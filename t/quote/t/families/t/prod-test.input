@@ -1,0 +1,58 @@
+{
+   "order_group" : [
+      {
+         "product_id" : "7",
+         "bundle" : [
+            {
+               "category_id" : "13",
+               "value" : "6",
+               "id" : "52"
+            },
+            {
+               "category_id" : "16",
+               "value" : "3",
+               "id" : "60"
+            },
+            {
+               "category_id" : "16",
+               "value" : "2",
+               "id" : "61"
+            },
+            {
+               "category_id" : "13",
+               "value" : "2",
+               "id" : "51"
+            },
+            {
+               "category_id" : "14",
+               "value" : "3",
+               "id" : "58"
+            },
+            {
+               "category_id" : "15",
+               "value" : "6",
+               "id" : "55"
+            }
+         ],
+         "shipping" : {
+            "addr2" : "Suite 1",
+            "country" : "US",
+            "city" : "Berkley",
+            "shipping_method" : "Ground",
+            "addr1" : "3214 Cumberland Rd",
+            "postal" : "48072",
+            "state_prov" : "MI"
+         }
+      }
+   ],
+   "contact" : {
+      "website" : "http://www.fonality.com",
+      "company_name" : "Fonality",
+      "phone" : "2132684579",
+      "industry" : "Computer Software",
+      "last_name" : "Weitz",
+      "email" : "jweitz@fonality.com",
+      "email_confirm" : "jweitz@fonality.com",
+      "first_name" : "Jeff"
+   }
+}

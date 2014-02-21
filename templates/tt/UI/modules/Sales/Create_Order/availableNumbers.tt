@@ -1,0 +1,9 @@
+<div id="availableNumbers" class="ui-display-none">
+<div class="sectionHeadr"><h4>Available Numbers</h4></div>
+    <table id="[% TAB %]"></table>
+</div>
+<div id="selectedNumbers" class="ui-display-none"> 
+<div class="sectionHeadr"><h4>Selected Numbers</h4></div>
+    <ul>
+    </ul>
+</div>

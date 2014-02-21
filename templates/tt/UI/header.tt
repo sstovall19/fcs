@@ -1,0 +1,83 @@
+[% IF !FORM.remote %]
+[% PROCESS 'misc.tt' %]
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" /></meta>
+		<title>Fonality Intranet [% TT_TITLE %]</title>
+		<link type="text/css" href="/css/fonality/jquery-ui-1.8.21.custom.css" rel="stylesheet" />
+		<link type="text/css" href="/css/nav.css" rel="stylesheet" />
+		<link type="text/css" href="/css/reset.css" rel="stylesheet" />
+		<link type="text/css" href="/css/v2_style.css" rel="stylesheet" />
+		<link type="text/css" href="/css/header.css" rel="stylesheet" />
+		<link type="text/css" href="/css/userFeedback.css" rel="stylesheet" />
+		<link type="text/css" href="/css/tooltip.css" rel="stylesheet" />
+		<script type="text/javascript" src="/js/jquery-1.7.2.min.js"></script>
+		<script type="text/javascript" src="/js/jquery-ui-1.8.21.custom.min.js"></script>
+		<script type="text/javascript" src="/js/jquery.validate.js"></script>
+		<script type="text/javascript" src="/js/jquery.tooltip.min.js"></script>
+		<script type="text/javascript" src="/js/additional-methods.js"></script>
+		<script type="text/javascript" src="/js/ui.dropdownchecklist-1.4-min.js"></script>
+		<script type="text/javascript" src="/js/misc.js"></script>
+		<script type="text/javascript" src="/js/search.js"></script>
+		<script type="text/javascript" src="/js/dumper.js"></script>
+		<script type="text/javascript" src="/js/json2.js"></script>
+        <script type="text/javascript" src="/js/header.js"></script>
+        <script type="text/javascript" src="/js/userFeedback.js"></script>
+        <script type="text/javascript" src="/js/tooltip.js"></script>
+	</head>
+
+<body class="fonality">
+
+[% PROCESS 'user_feedback.tt' %]
+
+<div id="page"> 
+
+	<div id="wrapper">
+
+		<div id="header">
+			<a href="/" title="Fonality | Business VoIP communications for growing SMB companies">
+				Fonality | Business VoIP communications for growing SMB companies
+			</a>
+		</div>
+
+		[% IF SESSION.username || SESSION.no_auth %]
+
+		<!-- Navigation start -->
+
+		<div id="mainnav">
+
+			[% INCLUDE 'nav_menu.tt' %]
+		</div>
+
+		[% END %]
+		<!-- Search form -->
+
+		[% INCLUDE 'account_menu.tt' %]
+
+		[% IF SESSION.username %]
+		<form id='top-search' onsubmit="return false;">
+			<h3>Search</h3>
+			<div>
+				<input type='text' class="text" id="nav_search" value='' autocomplete="off"/>
+				<input type='button' class='button' id="nav_search_button" value='Search' />
+			</div>
+		</form>
+		[% END %]
+
+	</div>
+
+<div id="nav_search_results" class="ui-state-active headerSearchResults"></div>
+
+<div id="content" class="headerContent">
+
+[% IF TT_TITLE %]
+	<h3>[% TT_TITLE %]</h3>
+	<hr>
+[% END %]
+
+[% END %]
+
+[% PROCESS 'alert.tt' %]
+[% PROCESS 'info.tt' %]
+[% PROCESS 'tooltip.tt' %]

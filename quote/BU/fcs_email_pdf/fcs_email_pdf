@@ -1,0 +1,263 @@
+#!/usr/bin/perl
+
+use strict;
+use lib '/home/smisel';
+use lib '/home/smisel/Fcs/lib';
+
+use Cwd;
+use Template();
+use SM::Client;
+use Mail::Sender;
+use MIME::Entity;
+use HTML::HTMLDoc;
+use PDF::Reuse;
+use Getopt::Std;
+
+my $client;
+
+main();
+
+sub main
+{
+
+	$client = SM::Client->new();
+	my ($q) = $client->initialize();
+	my %options=();
+	getopts('r', \%options);
+	rollback($client, \%options) if (defined($options{'r'}));
+
+	if ( (!defined($ENV{'PDF_DATA_DIR'})) || ! -d $ENV{'PDF_DATA_DIR'} ) {
+		$client->displayfailure("Error: Environment PDF_DATA_DIR not set!");
+	}
+
+	if ( (!defined($ENV{'PDF_DIR'})) || ! -d $ENV{'PDF_DIR'} ) {
+		$client->displayfailure("Error: Environment PDF_DIR not set!");
+	}
+
+	if (!defined($ENV{'PDF_URI'})) {
+		$client->displayfailure("Error: Environment PDF_URI not set!");
+	}
+
+	if (!defined($ENV{'PDF_INCLUDE'})) {
+		$client->displayfailure("Error: Environment PDF_INCLUDE not set!");
+	}
+
+	my $vars = {};
+	
+	$vars->{'THE_SERVER_NAME'}    = $ENV{'PDF_URI'};
+	$vars->{'SALES_PERSON_NAME'}  = $q->{'netsuite'}->{'netsuite_salesrep_name'};
+	$vars->{'SALES_PERSON_PHONE'} = $q->{'netsuite'}->{'netsuite_salesrep_phone'};
+	$vars->{'SALES_PERSON_EMAIL'} = $q->{'netsuite'}->{'netsuite_salesrep_email'};
+	$vars->{'NAME'}               = $q->{'contact'}->{'company_info_name'};
+	$vars->{'EMAIL'}              = $q->{'contact'}->{'company_info_email'};
+	$vars->{'PROPOSAL_ID'}        = $q->{'quote'}->{'quote_header_id'};
+
+	my $subtotal=0;
+	foreach my $itemarray ($q->{'quote'}->{'items'}) {
+		foreach my $item (@{$itemarray}) {
+			my $shit;
+			$shit->{'retail_price'} = format_comma(sprintf("%.2f", $item->{'base_price'}));
+			#$shit->{'price'} = format_comma(sprintf("%.2f", $item->{'price'}));
+			#$shit->{'subtotal'} = format_comma(sprintf("%.2f", $item->{'base_price'}));
+			$shit->{'subtotal'} = format_comma(sprintf("%.2f", $item->{'price'}));
+			$shit->{'price'} = format_comma(sprintf("%.2f", $item->{'base_price'}));
+			$shit->{'quantity'} = $item->{'quantity'};
+			$shit->{'name'} = $item->{'description'};
+			$shit->{'group_name'} = 'PBXtra HUD';
+			$subtotal=$subtotal + ($item->{'price'} * $item->{'quantity'});
+			push (@{$vars->{'ORDER_ITEMS'}}, $shit);
+		}
+	}
+
+	# Hardcode the shipping for demo...   FIXME!
+	$vars->{'SHIPPING_COST'} = "352.18";
+
+	$vars->{'SHIPPING_SERVICE'} = "UPS Ground";
+	$vars->{'QUOTE_TOTAL'}       = format_comma(sprintf("%.2f", $subtotal + $vars->{'SHIPPING_COST'}));
+	$vars->{'SUBTOTAL'}          = format_comma(sprintf("%.2f", $subtotal));
+	$vars->{'RETAIL_TOTAL'}      = format_comma(sprintf("%.2f", $subtotal));
+	$vars->{'RESELLER_DISCOUNT'} = 0;
+
+	set_random_pdf_name($q);
+
+	if ($vars->{MSG_ERROR}) {
+		$client->displayfailure($vars->{MSG_ERROR});
+	}
+	email_quote($q,$vars);
+	$client->displaysuccess($q);
+
+}
+
+
+sub set_random_pdf_name
+{
+	my $q = shift(@_);
+	my $random_string = $q->{'random_proposal_string'};
+
+	if ($random_string !~ /\w/)
+	{
+		$random_string = return_random_string(20);
+		$q->{'random_proposal_string'} = $random_string;
+	}
+}
+
+
+sub email_quote
+{
+	my ($email_msg, $proposal_msg, $error, $htmlmsg);
+	my $q             = shift(@_);
+	my $vars          = shift(@_);
+	my $reseller_id   = shift(@_);
+
+	my $proposal_id       = $q->{'quote'}->{'quote_header_id'};
+	my $random_string     = $q->{'random_proposal_string'};
+	my $proposal_file     = $ENV{'PDF_DIR'}."/p$random_string.pdf";
+	my $proposal_template = 'pbxtra_quote_only.tt';
+	my $email_template    = 'email.tt';
+
+	$vars->{'PROPOSAL_FILE'} = "/p$random_string.pdf";
+	# specify the subject
+	my $subject = $vars->{'NAME'} . "'s PBXtra Proposal #$proposal_id";
+
+	# create a new tt_obj because the main one has a pre_config and wrapper
+	my $tt_proposal = Template->new({ POST_CHOMP => 1, TRIM => 1, PRE_CHOMP => 1, INCLUDE_PATH => $ENV{'PDF_DATA_DIR'} });
+
+	# load the email body from the TT
+	$tt_proposal->process($proposal_template,$vars,\$proposal_msg) or $tt_proposal->error($error); 
+
+	#	create the proposal - a .pdf file to be downloaded by the customer
+	my $htmldoc = new HTML::HTMLDoc();
+	$htmldoc->path($ENV{'PDF_DATA_DIR'});
+	$htmldoc->set_bodyfont('Arial');
+	$htmldoc->set_fontsize('10');
+	#$htmldoc->set_left_margin(15,'mm');
+	#$htmldoc->set_bottom_margin(5,'mm');
+	$htmldoc->set_page_size('letter');
+	$htmldoc->set_left_margin(0,'mm');
+	$htmldoc->set_bottom_margin(5,'mm');
+	$htmldoc->set_top_margin(0,'mm');
+	$htmldoc->set_right_margin(0,'mm');
+	#$htmldoc->set_bodyimage('pbxtra_proposal_files/logolight.jpg') unless($vars->{'PCMALL'});
+	$htmldoc->set_footer('.','/','');	# page X of Y in the bottom right of each page
+	$htmldoc->set_html_content($proposal_msg);
+	my $pdf = $htmldoc->generate_pdf();
+	my $pdf_string = $pdf->to_string($pdf);
+	my $pdf_result;
+	#eval { $pdf_result = $pdf->to_file($proposal_file) };
+	$pdf_result = $pdf->to_file($proposal_file);
+
+	# open a temp file and write the dynamic and static content to it
+	PDF::Reuse::prFile($ENV{'PDF_DIR'}."/temp$random_string.pdf");
+	PDF::Reuse::prDoc($ENV{'PDF_DATA_DIR'}."/".$ENV{'PDF_INCLUDE'});
+	PDF::Reuse::prDoc($proposal_file);
+	PDF::Reuse::prEnd();
+
+	# overwrite the dynamic file with the femp file
+	PDF::Reuse::prFile($proposal_file) || die $!;
+	PDF::Reuse::prDoc($ENV{'PDF_DIR'}."/temp$random_string.pdf");
+	PDF::Reuse::prEnd();
+
+	# clean up
+	unlink($ENV{'PDF_DIR'}."/temp$random_string.pdf");
+
+	#
+	#	send the email with a link to the proposal
+	#
+
+	# create a new tt_obj because the main one has a pre_config and wrapper
+	my $tt_email = Template->new({ POST_CHOMP => 1, TRIM => 1, PRE_CHOMP => 1, INCLUDE_PATH => $ENV{'PDF_DATA_DIR'} });
+	$tt_email->process($email_template,$vars,\$email_msg) or $tt_email->error($error); 
+	# replace with spaces and line breaks
+	$email_msg =~ s/\&\#32\;/ /g;
+	$email_msg =~ s/\&\#13\;/\n/g;
+	# always add trailing carriage returns - multipart emails require them
+	$email_msg .= "\n";
+	# who to send the email to
+	my $to = $vars->{'EMAIL'};
+	# Felix Nilam - 10/08/2009
+	# send proposal to reseller if specified
+	if($q->{'email_to_reseller'} eq 'on')
+	{
+		if($vars->{'RESELLER_EMAIL'} ne '')
+		{
+			$to = $vars->{'RESELLER_EMAIL'};
+			$vars->{'EMAIL'} = $vars->{'RESELLER_EMAIL'};
+		}
+	}
+	
+	my $from;
+	if (defined $reseller_id)
+	{
+		$from = 'Fonality Reseller Proposal <resellers@fonality.com>';
+	}
+	else
+	{
+		$from = 'Fonality Proposal <sales@fonality.com>';
+	}
+
+	$client->display(*STDERR, "Mail to $to from $from subject $subject");
+
+	eval
+	{
+		my $sender = new Mail::Sender({ bypass_outlook_bug => 1 });
+		$sender->OpenMultipart(
+		{
+			smtp    => 'localhost',
+			to      => $to,
+			subject => $subject,
+			from    => $from,
+		} );
+		$sender->Body(
+		{
+			ctype => 'text/html',
+			msg   => $email_msg,
+		} );
+		# this is for attachments
+		$sender->Attach(
+		{
+			ctype       => $ENV{'PDF_DATA_DIR'}.'image/png',
+			file        => $ENV{'PDF_DATA_DIR'}.'/fonality_logo_header3.png',
+			name        => $ENV{'PDF_DATA_DIR'}.'fonality_logo_header3.png',
+			encoding    => 'base64',
+			disposition => "inline; filename=\"fonality_logo_header3.png\";\r\nContent-ID: <fonality_logo_header3.png>",
+		} );
+
+	$sender->Close();
+	} or $client->displayfailure("Could not email!   $@");
+}
+
+sub rollback
+{
+	my ($client) = shift;
+	my ($options) = shift;
+	$client->displaysuccess("Nothing to rollback.");
+}
+
+sub format_comma 
+{
+	my $delimiter = ','; # replace comma if desired
+	my($n,$d) = split /\./,shift,2;
+	my @a = ();
+	while($n =~ /\d\d\d\d/)
+	{
+		$n =~ s/(\d\d\d)$//;
+		unshift @a,$1;
+	}
+	unshift @a,$n;
+	$n = join $delimiter,@a;
+	$n = "$n\.$d" if $d =~ /\d/;
+	return $n;
+}
+
+sub return_random_string
+{
+	my $length = shift(@_) || 10;
+	my @chars = qw(2 3 4 5 6 7 8 9 A B C D E F G H J K L M N P
+			Q R S T U V W X Y Z a b c d e f g h i j k
+			m n o p q r s t u v w x y z _);
+	srand();
+	my $rand_string = '';
+	# Pick a random character from our array, and append it
+	$rand_string .= $chars[int rand @chars] while length($rand_string) < $length;
+	return($rand_string);
+}

@@ -1,0 +1,14 @@
+[% TITLE = ' :: Addon Order Request' %]
+[% COLSPAN = 2 %]
+<input type='hidden' name='reseller' value='[% IF RESELLER_ID OR RESELLER_PROPOSAL %]1[% ELSE %]0[% END %]'>
+<input type='hidden' name='oid' value='[% OID %]'>
+
+<h1 style="margin-bottom: 15px !important;">Request Submitted</h1>
+
+<p>
+	Thank you. Your addon request has been submitted.
+	An associate from our billing department will contact you to complete your order.
+	Your ticket number is: <b>[% ADDON_OTHER_TICKET_ID %]</b>.
+</p>
+
+

@@ -1,0 +1,76 @@
+<h1>Development Style Guide</h1>
+<p>Obviously everyone has their own style of programming, and tools such as
+perl-tidy can help but here is a list of things that all developers, regardless
+of language, should adhere to in order to keep the Fonality code base
+consistent.
+
+Some of these are taken from the perl style guide on perldoc.perl.org, others
+are to be in-line with our current code.</p>
+<p>Run perl programs under <code><strong>-w</strong></code> at all times. You may explicitly
+turn it off using the <code><strong>no</strong> warnings</code> pragma.
+
+You should always run under <code><strong>use</strong> strict</code>.
+
+<ul>
+    <li>4-column indent, replace tabs with spaces.</li>
+    <li>Opening curly on next line as keyword (to be consistent with current
+    code).</li>
+    <li>Ending curly should line up vertically with the starting keyword.</li>
+    <li>Space before the opening curly of a multi-line BLOCK.</li>
+    <li>One-line BLOCK may be put on one line, including curlies.</li>
+    <li>No space before the semicolon.</li>
+    <li>Space around most operators.</li>
+    <li>Space around a "complex" subscript (inside brackets).</li>
+    <li>Blank lines between chunks that do different things.</li>
+    <li>Uncuddled elses.</li>
+    <li>No space between function name and its opening parenthesis.</li>
+    <li>Space after each comma.</li>
+    <li>Long lines broken after an operator (except and and or ).</li>
+    <li>Space after last parenthesis matching on current line.</li>
+    <li>Line up corresponding items vertically.</li>
+    <li>Omit redundant punctuation as long as clarity doesn't suffer.</li>
+    <li>Document your code with understandable comments and use Pod formatting
+    in a consistent way. 
+    <ul>
+        <li>Use C&lt;&gt; for function, variable, and module names. Function is
+        more readabile with parentheses after the name, e.g.
+        <code>function().</code></li>
+        <li>Use B&lt;&gt; for command names like
+        <code><strong>cat</strong></code> or <code><strong>grep</strong></code>.</li>
+        <li>Use F&lt;&gt; or C&lt;&gt; for file names.</li>
+    </ul>
+    </li>
+    <li>Always call a module-level method using the complete package name. e.g.
+    Fap::ModuleName::MethodName</li>
+    <li>Return <code><strong>undef</strong></code> instead of
+    <code><strong>die</strong></code> for methods executed through the web. die
+    will result in an Error 500.</li>
+    <li>Create unit tests using Test::More whenever possible.</li>
+</ul>
+
+<p>Other things to think about:</p>
+<ul>
+    <li>Just because you <em>CAN</em> do something a particular way doesn't mean
+    you <em>SHOULD</em> do it that way. Go for readability and understandability
+    over complexity.</li>
+    <li>Don't muddy the code trying to exit a loop at the top or bottom. Use the
+    <code><strong>last</strong></code> operator in the middle if appropriate, and "outdent"
+    it a little to make it more visible.</li>
+    <li>Don't be afriad to use loop labels. They enhance readability and allow
+    for multi-level lop breaks.</li>
+    <li>Avoid using <code><strong>grep(), map()</strong></code> or `backticks`
+    in a void context, that is, when you just throw away their return values.
+    They all have return values so use them.</li>
+    <li>Variable names should be all lowercase with underscores to separate
+    words. CONSTANTS should be in all caps. Avoid obscure abbreviations to
+    improve readability. e.g. $bundle_license, $ITERATIONS</li>
+    <li>Package names being with a Capital and do not use underscores. e.g.
+    Fap::ConfLoader</li>
+    <li>Use the /x modifier on complex regular expressions to include
+    whitespace.</li>
+    <li>Use here documents instead of repeated
+    <code><strong>print()</strong></code> statements</li>
+    <li>Always check the return codes of system calls.</li>
+    <li>Think about reusability. Generalize your code. Consider writing a module
+    or object class.</li>
+</ul>

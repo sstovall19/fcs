@@ -1,0 +1,4 @@
+PDF_DATA_DIR=/home01/smisel/fcs_email_pdf/fcs_email_pdf_files;export PDF_DATA_DIR
+PDF_DIR=/nfs/www/pbxtra_proposal_downloads;export PDF_DIR
+PDF_URI=http://intranet.test29.fonality.com;export PDF_URI
+PDF_INCLUDE=FonalityPBXtra-datasheet_061611.pdf;export PDF_INCLUDE

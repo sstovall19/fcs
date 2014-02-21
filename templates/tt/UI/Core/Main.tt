@@ -1,0 +1,7 @@
+[% INCLUDE 'header.tt' %]
+
+<h3>Hello [% USER_INFO.first_name %], welcome to the intranet!</h3>
+
+<p>This is the main landing page.
+
+[% INCLUDE 'footer.tt' %]

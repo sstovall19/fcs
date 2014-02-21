@@ -1,0 +1,279 @@
+{
+    "INFO": {
+        "PID": 26141,
+        "JUST_RAN": "fcs_create_netsuite_opportunity.pl"
+    },
+    "netsuite": {
+        "netsuite_salesrep_phone": "877-366-2548 x7030",
+        "netsuite_salesrep_email": "smisel@fonality.com",
+        "netsuite_id": "1568005",
+        "opportunity_id": "990612",
+        "netsuite_salesrep_id": "1367977",
+        "netsuite_salesrep_name": "Wade Bowling"
+    },
+    "quote": {
+        "quote_header_id": "241580",
+        "items": [
+            {
+                "quantity": "1",
+                "base_price": "595",
+                "price": "595",
+                "description": "PBXtra Standard Edition"
+            },
+            {
+                "quantity": "1",
+                "base_price": "2599",
+                "price": "2599",
+                "description": "Dell R300"
+            },
+            {
+                "quantity": "1",
+                "base_price": "0",
+                "price": "0",
+                "description": "HUD Personal"
+            },
+            {
+                "quantity": "1",
+                "base_price": "65",
+                "price": "65",
+                "description": "Annual Software & Support Agreements (1-4 Users)"
+            }
+        ]
+    },
+    "Shipping": {
+        "Info": {
+            "_North Carolina_United States_Wake Forest_27587_205 Stillwood Drive": {
+                "Items": {
+                    "49": 1,
+                    "53": 1,
+                    "70": 1,
+                    "74": 1,
+                    "79": 1,
+                    "82": 1
+                },
+                "Address": {
+                    "shipping_state": "North Carolina",
+                    "shipping_country": "United States",
+                    "shipping_city": "Wake Forest",
+                    "shipping_zip": "27587",
+                    "shipping_street": "205 Stillwood Drive"
+                },
+                "Rates": [
+                    {
+                        "rate": "64.28",
+                        "currency": "USD",
+                        "carrier": "UPS",
+                        "value": 1479.96,
+                        "weight": 15.47,
+                        "weightUnit": "kg",
+                        "service": "Ground"
+                    },
+                    {
+                        "rate": "194.83",
+                        "currency": "USD",
+                        "carrier": "UPS",
+                        "value": 1479.96,
+                        "weight": 15.47,
+                        "weightUnit": "kg",
+                        "service": "3 Day Select"
+                    },
+                    {
+                        "rate": "295.26",
+                        "currency": "USD",
+                        "carrier": "UPS",
+                        "value": 1479.96,
+                        "weight": 15.47,
+                        "weightUnit": "kg",
+                        "service": "2nd Day Air"
+                    },
+                    {
+                        "rate": "339.55",
+                        "currency": "USD",
+                        "carrier": "UPS",
+                        "value": 1479.96,
+                        "weight": 15.47,
+                        "weightUnit": "kg",
+                        "service": "2nd Day Air AM"
+                    },
+                    {
+                        "rate": "412.22",
+                        "currency": "USD",
+                        "carrier": "UPS",
+                        "value": 1479.96,
+                        "weight": 15.47,
+                        "weightUnit": "kg",
+                        "service": "Next Day Air Saver"
+                    },
+                    {
+                        "rate": "425.62",
+                        "currency": "USD",
+                        "carrier": "UPS",
+                        "value": 1479.96,
+                        "weight": 15.47,
+                        "weightUnit": "kg",
+                        "service": "Next Day Air"
+                    },
+                    {
+                        "rate": "496.30",
+                        "currency": "USD",
+                        "carrier": "UPS",
+                        "value": 1479.96,
+                        "weight": 15.47,
+                        "weightUnit": "kg",
+                        "service": "Next Day Air Early AM"
+                    }
+                ],
+                "Comingled": 0
+            }
+        }
+    },
+    "contact": {
+        "wizard": "0",
+        "company_info_website": "http://samyismyhero.com",
+        "eml": "",
+        "src": "",
+        "company_info_industry": "",
+        "email_proposal": "Get Quote",
+        "promo_code": "HDGGD",
+        "company_info_email_confirm": "steve@miselconsulting.com",
+        "order_review": "1",
+        "company_info_cust_phone": "310 555-5555",
+        "product_id": 10,
+        "company_info_name": "Testy Paul",
+        "company_info_email": "steve@miselconsulting.com",
+        "reseller": "0"
+    },
+    "servers": [
+        {
+            "Items": [
+                {
+                    "value": null,
+                    "id": "60"
+                },
+                {
+                    "value": null,
+                    "id": "56"
+                },
+                {
+                    "value": null,
+                    "id": "68"
+                },
+                {
+                    "value": "1",
+                    "id": "74"
+                },
+                {
+                    "value": null,
+                    "id": "66"
+                },
+                {
+                    "value": null,
+                    "id": "59"
+                },
+                {
+                    "value": "1",
+                    "id": "53"
+                },
+                {
+                    "value": "1",
+                    "id": "70"
+                },
+                {
+                    "value": null,
+                    "id": "65"
+                },
+                {
+                    "value": null,
+                    "id": "45"
+                },
+                {
+                    "value": null,
+                    "id": "54"
+                },
+                {
+                    "value": null,
+                    "id": "46"
+                },
+                {
+                    "value": null,
+                    "id": "43"
+                },
+                {
+                    "value": null,
+                    "id": "61"
+                },
+                {
+                    "value": null,
+                    "id": "69"
+                },
+                {
+                    "value": "1",
+                    "id": "79"
+                },
+                {
+                    "value": null,
+                    "id": "57"
+                },
+                {
+                    "value": null,
+                    "id": "62"
+                },
+                {
+                    "value": null,
+                    "id": "41"
+                },
+                {
+                    "value": null,
+                    "id": "47"
+                },
+                {
+                    "value": null,
+                    "id": "44"
+                },
+                {
+                    "value": "1",
+                    "id": "82"
+                },
+                {
+                    "value": "1",
+                    "id": "49"
+                },
+                {
+                    "value": null,
+                    "id": "64"
+                },
+                {
+                    "value": null,
+                    "id": "67"
+                },
+                {
+                    "value": null,
+                    "id": "58"
+                },
+                {
+                    "value": null,
+                    "id": "42"
+                },
+                {
+                    "value": null,
+                    "id": "73"
+                },
+                {
+                    "value": null,
+                    "id": "55"
+                },
+                {
+                    "value": null,
+                    "id": "63"
+                }
+            ],
+            "Shipping": {
+                "shipping_state": "North Carolina",
+                "shipping_country": "United States",
+                "shipping_city": "Wake Forest",
+                "shipping_zip": "27587",
+                "shipping_street": "205 Stillwood Drive"
+            }
+        }
+    ]
+}

@@ -1,0 +1,117 @@
+[% item = CATEGORY.name.replace(' ', '_') %]
+
+<div style="padding: 5px;">
+
+<div id="category_[% item %]" category_title="[% CATEGORY.name %]" category_id="[% CATEGORY.category_id %]"  class="form_category_div[% IF HIDDEN %] displayNone[% END %]">
+
+    <h3 class="h3_category">[% CATEGORY.name %]</h3>
+
+    <div class="display_right_preview_form" class="displayBlock">
+
+        <div class="form_category_description">[% CATEGORY.description %]</div>
+
+    [% FIELDS = CATEGORY.label %]
+
+    [% IF FIELDS.keys %]
+        [% FIELDS = [ FIELDS ] %]
+    [% END %]
+    
+    [% OPT_NUM = 0 %]
+
+    <table width="100%">
+        <tr>
+            <td align="center">
+    [% FOREACH FIELD IN FIELDS.nsort('priority') %]
+
+    [% FOREACH ITEM IN FIELD.bundles %]
+        <div class="bundle_select_form_element category_id_[% CATEGORY.category_id %] ui-widget ui-corner-all ui-state-disabled" item_id="[% ITEM.bundle_id %]" category_id="[% CATEGORY.category_id %]" display_name="[% ITEM.display_name %]" description="[% ITEM.description %]">
+            <img src="/iconify?w=75&h=75&icon=[% ITEM.display_name %]" width="75" height="75">
+            <span class="displayNone">[% ITEM.display_name %]</span>
+        [% OPT_NUM = 1 %]
+        </div>
+
+    [% END %]
+    [% END %]
+
+            </td>
+        </tr>
+    </table>
+
+    [% FIRST_BUNDLE = "" %]
+
+    <select class="bundle_selector category_id_[% CATEGORY.category_id %]" class="displayNone">
+
+    [% FOREACH FIELD IN FIELDS.nsort('priority') %]
+        [% IF !FIRST_BUNDLE %][% FIRST_BUNDLE = FIELD %][% END %]
+
+        [% FOREACH BUNDLE IN FIELD.bundles %]
+            <option value="[% BUNDLE.bundle_id %]">[% BUNDLE.name %]</option>       
+        [% END %]
+    [% END %]
+
+    </select>
+
+        <form id="form_category_[% CATEGORY.name.replace(' ', '_') %]">
+            <div class="form_header_label">Item</div>
+            <div class="form_header_qty">Qty</div>
+            [% IF HAS_BUY_OPTION && HAS_RENT_OPTION %]<div class="form_header_rent_qty">Rent</div>[% END %]
+            <div class="form_clear"></div>
+            [% USE String(FIRST_BUNDLE.display) %]
+            
+            [% IF String.upper == 'NUMBER' %]
+
+                [% FOREACH BUNDLE IN FIRST_BUNDLE.bundles %]
+
+                <div class="form_label[% IF NO_IMAGE %] no_image[% END %] bundle_selector_label" category_id="[% CATEGORY.category_id %]" description="[% BUNDLE.description %]">[% FIRST_BUNDLE.name %]</div>
+                <div class="form_element"><input class="ui-widget ui-corner-all bundle_selector_input" type="text" name="[% BUNDLE.bundle_id %]" size="5"[% IF FIRST_BUNDLE.min %] value="[% FIRST_BUNDLE.min %]"[% END %]></div>
+
+                <div class="mrc_element">
+                    <input class="ui-widget ui-corner-all mrc mrc_[% BUNDLE.bundle_id %]" type="checkbox" size="5">
+                </div>
+
+                <div class="form_clear"></div>
+
+                [% END %]
+
+            [% ELSIF String.upper == 'TEXT' %]
+
+                [% FOREACH BUNDLE IN FIRST_BUNDLE.bundles %]
+
+                    <div class="form_label[% IF NO_IMAGE %] no_image[% END %] bundle_selector_label" category_id="[% CATEGORY.category_id %]" description="[% BUNDLE.description %]">
+                        [% FIRST_BUNDLE.name %]
+                    </div>
+
+                    <div class="form_element">
+                        <input class="ui-widget ui-corner-all bundle_selector_input" type="text" name="[% BUNDLE.bundle_id %]" size="18">
+                    </div>
+
+                    <div class="mrc_element">
+                        <input class="ui-widget ui-corner-all mrc mrc_[% BUNDLE.bundle_id %]" type="checkbox" size="5">
+                    </div>
+
+                    <div class="form_clear"></div>
+
+                [% END %]
+
+            [% ELSE %]
+
+                NO DISPLAY METHOD FOR [% FIRST_BUNDLE.name %]
+
+            [% END %]
+        </form>
+
+        <div class="floatLeft">
+            <input type="button" onclick="save_pre_form_category([% CATEGORY.category_id %], '[% CATEGORY.name.replace(' ', '_') %]')" value="Continue">
+        </div>
+
+    </div>
+    <div id="preview_panel_[% CATEGORY.category_id %]" class="display_right_preview_panel basic"><h4>FCS User License</h4><p><img src="/iconify?&w=100&h=100&icon=FCS User License" align="left" width="100" height="100"> FCS user license which provides basic features</div>
+    <div id="preview_panel_[% CATEGORY.category_id %]" class="display_right_preview_panel pro"><h4>FCS User License</h4><p><img src="/iconify?&w=100&h=100&icon=FCS User License" align="left" width="100" height="100"> FCS Pro user license which provides basic plus professional features</div>
+
+    <script type="text/javascript">
+           var catId =   '[% CATEGORY.category_id %]';
+          // bundleSelectorHandler(catId);
+          //bundleSelectorHandler('[% CATEGORY.category_id %]');
+    </script>
+ </div>
+</div>

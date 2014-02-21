@@ -1,0 +1,67 @@
+{
+   "order" : {
+      "total_price" : "0.00",
+      "status" : "NEW",
+      "order_groups" : [
+         {
+            "sales_tax_rate" : "10.00000",
+            "total_price" : "4000.00",
+            "shipping_type_id" : "4020",
+            "netsuite_opportunity_id" : "1000",
+            "order_id" : "52914",
+            "order_bundles" : [
+               {
+                  "total_price" : "0.00",
+                  "quantity" : "1",
+                  "order_bundle_id" : "1000",
+                  "order_group_id" : "10000",
+                  "bundle_id" : "2032",
+                  "list_price" : "0.00",
+                  "order_bundle_details" : [
+                     {
+                        "did_number" : "123456",
+                        "lnp" : "1",
+                        "extension_number" : "123",
+                        "order_bundle_id" : "1000",
+                        "order_bundle_detail_id" : "1000"
+                     }
+                  ],
+                  "added_conference_bridges" : [
+                     {
+                        "extension" : 8524,
+                        "index" : 20
+                     }
+                  ],
+                  "unit_price" : "0.00"
+               }
+            ],
+            "address_id" : "1",
+            "order_group_id" : "10000",
+            "total_sales_tax" : "10.00",
+            "server_id" : "18800",
+            "product_id" : "6",
+            "address" : {
+               "country" : "USA",
+               "addr2" : "",
+               "city" : "Manchester",
+               "postal" : "03109",
+               "entity_address_id" : "1",
+               "addr1" : "322 Grasselli Street",
+               "label" : "Home",
+               "state" : "NH"
+            }
+         }
+      ],
+      "order_id" : "52914",
+      "netsuite_salesperson_id" : null,
+      "order_type" : "ADDON",
+      "record_type" : "ORDER",
+      "created" : "2012-11-11 20:02:28",
+      "balance" : "0.00",
+      "customer_id" : "1",
+      "netsuite_lead_id" : "0",
+      "contact_id" : null,
+      "updated" : null,
+      "reseller_id" : null
+   }
+}

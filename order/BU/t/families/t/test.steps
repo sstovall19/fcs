@@ -1,0 +1,52 @@
+[
+    {
+        familyname => 'QUOTE'
+    },
+    {
+        sequence                => 'A',
+        objectname              => 'Create Quote',
+        sequence_success        => 'B',
+        sequence_failure        => 'Z',
+        objectlocation          => '/home01/sstovall/trunk/fcs/order/BU/fcs_create_quote.pl',  
+    },
+    {
+        sequence 		=> 'B',
+        objectname 		=> 'Calculate Shipping',
+        sequence_success 	=> 'C',
+        sequence_failure	=> 'Z',
+	objectlocation		=> '/home01/sstovall/trunk/fcs/order/BU/fcs_shipping_calculator.pl',
+        iterations		=> 3,
+    },
+    {
+        sequence                => 'C',
+        objectname              => 'Check NS Lead',
+        sequence_success        => 'D',
+        sequence_failure        => 'Z',
+        objectlocation          => '/home01/sstovall/trunk/fcs/order/BU/fcs_create_netsuite_customer.pl',
+        iterations              => 3,
+    },
+    {
+        sequence                => 'D',
+        objectname              => 'Create NS Opportunity',
+        sequence_success        => 'E',
+        sequence_failure        => 'Z',
+        objectlocation          => '/home01/sstovall/trunk/fcs/order/BU/fcs_create_netsuite_opportunity.pl',
+        iterations              => 3,
+    },
+    {
+        sequence                => 'E',
+        objectname              => 'Create PDF & Email',
+        sequence_success        => '',
+        sequence_failure        => 'Z',
+        objectlocation          => '/home01/smisel/fcs_email_pdf/fcs_email_pdf',
+        iterations              => 3,
+    },
+    {
+        sequence                => 'Z',
+        objectname              => 'Failure Notification',
+        sequence_success        => '',
+        sequence_failure        => '',
+        objectlocation          => '/home01/sstovall/trunk/fcs/order/BU/dummy_unit.pl',
+        iterations              => 1,
+    },
+]

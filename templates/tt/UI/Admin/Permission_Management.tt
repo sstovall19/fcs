@@ -1,0 +1,824 @@
+[% PROCESS 'header.tt' %]
+
+<script type="text/javascript">
+
+	$(document).ready(function()
+	{
+		// Initialize the role and user accordions
+		$("#role_accordion").accordion({
+			active: false,
+			navigation: true,
+			collapsible: true
+		});
+
+		$("#user_accordion").accordion({
+			active: false,
+			collapsible: true
+		});	
+		
+		// New role form validation
+		$('#add_new_role').validate({
+			submitHandler: function(e)
+			{
+				add_role();
+				
+			},
+			rules: {
+				role_name: {
+					required: true,
+					minlength: 1,
+					maxlength: 36
+				},
+				role_desc: {
+					required: false
+				}
+			},
+			messages: {
+				role_name: {
+					required: "Role name is required",
+					rangelength: jQuery.format("Enter between {0} and {1} characters for a role name"),
+					minlength: jQuery.format("Enter at least {0} characters for first name")
+				}
+			}
+		});
+
+	});
+
+	// Clicked on remove role button
+	function remove_role(id)
+	{
+		if(id)
+		{
+			// Make sure that we actually want to remove the role
+			if(!confirm('Are you sure that you want to remove this role?  This action cannot be undone!'))
+				return false;
+
+			$.ajax({
+				dataType: 'json',
+				url: '/?mode=Admin.Permission_Management',
+				data: { role_id: id, action: 'remove_role' },
+				success: function(data)
+				{
+					if(data && data.TT_INFO)
+					{
+						// User feedback
+						info(data.TT_INFO);
+					
+						// Fade out and remove the role from the accordion
+						$('#role_'+id).fadeOut().remove();
+					}
+				}
+			});
+		}
+		else
+		{
+			alert('Invalid role ID', 'Error');
+			return false;
+		}
+	}
+
+	// This needs to be fired off every time a role permission without a parent id is changed to display or hide the child permissions and disable them if the parent is disabled
+	function enable_children(e, id, role_id)
+	{
+		if(!e || !id)
+			return false;
+
+		// Display children?
+		if($(e).val())
+		{
+			$('.role_'+role_id+'.child_of_'+id).removeAttr('disabled');
+			$('.role_'+role_id+'.child_row_of_'+id).fadeIn();
+		}
+		else // Nope, hide them
+		{
+			// Disable each select element and then iterate through each one and disable them if they are currently enabled
+			$('.role_'+role_id+'.child_of_'+id).attr('disabled', 'disabled').each(function()
+			{
+				if($(this).val() != "")
+				{
+					$(this).val('').trigger('change');
+				}
+			});
+
+			// Hide child permissions
+			$('.role_'+role_id+'.child_row_of_'+id).fadeOut();
+		}
+	}
+
+	// The same as above, but for user permissions
+	function enable_user_children(e, id, user_id)
+	{
+		if(!e || !id)
+			return false;
+
+		// Should we display children?
+		if($(e).val())
+		{
+			$('.user_'+user_id+'.child_of_'+id).removeAttr('disabled');
+			$('.user_'+user_id+'.child_row_of_'+id).fadeIn();
+		}
+		else
+		{
+			// Disable each select element and then iterate through each one and disable them if they are currently enabled
+			$('.user_'+user_id+'.child_of_'+id).attr('disabled', 'disabled').each(function()
+			{
+				if($(this).val() != "")
+				{
+					$(this).val('').trigger('change');
+				}
+			});
+
+			// Hide child permissions
+			$('.user_'+user_id+'.child_row_of_'+id).fadeOut();
+		}
+	}
+
+
+	// Fire this when a permission changes
+	function update_permission(e, id, role_id)
+	{
+		var level = $(e).val();
+		if(!id || !role_id)
+			return false;
+
+		// Hide the select field and replace with a loading image
+		$(e).hide();
+		$('.role_'+role_id+'.update_status_'+id).html('<img src="/images/loading.gif">').fadeIn();
+
+		// Build POST data
+		var form_data = {};
+
+		form_data.mode = 'Admin.Permission_Management';
+		form_data.action = 'change_role_permission';
+		form_data.permission_id = id;
+		form_data.permission_level = level;
+		form_data.role_id = role_id;
+
+		$.ajax({
+			url: '/',
+			dataType: 'JSON',
+			data: form_data,
+			success: function(data)
+			{
+				if(data && data.access)
+				{
+					// Change the selected option
+					$(e).val(data.access);
+					$(e).parent().removeClass('ui-state-disabled');
+				}
+				else
+				{
+					// The permission has been set to disabled
+					$(e).parent().addClass('ui-state-disabled');
+				}
+
+				// Hide the loading image
+				$('.role_'+role_id+'.update_status_'+id).hide();
+
+				// Re-display the select field
+				$(e).fadeIn();
+			}
+		});
+	}
+
+	// This should be fired off whenever a user permission is changed
+	function update_user_permission(e, id, user_id)
+	{
+		var level = $(e).val();
+		if(!id || !user_id)
+			return false;
+
+		// Hide the select field and display a loading image
+		$(e).hide();
+		$('.user_'+user_id+'.update_status_'+id).html('<img src="/images/loading.gif">').fadeIn();
+
+		// Build POST data
+		var form_data = {};
+
+		form_data.mode = 'Admin.Permission_Management';
+		form_data.action = 'change_user_permission';
+		form_data.permission_id = id;
+		form_data.permission_level = level;
+		form_data.user_id = user_id;
+
+		$.ajax({
+			url: '/',
+			dataType: 'JSON',
+			data: form_data,
+			success: function(data)
+			{
+				if(data && data.access)
+				{
+					// Update the selected option
+					$(e).val(data.access);
+					$(e).parent().removeClass('ui-state-disabled');
+				}
+				else
+				{
+					// Permission set to disabled
+					$(e).parent().addClass('ui-state-disabled');
+				}
+
+				// Hide the loading image
+				$('.user_'+user_id+'.update_status_'+id).hide();
+
+				/// Re-display the select field
+				$(e).fadeIn();
+			}
+		});
+	}
+
+	// Whenever a role is expanded in the accordion, this populates the role's currently selected permissions and users
+	function populate_role(role_id)
+	{
+		if(!role_id)
+			return false;
+
+		// Build POST data
+		var form_data = {};
+		form_data.mode = 'Admin.Permission_Management';
+		form_data.action = 'load_role_permissions';
+		form_data.role_id = role_id;
+
+		$.ajax({
+			url: '/',
+			dataType: 'JSON',
+			data: form_data,
+			success: function(data)
+			{
+				if(data && data.permissions)
+				{
+					// Cycle through each loaded permission and set the select field appropriately
+					var i = 0;
+					for(i in data.permissions)
+					{
+						var p = data.permissions[i];
+
+						// This is a child permission, make sure we use the proper class selector
+						if(p.parent_id > 0)
+						{
+							$('.role_'+role_id+'.child_'+p.intranet_permission_id).val(p.access);
+
+							// Set class to enabled or disabled
+							if(p.access)
+							{
+								$('.role_'+role_id+'.child_'+p.intranet_permission_id).parent().removeClass('ui-state-disabled');
+							}
+							else
+							{
+								$('.role_'+role_id+'.child_'+p.intranet_permission_id).parent().addClass('ui-state-disabled');
+							}
+						}
+						else // parent permissoin
+						{
+							$('.role_'+role_id+'.parent_'+p.intranet_permission_id).val(p.access);
+							enable_children($('.role_'+role_id+'.parent_'+p.intranet_permission_id), p.intranet_permission_id, role_id);
+
+							// Set class to enabled or disabled
+							if(p.access)
+							{
+								$('.role_'+role_id+'.parent_'+p.intranet_permission_id).parent().removeClass('ui-state-disabled');
+							}
+							else
+							{
+								$('.role_'+role_id+'.parent_'+p.intranet_permission_id).parent().addClass('ui-state-disabled');
+							}
+						}
+
+					}
+				}
+
+				// Handle the user list - simply move all users found in the role from the available to selected users list
+				if(data && data.users)
+				{
+					var i = 0;
+					for(i in data.users)
+					{
+						var u = data.users[i];
+						$('.role_'+role_id+'.user_option_'+u.intranet_user_id).appendTo('.role_'+role_id+'.selected_users');
+					}
+				}
+
+				// Remove the disabled class from the role's div
+				$('#role_'+role_id).removeClass('ui-state-disabled');
+			}
+		});
+	}
+
+	// See comments above in populate_permissions
+	function populate_user_permissions(user_id)
+	{
+		if(!user_id)
+			return false;
+
+		var form_data = {};
+		form_data.mode = 'Admin.Permission_Management';
+		form_data.action = 'load_user_permissions';
+		form_data.user_id = user_id;
+
+		$.ajax({
+			url: '/',
+			dataType: 'JSON',
+			data: form_data,
+			success: function(data)
+			{
+				if(data && data.permissions)
+				{
+					var i = 0;
+					for(i in data.permissions)
+					{
+						var p = data.permissions[i];
+
+						if(p.parent_id > 0)
+						{
+							$('.user'+user_id+'.child_'+p.intranet_permission_id).val(p.access);
+
+							if(p.access)
+							{
+								$('.user_'+user_id+'.child_'+p.intranet_permission_id).parent().removeClass('ui-state-disabled');
+							}
+							else
+							{
+								$('.user_'+user_id+'.child_'+p.intranet_permission_id).parent().addClass('ui-state-disabled');
+							}
+						}
+						else
+						{
+							$('.user_'+user_id+'.parent_'+p.intranet_permission_id).val(p.access);
+							enable_user_children($('.user_'+user_id+'.parent_'+p.intranet_permission_id), p.intranet_permission_id, user_id);
+
+							if(p.access)
+							{
+								$('.user_'+user_id+'.parent_'+p.intranet_permission_id).parent().removeClass('ui-state-disabled');
+							}
+							else
+							{
+								$('.user_'+user_id+'.parent_'+p.intranet_permission_id).parent().addClass('ui-state-disabled');
+							}
+						}
+
+					}
+				}
+
+				// Remove the disabled class from the user's div
+				$('#user_'+user_id).removeClass('ui-state-disabled');
+			}
+		});
+	}
+
+	// Add users from available to selected users - this is fired off by the add button in the user list
+	function add_available_users(role_id)
+	{
+		if(!role_id)
+			return false;
+
+		var selection = new Array();
+
+		$('.role_'+role_id+'.available_users option:selected').each(function()
+		{
+			selection.push($(this).val());
+		});
+
+		if(selection.length === 0)
+			return false;
+
+		$('#role_'+role_id).addClass('ui-state-disabled');
+
+		var form_data = {};
+		form_data.mode = 'Admin.Permission_Management';
+		form_data.action = 'add_users_to_role';
+		form_data.role_id = role_id;
+		form_data.users = selection;
+
+		$.ajax({
+			url: '/',
+			data: form_data,
+			dataType: 'JSON',
+			type: 'POST',
+			success: function(data)
+			{
+				if(data && data.added)
+				{
+					for(i in data.added)
+					{
+						$('.role_'+role_id+'.user_option_'+data.added[i]).appendTo('.role_'+role_id+'.selected_users');					
+					}
+					sort_select(role_id, 'selected_users');
+				}
+
+				$('#role_'+role_id).removeClass('ui-state-disabled');
+			}
+		});
+		
+	}
+
+	// Remove selected users from the role - fired off by the remove button in the role user list
+	function remove_selected_users(role_id)
+	{
+		if(!role_id)
+			return false;
+
+		var selection = new Array();
+
+		$('.role_'+role_id+'.selected_users option:selected').each(function()
+		{
+			selection.push($(this).val());
+		});
+
+		if(selection.length === 0)
+			return false;
+
+		$('#role_'+role_id).addClass('ui-state-disabled');
+
+		var form_data = {};
+		form_data.mode = 'Admin.Permission_Management';
+		form_data.action = 'remove_users_from_role';
+		form_data.role_id = role_id;
+		form_data.users = selection;
+
+		$.ajax({
+			url: '/',
+			data: form_data,
+			dataType: 'JSON',
+			type: 'POST',
+			success: function(data)
+			{
+				if(data && data.removed)
+				{
+					for(i in data.removed)
+					{
+						$('.role_'+role_id+'.user_option_'+data.removed[i]).appendTo('.role_'+role_id+'.available_users');					
+					}
+					sort_select(role_id, 'available_users');
+				}
+
+				$('#role_'+role_id).removeClass('ui-state-disabled');
+			}
+		});
+	}
+
+	// Sort the user select list
+	function sort_select(role_id, select_class)
+	{
+		$('.role_'+role_id+'.'+select_class).sort_select_box();
+	}
+
+	// Display / Hide the add new role form
+	function toggle_add_role()
+	{
+		$('#add_role_window').slideToggle('slow','swing').css('z-index', z_index());
+	}
+
+	// Add a new role ( note, this will reload the page with the new role expanded on success )
+	function add_role()
+	{
+		$('#add_new_role :submit').attr('disabled', 'disabled').val('Loading...');
+		$('#add_new_role_loading').html('<img src="/images/loading.gif">');
+		var form_data = get_form_data('#add_new_role');
+		form_data.mode = 'Admin.Permission_Management';
+		form_data.action = 'add_role';
+
+		$.ajax({
+			dataType: 'json',
+			url: '/',
+			data: form_data,
+			type: 'POST',
+			success: function(data)
+			{
+				$('#add_new_role_loading').html('&nbsp;');
+				if(data && data.success)
+				{
+					toggle_add_role();
+					info(data.success);
+					window.location='/?mode=Admin.Permission_Mangement#role_id_'+data.role.intranet_role_id;
+					window.location.reload();	
+				}
+				$('#add_new_role :submit').removeAttr('disabled').val('Add Role');
+			}
+		});
+
+		return false;
+	}
+
+	// Edit the role description in place
+	function edit_role_description(role_id)
+	{
+		if(!role_id)
+			return false;
+
+		var e = $('.role_'+role_id+'.role_description');
+		var desc = $(e).text();
+		$(e).text('');
+		var i = $('<input type="text" maxlength="128" size="64" onblur="submit_role_description(this, '+role_id+', \''+desc+'\')">').appendTo($(e)).val(desc).focus();
+	}
+
+	// Send the role description change to the server
+	function submit_role_description(e, role_id, prev_desc)
+	{
+		if(!role_id)
+			return false;
+
+		var desc = $(e).val();
+
+		if(desc == prev_desc)
+		{
+			$(e).fadeOut().remove();
+			$('.role_'+role_id+'.role_description').text(desc);
+			return false;
+		}
+
+		$(e).addClass('disabled').attr('disabled', 'disabled');
+
+		var form_data = {};
+		form_data.mode = 'Admin.Permission_Management';
+		form_data.action = 'add_role';
+		form_data.role_id = role_id;
+		form_data.role_desc = desc;
+
+		$.ajax({
+			url: '/',
+			dataType: 'JSON',
+			type: 'POST',
+			data: form_data,
+			success: function(data)
+			{
+				if(data && data.success)
+				{
+					$(e).fadeOut().remove();
+					$('.role_'+role_id+'.role_description').text(desc);
+				}
+			}
+		});	
+	}
+
+	// Edit the name of the role
+	function edit_role_name(role_id)
+	{
+		if(!role_id)
+			return false;
+
+		var e = $('.role_'+role_id+'.role_name');
+		var desc = $('.role_'+role_id+'.role_name_holder').text();
+		$(e).text('');
+		var i = $('<input type="text" maxlength="28" size="28" onblur="submit_role_name(this, '+role_id+', \''+desc+'\')">').appendTo($(e)).val(desc).focus();
+	}
+
+	// Send the role name change to the server
+	function submit_role_name(e, role_id, prev_desc)
+	{
+		if(!role_id)
+			return false;
+
+		var desc = $(e).val();
+
+		if(desc == prev_desc)
+		{
+			$(e).fadeOut().remove();
+			$('.role_'+role_id+'.role_name').text('[ click edit role name ]');
+			return false;
+		}
+
+		$(e).addClass('disabled').attr('disabled', 'disabled');
+
+		var form_data = {};
+		form_data.mode = 'Admin.Permission_Management';
+		form_data.action = 'add_role';
+		form_data.role_id = role_id;
+		form_data.role_name = desc;
+
+		$.ajax({
+			url: '/',
+			dataType: 'JSON',
+			type: 'POST',
+			data: form_data,
+			success: function(data)
+			{
+				if(data && data.success)
+				{
+					$(e).fadeOut().remove();
+					$('.role_'+role_id+'.role_name').text('[ click to edit role name ]');
+					$('.role_'+role_id+'.role_name_holder').text(desc);
+				}
+			}
+		});	
+	}
+
+	// This should be fired off by the opposing select list of users to add / remove from a group to prevent selecting users from both lists
+	function clear_selections(role_id, type)
+	{
+		$('.role_'+role_id+'.'+type).val([]);
+	}
+
+</script>
+
+	<div id="add_role_window" style="display: none; margin-bottom: 10px; width: 100%; text-align: center;">
+		<div class="grey-round" style="margin:0 auto;width:90%; padding-top: 10px; padding-bottom: 10px;">
+		<h3>Add a new role</h3>
+
+					<form id="add_new_role" onsubmit="return false;">
+					<table width="100%">
+						<tr>
+							<td style="text-align: right; vertical-align: middle;" width="30%">Role Name:</td>
+							<td width="70%" style="text-align: left;" style="text-align: left;"><input type="text" name="role_name" maxlength="36"></td>
+						</tr>
+						<tr>
+							<td style="text-align: right; vertical-align: middle;" width="30%">Role Desc:</td>
+							<td width="70%" style="text-align: left;"><input type="text" name="role_desc" maxlength="128"></td>
+						</tr>
+						<tr>
+							<td width="30%" style="text-align: right;" id="add_role_loading">&nbsp;</td>
+							<td width="70%" style="text-align: left;"><input class="" type="submit" value="Add Role"></td>
+						</tr>
+					</table>
+					</form>
+		</div>
+
+	</div>
+
+
+	[%# This is to enable sorting by perm->{id}->{perm}->{name} %]
+	[% PERMISSION_KEYS = {} %]
+
+	[% FOREACH P IN PERMISSIONS.keys %]
+			[% KEY = PERMISSIONS.$P.perm.name %]
+			[% PERMISSION_KEYS.$KEY = P %]
+	[% END %]
+
+	<div class="ui-state-highlight ui-widget-header ui-corner-all" style="padding: 8px; height: 18px;">
+		<div style="float: left;"><span class="ui-widget-title" style="font-size: 15px;">Roles</span></div>
+		<div style="float: right;"><span class="ui-state-hover" style="cursor: pointer; padding: 3px;" onclick="toggle_add_role()">Add role</span></div>
+	</div>
+
+         [% PROCESS infobox text="Click on a role name to expand it to edit or remove the role.  You can add a new role by clicking on the 'Add Role' button above.<hr>If you would like to change the name of the role, click on the [ click to edit role name ] link. To change the description, double click on the current description.<hr>You can add or remove users from the role in the 'Role Users' section at the bottom of each role." %]
+
+	<div id="role_accordion">
+
+	[% FOREACH ROLE IN ROLES %]
+
+		<h3><a href="#role_id_[% ROLE.intranet_role_id %]" class="role_[% ROLE.intranet_role_id %] role_name_holder" onclick="populate_role([% ROLE.intranet_role_id %])">[% ROLE.name %]</a></h3>
+
+		<div id="role_[% ROLE.intranet_role_id %]" class="ui-state-disabled">
+			<div style="float: left; font-size: .9em; padding-bottom: 5px;" class="role_[% ROLE.intranet_role_id %] role_name" onclick="edit_role_name([% ROLE.intranet_role_id %])">[ click to edit role name ]</div>
+			<div style="float: left; font-weight: bold; clear: both;" class="role_[% ROLE.intranet_role_id %] role_description" ondblclick="edit_role_description([% ROLE.intranet_role_id %])">[% ROLE.description %]</div>
+			<div id="delete_role_[% ROLE.intranet_role_id %]" style="float: right; padding: 2px; cursor: pointer;" class="ui-widget ui-widget-content ui-state-error">Delete Role</div>
+
+			<!-- Enable delete button -->
+			<script>
+				$('#delete_role_[% ROLE.intranet_role_id %]').click(function()
+				{
+					remove_role([% ROLE.intranet_role_id %]);
+				});
+			</script>
+
+			<div style="clear: both;  position: relative; top: 40px; padding-bottom: 20px;">
+				<h2>Role Permissions</h2>
+				<hr>
+				<table class="permission-table" width="100%">
+					<tr>
+						<td class="ui-state-active"><b>Application Access</b></td>
+						<td class="ui-state-active"><b>Sub Permission</b></td>
+						<td class="ui-state-active"><b>Description</b></td>
+						<td class="ui-state-active"><b>Level</b></td>
+					</tr>
+					[% FOREACH KEY IN PERMISSION_KEYS.keys.sort %]
+						[% P = PERMISSION_KEYS.$KEY %]
+					<tr>
+						<td class="ui-state-hover">[% PERMISSIONS.$P.perm.name.replace('\.', ' -> ') %]</td>
+						<td class="ui-state-hover ui-state-disabled">&nbsp;</td>
+						<td class="ui-state-hover">[% PERMISSIONS.$P.perm.description %]</td>
+						<td class="ui-state-hover ui-state-disabled">
+							<select class="role_[% ROLE.intranet_role_id %] parent_[% PERMISSIONS.$P.perm.intranet_permission_id %]" onchange="enable_children(this, [% PERMISSIONS.$P.perm.intranet_permission_id %], [% ROLE.intranet_role_id %]); update_permission(this, [% PERMISSIONS.$P.perm.intranet_permission_id %], [% ROLE.intranet_role_id %]);">
+								<option value="">No Access</option>
+								[% FOREACH LEVEL IN PERMISSIONS.$P.perm.access.split('') %]
+								<option value="[% LEVEL %]">[% IF LEVEL == 'r' %]Read[% ELSE %]Write[% END %]</option>
+								[% END %]
+							</select>
+							<span class="role_[% ROLE.intranet_role_id %] update_status_[% PERMISSIONS.$P.perm.intranet_permission_id %]"></span>
+						</td>
+					</tr>
+					[% CHILDPERMS = PERMISSIONS.$P.child %]
+					[% FOREACH CHILD IN CHILDPERMS.keys.sort %]
+					<tr class="role_[% ROLE.intranet_role_id %] child_row_of_[% PERMISSIONS.$P.perm.intranet_permission_id %]" style="display: none;">
+						<td class="ui-state-hover ui-state-disabled">&nbsp;</td>
+						<td class="ui-state-hover">[% CHILDPERMS.$CHILD.name.replace('\.', ' -> ') %]</td>
+						<td class="ui-state-hover">[% CHILDPERMS.$CHILD.description %]</td>
+						<td class="ui-state-hover ui-state-disabled">
+							<select class="role_[% ROLE.intranet_role_id %] child_of_[% PERMISSIONS.$P.perm.intranet_permission_id %] child_[% CHILDPERMS.$CHILD.intranet_permission_id %]" disabled onchange="update_permission(this, [% CHILDPERMS.$CHILD.intranet_permission_id %], [% ROLE.intranet_role_id %]);">
+								<option value="">No Access</option>
+								[% FOREACH LEVEL IN CHILDPERMS.$CHILD.access.split('') %]
+								<option value="[% LEVEL %]">[% IF LEVEL == 'r' %]Read[% ELSE %]Write[% END %]</option>
+								[% END %]
+							</select>
+							<span class="role_[% ROLE.intranet_role_id %] update_status_[% CHILDPERMS.$CHILD.intranet_permission_id %]"></span>
+						</td>
+					</tr>
+
+					[% END %]
+					[% END %]
+				</table>
+
+				<h2>Role Users</h2>
+				<hr>
+				<table class="permission-table" width="100%">
+					<tr>
+						<td class="ui-state-active" width="45%"><b>Available Users</b></td>
+						<td width="10%">&nbsp;</td>
+						<td class="ui-state-active" width="45%"><b>Selected Users</b></td>
+					</tr>
+					<tr>
+						<td class="ui-state-hover" width="45%">
+							<select class="role_[% ROLE.intranet_role_id %] available_users" multiple size="20" style="width: 100%;" onfocus="clear_selections([% ROLE.intranet_role_id %], 'selected_users')">
+								[% FOREACH U IN USERS.sort('first_name') %]
+									<option class="role_[% ROLE.intranet_role_id %] user_option_[% U.intranet_user_id %]" value="[% U.intranet_user_id %]">[% U.first_name _ ' ' _ U.last_name %]</option>
+								[% END %]
+							</select>
+						</td>
+						<td width="10%" style="text-align: center; vertical-align: middle;">
+							<div class="ui-widget ui-state-highlight ui-corner-all" onclick="add_available_users([% ROLE.intranet_role_id %])" style="padding: 10px; cursor: pointer;">Add ></div>
+							
+							<div class="ui-widget ui-state-highlight ui-corner-all" onclick="remove_selected_users([% ROLE.intranet_role_id %])" style="padding: 10px; margin-top: 5px; cursor: pointer;">< Remove</div>
+						</td>
+						<td class="ui-state-hover" width="45%">
+							<select class="role_[% ROLE.intranet_role_id %] selected_users" multiple size="20" style="width: 100%;" onfocus="clear_selections([% ROLE.intranet_role_id %], 'available_users')">
+
+							</select>
+						</td>
+					</tr>
+				</table>
+					
+			</div>
+				
+			
+		</div>
+	[% END %]
+	</div>
+
+	<hr>
+
+	<div class="ui-state-highlight ui-widget-header ui-corner-all" style="padding: 8px; height: 18px;">
+		<span class="ui-widget-title" style="font-size: 15px;">Users</span>
+	</div>
+         [% PROCESS infobox text="The user permission section is used to add individual permissions for a single user.  You can use this to provide a user with special permissions without the need to create a separate role for them." %]
+
+	<div id="user_accordion">
+
+		[% FOREACH USER IN USERS %]
+
+			<h3><a href="#" onclick="populate_user_permissions([% USER.intranet_user_id %])">[% USER.first_name _ ' ' _ USER.last_name %]</a></h3>
+			<div id="user_[% USER.intranet_user_id %]" class="ui-state-disabled">
+
+			<div style="clear: both;  position: relative; top: 10px; padding-bottom: 20px;">
+				<h2>User Permissions</h2>
+				<hr>
+				<table class="permission-table" width="100%">
+					<tr>
+						<td class="ui-state-active"><b>Application Access</b></td>
+						<td class="ui-state-active"><b>Sub Permission</b></td>
+						<td class="ui-state-active"><b>Description</b></td>
+						<td class="ui-state-active"><b>Level</b></td>
+					</tr>
+					[% FOREACH KEY IN PERMISSION_KEYS.keys.sort %]
+						[% P = PERMISSION_KEYS.$KEY %]
+					<tr>
+						<td class="ui-state-hover">[% PERMISSIONS.$P.perm.name.replace('\.', ' -> ') %]</td>
+						<td class="ui-state-hover ui-state-disabled">&nbsp;</td>
+						<td class="ui-state-hover">[% PERMISSIONS.$P.perm.description %]</td>
+						<td class="ui-state-hover ui-state-disabled">
+							<select class="user_[% USER.intranet_user_id %] parent_[% PERMISSIONS.$P.perm.intranet_permission_id %]" onchange="enable_user_children(this, [% PERMISSIONS.$P.perm.intranet_permission_id %], [% USER.intranet_user_id %]); update_user_permission(this, [% PERMISSIONS.$P.perm.intranet_permission_id %], [% USER.intranet_user_id %]);">
+								<option value="">Inherited</option>
+								[% FOREACH LEVEL IN PERMISSIONS.$P.perm.access.split('') %]
+								<option value="[% LEVEL %]">[% IF LEVEL == 'r' %]Read[% ELSE %]Write[% END %]</option>
+								[% END %]
+							</select>
+							<span class="user_[% USER.intranet_user_id %] update_status_[% PERMISSIONS.$P.perm.intranet_permission_id %]"></span>
+						</td>
+					</tr>
+					[% CHILDPERMS = PERMISSIONS.$P.child %]
+					[% FOREACH CHILD IN CHILDPERMS.keys.sort %]
+					<tr class="user_[% USER.intranet_user_id %] child_row_of_[% PERMISSIONS.$P.perm.intranet_permission_id %]" style="display: none;">
+						<td class="ui-state-hover ui-state-disabled">&nbsp;</td>
+						<td class="ui-state-hover">[% CHILDPERMS.$CHILD.name.replace('\.', ' -> ') %]</td>
+						<td class="ui-state-hover">[% CHILDPERMS.$CHILD.description %]</td>
+						<td class="ui-state-hover ui-state-disabled">
+							<select class="user_[% USER.intranet_user_id %] child_of_[% PERMISSIONS.$P.perm.intranet_permission_id %] child_[% CHILDPERMS.$CHILD.intranet_permission_id %]" disabled onchange="update_user_permission(this, [% CHILDPERMS.$CHILD.intranet_permission_id %], [% USER.intranet_user_id %]);">
+								<option value="">Inherited</option>
+								[% FOREACH LEVEL IN CHILDPERMS.$CHILD.access.split('') %]
+								<option value="[% LEVEL %]">[% IF LEVEL == 'r' %]Read[% ELSE %]Write[% END %]</option>
+								[% END %]
+							</select>
+							<span class="user_[% USER.intranet_user_id %] update_status_[% CHILDPERMS.$CHILD.intranet_permission_id %]"></span>
+						</td>
+					</tr>
+
+					[% END %]
+					[% END %]
+				</table>
+			</div>
+
+			</div>
+		[% END %]
+	</div>
+
+
+[% INCLUDE 'footer.tt' %]
+

@@ -1,0 +1,91 @@
+[% CP_TEXT_SMALL = "font-family: Verdana, Arial; " _
+                   "color: #000000; " _
+                   "font-size: 11px;" %]
+
+<html>
+<head><title></title></head>
+<body bgcolor='#FFFFFF'>
+<center>
+<table style='border: 1px solid #CECFCE;' bgcolor='#FFFFFF' width=608 height=301>
+	<tr>
+		<td align='center' width='10%'>
+			<table border=0 width='92%'>
+				<tr>
+					<td valign='bottom' align='left'>
+						<span style='[% CP_TEXT_SMALL %]'><b>Dear [% NAME %],</b></span>
+					</td>
+					<td align='right'>
+						<img src='cid:logosmall.jpg' alt='Fonality' height=58 width=252>
+					</td>
+				</tr>
+				<tr>
+					<td align='left' colspan=2>
+						<span style='[% CP_TEXT_SMALL %]'>
+							<br><p>
+								Thank you for your interest in Fonality. Below is a link to your itemized proposal:
+							</p>
+						</span>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr valign='top'>
+		<td align='center' width='10%'>
+			<table border=0 width='92%' height=40>
+				<tr>
+					<td align='center' valign='center'>
+						<font color='blue'>
+						<a style='[% CP_TEXT_SMALL %]'
+						   href='[% THE_SERVER_NAME %]/pbxtra_proposal_downloads/[% PROPOSAL_FILE %]?pid=[% PROPOSAL_ID %]&eml=[% EMAIL %]&utm_source=proposal&utm_medium=quote&utm_campaign=sales-team&utm_content=body-text-viewproposal'>Click here to view your Proposal</a>
+						</font>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+
+	[% UNLESS WIZARD %]
+	<tr valign='top'>
+        <td align='center'>
+            <table border=0 width='92%'>
+                <tr>
+                    <td align='center' valign='bottom' width='50%'>
+                        <BR>
+						<font color='blue'>
+                        <a style='[% CP_TEXT_SMALL %]'
+                           href='[% SCRIPT_URL %]?recall=[% PROPOSAL_ID %]&email=[% EMAIL %]&utm_source=proposal&utm_medium=quote&utm_campaign=sales-team&utm_content=body-text-changeproposal'>Click here to change this Proposal</a>
+						</font>
+                    </td>
+                    <td align='center' valign='bottom' width='50%'>
+                        <BR>
+						<font color='blue'>
+                        <a style='[% CP_TEXT_SMALL %]'
+						   href='[% SCRIPT_URL %]?convert=[% PROPOSAL_ID %]&eml=[% EMAIL %]&utm_source=proposal&utm_medium=quote&utm_campaign=sales-team&utm_content=body-text-placeorder'>Click here to place this Order</a>
+						</font>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    	</tr>
+	[% END %]
+	<tr>
+		<td align='center'>
+			<table border=0 width='92%' height=40>
+				<tr>
+					<td align='left'>
+						<span style='[% CP_TEXT_SMALL %]'>
+							Please reply to this email if you have any questions. We look forward to working with you!<br><br>
+						</span>
+						<hr size=1 width=120 align='left' />
+						<span style='[% CP_TEXT_SMALL %]'>
+							[% SALES_PERSON_NAME %]<br>Fonality, Inc.<br>[% SALES_PERSON_PHONE %]<br><br>
+						</span>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
+</center>
+</body></html>

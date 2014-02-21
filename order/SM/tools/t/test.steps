@@ -1,0 +1,36 @@
+[
+    {
+        familyname => 'T'
+    },
+    {
+        sequence                => 'A',
+        objectname              => 'Example Unit',
+        sequence_success        => 'B',
+        sequence_failure        => '',
+        objectlocation          => '/home01/ekelly/sandbox/fcs/trunk/order/SM/examples/example_unit.pl',  
+    },
+    {
+        sequence 		=> 'B',
+        objectname 		=> 'Example Unit',
+        sequence_success 	=> 'C',
+        sequence_failure	=> '',
+	objectlocation		=> '/home01/ekelly/sandbox/fcs/trunk/order/SM/examples/example_unit.pl',
+        iterations		=> 3,
+    },
+    {
+        sequence                => 'C',
+        objectname              => 'Example Unit',
+        sequence_success        => 'D',
+        sequence_failure        => '',
+        objectlocation          => '/home01/ekelly/sandbox/fcs/trunk/order/SM/examples/example_unit.pl',
+        iterations              => 3,
+    },
+    {
+        sequence                => 'D',
+        objectname              => 'Example Unit',
+        sequence_success        => '',
+        sequence_failure        => '',
+        objectlocation          => '/home01/ekelly/sandbox/fcs/trunk/order/SM/examples/example_unit.pl',
+        iterations              => 3,
+    },
+]

@@ -1,0 +1,11 @@
+[% IF TT_ALERT && TT_ALERT != '' %]
+	<div class="ui-widget margin5">
+		<div class="ui-state-error ui-corner-all fDiv">
+			[% FOREACH ALERT IN TT_ALERT %]<span class="ui-icon ui-icon-alert fSpan"></span>&nbsp;[% ALERT %]<br>[% END %]
+		</div>
+	</div>
+
+	<br>
+[% END %]
+
+

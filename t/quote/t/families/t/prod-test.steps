@@ -1,0 +1,88 @@
+[
+    {
+        familyname => 'QUOTE'
+    },
+    {
+        sequence_name           => 'A',
+        objectname              => 'Create Quote',
+        sequence_success        => 'B',
+        sequence_failure        => 'Z',
+        objectlocation          => '/usr/local/fonality/BU/quote/fcs_create_quote.pl',  
+        _test                   =>
+                                  {
+                                    return_code => '1',
+                                  },
+    },
+    {
+        sequence_name		=> 'B',
+        objectname 		=> 'Tax Calculator',
+        sequence_success 	=> 'C',
+        sequence_failure	=> 'Z',
+	objectlocation		=> '/usr/local/fonality/BU/quote/java/tax-calculator.jar',
+        iterations		=> 3,
+        _test                   =>
+                                  {
+                                    return_code => '1',
+                                  },
+    },
+    {
+        sequence_name           => 'C',
+        objectname              => 'Calculate Shipping',
+        sequence_success        => 'D',
+        sequence_failure        => 'Z',
+        objectlocation          => '/usr/local/fonality/BU/quote/fcs_shipping_calculator.pl',
+        iterations              => 3,
+        _test                   =>
+                                  {
+                                    return_code => '1',
+                                  },
+    },
+    {
+        sequence_name           => 'D',
+        objectname              => 'Check NS Lead',
+        sequence_success        => 'E',
+        sequence_failure        => 'Z',
+        objectlocation          => '/usr/local/fonality/BU/quote/fcs_create_netsuite_customer.pl',
+        iterations              => 3,
+        _test                   =>
+                                  {
+                                    return_code => '1',
+                                  },
+    },
+    {
+        sequence_name           => 'E',
+        objectname              => 'Create NS Opportunity',
+        sequence_success        => 'F',
+        sequence_failure        => 'Z',
+        objectlocation          => '/usr/local/fonality/BU/quote/fcs_create_netsuite_opportunity.pl',
+        iterations              => 3,
+        _test                   =>
+                                  {
+                                    return_code => '1',
+                                  },
+    },
+    {
+        sequence_name           => 'F',
+        objectname              => 'Create PDF & Email',
+        sequence_success        => '',
+        sequence_failure        => 'Z',
+        objectlocation          => '/usr/local/fonality/BU/quote/fcs_email_pdf/fcs_email_pdf',
+        iterations              => 3,
+        _test                   =>
+                                  {
+                                    return_code => '1',
+                                  },
+    },
+    {
+        sequence_name           => 'Z',
+        objectname              => 'Failure Notification',
+        sequence_success        => '',
+        sequence_failure        => '',
+        objectlocation          => '/usr/local/fonality/BU/quote/java/email-notification.jar',
+        iterations              => 1,
+        _test                   =>
+                                  {
+                                    run => 0,
+                                  },
+    },
+]

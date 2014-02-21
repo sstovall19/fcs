@@ -1,0 +1,329 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.6	//
+CountryEnumerations	External/NetSuite/Config.pm	/^sub CountryEnumerations {$/;"	s
+CountryEnumerations	External/NetSuite/Config_2009_2.pm	/^sub CountryEnumerations {$/;"	s
+CountryEnumerations	External/NetSuite/Config_2011_1.pm	/^sub CountryEnumerations {$/;"	s
+DEFAULT_LOCKFILE	External/NetSuite/Client.pm	/^use constant DEFAULT_LOCKFILE      => 'serialization_gate';$/;"	c
+DESTROY	External/NetSuite/Client.pm	/^sub DESTROY {$/;"	s
+DESTROY	Model/DBIx.pm	/^sub DESTROY {$/;"	s
+Fap	Server.pm	/^                Fap::trace_error("ERR: Unable to set timezone");$/;"	l
+Fap	Server.pm	/^            Fap::trace_error("ERR: Unable to set timezone");$/;"	l
+Fap	Server.pm	/^        Fap::trace_error("ERR: No timezone obtained for $country");$/;"	l
+File	ConfLoader.pm	/^        File::Slurp::write_file( "$confdir\/$conf.mp", { binmode => ':raw' }, Data::MessagePack->pack($obj) );$/;"	l
+File	Model/ResConf.pm	/^        File::Slurp::write_file( "$confdir\/$conf.mp", { binmode => ':raw' }, Data::MessagePack->pack($obj) );$/;"	l
+NETSUITE_LOCKFILE_DIR	External/NetSuite/Client.pm	/^use constant NETSUITE_LOCKFILE_DIR => '\/nfs\/netsuite_prov';$/;"	c
+RecordFields	External/NetSuite/Config.pm	/^sub RecordFields {$/;"	s
+RecordFields	External/NetSuite/Config_2009_2.pm	/^sub RecordFields {$/;"	s
+RecordFields	External/NetSuite/Config_2011_1.pm	/^sub RecordFields {$/;"	s
+RecordNamespaces	External/NetSuite/Config.pm	/^sub RecordNamespaces {$/;"	s
+RecordNamespaces	External/NetSuite/Config_2009_2.pm	/^sub RecordNamespaces {$/;"	s
+RecordNamespaces	External/NetSuite/Config_2011_1.pm	/^sub RecordNamespaces {$/;"	s
+RecordTypes	External/NetSuite/Config.pm	/^sub RecordTypes {$/;"	s
+RecordTypes	External/NetSuite/Config_2009_2.pm	/^sub RecordTypes {$/;"	s
+RecordTypes	External/NetSuite/Config_2011_1.pm	/^sub RecordTypes {$/;"	s
+SOAP	External/NetSuite/Client.pm	/^                        SOAP::Header->name('bodyFieldsOnly')->value( $header->{bodyFieldsOnly} )->prefix('messages'),$/;"	l
+SOAP	External/NetSuite/Client.pm	/^                        SOAP::Header->name('pageSize')->value( $header->{pageSize} )->prefix('messages'),$/;"	l
+SOAP	External/NetSuite/Client.pm	/^                    SOAP::Data->name( 'account'  => $self->{ACCOUNT} ),$/;"	l
+SOAP	External/NetSuite/Client.pm	/^                    SOAP::Data->name( 'email'    => $self->{EMAIL} ),$/;"	l
+SOAP	External/NetSuite/Client.pm	/^                    SOAP::Data->name( 'password' => $self->{PASSWORD} ),$/;"	l
+SOAP	External/NetSuite/Client.pm	/^                    SOAP::Data->name('role')->attr( { 'internalId' => $self->{ROLE} } ) ) ) ) );$/;"	l
+SOAP	External/NetSuite/Client.pm	/^                SOAP::Data->name( 'searchRecord' => \\SOAP::Data->value(@searchRecord) )$/;"	l
+SOAP	External/NetSuite/Client.pm	/^                SOAP::Data->name('searchRecord')$/;"	l
+SOAP	External/NetSuite/Client.pm	/^                SOAP::Header->name($/;"	l
+SOAP	External/NetSuite/Client.pm	/^              SOAP::Data->name( $searchType => \\SOAP::Data->value(@searchTypes) )$/;"	l
+SOAP	External/NetSuite/Client.pm	/^            SOAP::Data->name( 'record' => \\SOAP::Data->value( $self->_parseRequest( ucfirst($recordType), $recordRef ) ) )$/;"	l
+SOAP	External/NetSuite/Client.pm	/^            SOAP::Data->name( 'record' => \\SOAP::Data->value( $self->_parseRequest( ucfirst($recordType), $recordRef, $replaceall ) ) )$/;"	l
+SOAP	External/NetSuite/Client.pm	/^            SOAP::Data->name( 'recordType' => $args{type} )    #->attr({xmlns=>"urn:core_2012_1.platform.webservices.netsuite.com"}),$/;"	l
+SOAP	External/NetSuite/Client.pm	/^            SOAP::Data->name($/;"	l
+SOAP	External/NetSuite/Client.pm	/^            SOAP::Data->name('baseRef')->attr( {$/;"	l
+SOAP	External/NetSuite/Client.pm	/^          SOAP::Data->name( 'record' => \\SOAP::Data->value( $self->_parseRequest( ucfirst($recordType), $r ) ) )$/;"	l
+SOAP	External/NetSuite/Client.pm	/^      SOAP::Data->value( SOAP::Data->name("customizationType")->attr( { getCustomizationType => $type } ), SOAP::Data->name( "includeInactives" => "false" ), );$/;"	l
+SearchNamespaces	External/NetSuite/Config.pm	/^sub SearchNamespaces {$/;"	s
+SearchNamespaces	External/NetSuite/Config_2009_2.pm	/^sub SearchNamespaces {$/;"	s
+SearchNamespaces	External/NetSuite/Config_2011_1.pm	/^sub SearchNamespaces {$/;"	s
+SearchTypes	External/NetSuite/Config.pm	/^sub SearchTypes {$/;"	s
+SearchTypes	External/NetSuite/Config_2009_2.pm	/^sub SearchTypes {$/;"	s
+SearchTypes	External/NetSuite/Config_2011_1.pm	/^sub SearchTypes {$/;"	s
+StateEnumerations	External/NetSuite/Config.pm	/^sub StateEnumerations {$/;"	s
+StateEnumerations	External/NetSuite/Config_2009_2.pm	/^sub StateEnumerations {$/;"	s
+StateEnumerations	External/NetSuite/Config_2011_1.pm	/^sub StateEnumerations {$/;"	s
+SystemNamespaces	External/NetSuite/Config.pm	/^sub SystemNamespaces {$/;"	s
+SystemNamespaces	External/NetSuite/Config_2009_2.pm	/^sub SystemNamespaces {$/;"	s
+SystemNamespaces	External/NetSuite/Config_2011_1.pm	/^sub SystemNamespaces {$/;"	s
+_GetUPSRate	Shipping.pm	/^sub _GetUPSRate {$/;"	s
+_attributes	External/NetSuite/Client.pm	/^sub _attributes {$/;"	s
+_customField	External/NetSuite.pm	/^sub _customField {$/;"	s
+_dbix_normalize	Model/DBIx.pm	/^sub _dbix_normalize {$/;"	s
+_get_bundle	Bundle.pm	/^sub _get_bundle {$/;"	s
+_handle_key	Model/DBIx.pm	/^sub _handle_key {$/;"	s
+_logTransport	External/NetSuite/Client.pm	/^sub _logTransport {$/;"	s
+_markup	Shipping.pm	/^sub _markup {$/;"	s
+_parseAttributes	External/NetSuite/Client.pm	/^sub _parseAttributes {$/;"	s
+_parseFamily	External/NetSuite/Client.pm	/^sub _parseFamily {$/;"	s
+_parseFault	External/NetSuite/Client.pm	/^sub _parseFault {$/;"	s
+_parseNode	External/NetSuite/Client.pm	/^sub _parseNode {$/;"	s
+_parseRequest	External/NetSuite/Client.pm	/^sub _parseRequest {$/;"	s
+_parseRequestField	External/NetSuite/Client.pm	/^sub _parseRequestField {$/;"	s
+_parseResponse	External/NetSuite/Client.pm	/^sub _parseResponse {$/;"	s
+_parseSearchResults	External/NetSuite/Client.pm	/^sub _parseSearchResults {$/;"	s
+add	External/NetSuite/Client.pm	/^sub add {$/;"	s
+addList	External/NetSuite/Client.pm	/^sub addList {$/;"	s
+add_bundle	Server.pm	/^sub add_bundle {$/;"	s
+add_item	SolvingMaze.pm	/^sub add_item {$/;"	s
+add_item_detail	SolvingMaze.pm	/^sub add_item_detail {$/;"	s
+all	Model/DBIx/ResultSet.pm	/^sub all {$/;"	s
+allowed_server_licenses	ServerLicense.pm	/^sub allowed_server_licenses {$/;"	s
+backend	Model/Cache.pm	/^sub backend {$/;"	s
+base	External/NetSuite.pm	/^sub base         { return shift->{ns}; }$/;"	s
+cache	Model/DBIx.pm	/^sub cache  { return $_[0]->{cache}; }$/;"	s
+cache_get	Model/DBIx.pm	/^sub cache_get {$/;"	s
+cache_remove	Model/DBIx.pm	/^sub cache_remove {$/;"	s
+cache_servers	Model/DBIx/Auth.pm	/^sub cache_servers { return $_[0]->{cache}; }$/;"	s
+cache_set	Model/DBIx.pm	/^sub cache_set {$/;"	s
+calculate	Shipping.pm	/^sub calculate {$/;"	s
+clearError	External/NetSuite/Client.pm	/^sub clearError {$/;"	s
+collapse	Net/Email.pm	/^sub collapse {$/;"	s
+collapse_custom_fields	External/NetSuite/Client.pm	/^sub collapse_custom_fields {$/;"	s
+commit	Model/DBIx.pm	/^sub commit {$/;"	s
+count_server_license	ServerLicense.pm	/^sub count_server_license {$/;"	s
+create	External/NetSuite/Types/CustomRecord.pm	/^sub create {$/;"	s
+create	External/NetSuite/Types/Customer.pm	/^sub create {$/;"	s
+create	External/NetSuite/Types/Item.pm	/^sub create {$/;"	s
+create	External/NetSuite/Types/Opportunity.pm	/^sub create {$/;"	s
+create_opportunity	External/NetSuite.pm	/^sub create_opportunity {$/;"	s
+customBool	External/NetSuite.pm	/^sub customBool {$/;"	s
+customField	External/NetSuite.pm	/^sub customField {$/;"	s
+customField	External/NetSuite/Client.pm	/^sub customField {$/;"	s
+customFloat	External/NetSuite.pm	/^sub customFloat {$/;"	s
+customInt	External/NetSuite.pm	/^sub customInt {$/;"	s
+customMultiselect	External/NetSuite.pm	/^sub customMultiselect {$/;"	s
+customSelect	External/NetSuite.pm	/^sub customSelect {$/;"	s
+customer	External/NetSuite.pm	/^sub customer     { return shift->hastype( "customer", "Fap::External::NetSuite::Types::Customer" ); }$/;"	s
+customerRef	External/NetSuite.pm	/^sub customerRef {$/;"	s
+customrecord	External/NetSuite.pm	/^sub customrecord { return shift->hastype( "customrecord", "Fap::External::NetSuite::Types::CustomRecord" ); }$/;"	s
+dbh	Model/DBIx.pm	/^sub dbh {$/;"	s
+dbn	Model/Fcs.pm	/^sub dbn {$/;"	s
+dbn	Model/Hus.pm	/^sub dbn          { return "hus"; }$/;"	s
+dbn	Model/Pbxtra.pm	/^sub dbn {$/;"	s
+decrement	Model/Cache.pm	/^sub decrement {$/;"	s
+decrement	Model/Cache/File.pm	/^sub decrement {$/;"	s
+decrement	Model/Cache/Memory.pm	/^sub decrement {$/;"	s
+default_expires	Model/DBIx.pm	/^use constant default_expires => 60;$/;"	c
+delete	External/NetSuite/Client.pm	/^sub delete {$/;"	s
+delete	External/NetSuite/Types/Base.pm	/^sub delete {$/;"	s
+delete	Model/Cache.pm	/^sub delete {$/;"	s
+delete	Model/Cache/File.pm	/^sub delete {$/;"	s
+delete	Model/Cache/Memory.pm	/^sub delete {$/;"	s
+delete	Model/DBIx/Result.pm	/^sub delete {$/;"	s
+deleteList	External/NetSuite/Client.pm	/^sub deleteList {$/;"	s
+delete_opportunity	External/NetSuite.pm	/^sub delete_opportunity {$/;"	s
+destination	SolvingMaze.pm	/^sub destination {$/;"	s
+desynchronize	External/NetSuite/Client.pm	/^sub desynchronize {$/;"	s
+dnftw	Model/Fcs/Backend/Result/Bundle.pm	/^sub dnftw { return 1; }$/;"	s
+dnfwt	Model/DBIx/Result.pm	/^sub dnfwt { return 0; }$/;"	s
+dsn	Model/DBIx/Auth.pm	/^sub dsn {$/;"	s
+dsn	Model/Fcs.pm	/^sub dsn {$/;"	s
+dsn	Model/Hus.pm	/^sub dsn {$/;"	s
+dumpError	External/NetSuite.pm	/^sub dumpError() {$/;"	s
+employeeRef	External/NetSuite.pm	/^sub employeeRef {$/;"	s
+error	External/NetSuite/Client.pm	/^sub error {$/;"	s
+errorCode	External/NetSuite.pm	/^sub errorCode { return $_[0]->{ns}->errorCode(); }$/;"	s
+errorCode	External/NetSuite/Client.pm	/^sub errorCode { return $_[0]->{ERROR_CODE}; }$/;"	s
+errorMsg	External/NetSuite.pm	/^sub errorMsg  { return $_[0]->{ns}->errorMsg(); }$/;"	s
+errorMsg	External/NetSuite/Client.pm	/^sub errorMsg  { return $_[0]->{ERROR_RESULTS}; }$/;"	s
+file	Model/Cache.pm	/^sub file {$/;"	s
+filter_duplicates	Model/DBIx/ResultSet.pm	/^sub filter_duplicates {$/;"	s
+find	Model/DBIx/ResultSet.pm	/^sub find {$/;"	s
+first	Model/DBIx/ResultSet.pm	/^sub first {$/;"	s
+get	External/NetSuite/Client.pm	/^sub get {$/;"	s
+get	External/NetSuite/Types/Base.pm	/^sub get {$/;"	s
+get	Model/Cache.pm	/^sub get {$/;"	s
+get	Model/Cache/File.pm	/^sub get {$/;"	s
+get	Model/Cache/Memory.pm	/^sub get {$/;"	s
+get	Order.pm	/^sub get {$/;"	s
+get	Server.pm	/^sub get {$/;"	s
+getAll	External/NetSuite/Client.pm	/^sub getAll {$/;"	s
+getBody	External/NetSuite/Client.pm	/^sub getBody {$/;"	s
+getCount	Model/Cache.pm	/^sub getCount {$/;"	s
+getCustomization	External/NetSuite/Client.pm	/^sub getCustomization {$/;"	s
+getCustomizationId	External/NetSuite/Client.pm	/^sub getCustomizationId {$/;"	s
+getHead	External/NetSuite/Client.pm	/^sub getHead {$/;"	s
+getList	External/NetSuite/Client.pm	/^sub getList {$/;"	s
+getRequest	External/NetSuite/Client.pm	/^sub getRequest {$/;"	s
+getResponse	External/NetSuite/Client.pm	/^sub getResponse {$/;"	s
+getResults	External/NetSuite/Client.pm	/^sub getResults {$/;"	s
+getSelectValue	External/NetSuite/Client.pm	/^sub getSelectValue {$/;"	s
+get_all_server_licenses	ServerLicense.pm	/^sub get_all_server_licenses {$/;"	s
+get_attribute	Server.pm	/^sub get_attribute {$/;"	s
+get_bundle_licenses	ServerLicense.pm	/^sub get_bundle_licenses {$/;"	s
+get_bundle_with_name	Bundle.pm	/^sub get_bundle_with_name {$/;"	s
+get_code2	Data/Countries.pm	/^sub get_code2 {$/;"	s
+get_country_code	Data/Countries.pm	/^sub get_country_code {$/;"	s
+get_details	Order.pm	/^sub get_details {$/;"	s
+get_dialing_code	Data/Countries.pm	/^sub get_dialing_code {$/;"	s
+get_full_name	Data/Countries.pm	/^sub get_full_name {$/;"	s
+get_language	Locale.pm	/^sub get_language {$/;"	s
+get_loadzone	Data/Countries.pm	/^sub get_loadzone {$/;"	s
+get_long_name	Data/Countries.pm	/^sub get_long_name {$/;"	s
+get_national_prefix	Data/Countries.pm	/^sub get_national_prefix {$/;"	s
+get_netsuite_name	Data/Countries.pm	/^sub get_netsuite_name {$/;"	s
+get_opermode	Data/Countries.pm	/^sub get_opermode {$/;"	s
+get_phone_info	Bundle.pm	/^sub get_phone_info {$/;"	s
+get_rates	SolvingMaze.pm	/^sub get_rates {$/;"	s
+get_server_policy	HUD.pm	/^sub get_server_policy {$/;"	s
+get_servers	Customer.pm	/^sub get_servers {$/;"	s
+get_state_name	Locale.pm	/^sub get_state_name {$/;"	s
+get_timezone	Locale.pm	/^sub get_timezone {$/;"	s
+handle_response	External/NetSuite/Client.pm	/^sub handle_response {$/;"	s
+hasError	External/NetSuite.pm	/^sub hasError  { return $_[0]->{ns}->hasError(); }$/;"	s
+hasError	External/NetSuite/Client.pm	/^sub hasError { return $_[0]->{ERROR}; }$/;"	s
+has_feature_with_name	Bundle.pm	/^sub has_feature_with_name {$/;"	s
+hastype	External/NetSuite.pm	/^sub hastype {$/;"	s
+host	Model/DBIx.pm	/^sub host   { return $_[0]->{host} || "localhost"; }$/;"	s
+host	Model/DBIx/Auth.pm	/^sub host          { return $_[0]->{db}->{host}; }$/;"	s
+increment	Model/Cache.pm	/^sub increment {$/;"	s
+increment	Model/Cache/File.pm	/^sub increment {$/;"	s
+increment	Model/Cache/Memory.pm	/^sub increment {$/;"	s
+is_hosted	Server.pm	/^sub is_hosted {$/;"	s
+is_phone_bundle	Bundle.pm	/^sub is_phone_bundle {$/;"	s
+is_valid_device_id	Util.pm	/^sub is_valid_device_id {$/;"	s
+is_valid_extension	Util.pm	/^sub is_valid_extension {$/;"	s
+is_valid_qty	Util.pm	/^sub is_valid_qty {$/;"	s
+is_valid_server_id	Util.pm	/^sub is_valid_server_id {$/;"	s
+item	External/NetSuite.pm	/^sub item         { return shift->hastype( "item", "Fap::External::NetSuite::Types::Item" ); }$/;"	s
+json	Model/DBIx.pm	/^sub json {$/;"	s
+kCOUNTRY_LANGUAGE	Global.pm	/^use constant kCOUNTRY_LANGUAGE => { 'default' => 'en', 'jp' => 'jp', 'au' => 'au' };$/;"	c
+kCP_LOCATION_FILE	Global.pm	/^use constant kCP_LOCATION_FILE => '\/etc\/fonality\/cp_location';$/;"	c
+kCP_VERSION	Global.pm	/^use constant kCP_VERSION => '12.6';$/;"	c
+kDEFAULT_BANNER	Global.pm	/^use constant kDEFAULT_BANNER =>$/;"	c
+kDEFAULT_HOST_VERSION	Global.pm	/^use constant kDEFAULT_HOST_VERSION => '2010.1.2';                            #2010.1.2 is default since this is the first 2010.1.x$/;"	c
+kDEFAULT_HUD_HOSTED_POLICY	Global.pm	/^use constant kDEFAULT_HUD_HOSTED_POLICY => '3.6_5003';$/;"	c
+kDEFAULT_HUD_PREMISE_POLICY	Global.pm	/^use constant kDEFAULT_HUD_PREMISE_POLICY  => '3.5_5237';$/;"	c
+kDEFAULT_TIMEZONE	Global.pm	/^use constant kDEFAULT_TIMEZONE => '\/usr\/share\/zoneinfo\/America\/Los_Angeles';$/;"	c
+kFAILED_EMAIL_FROM	Global.pm	/^use constant kFAILED_EMAIL_FROM => 'donotreply@fonality.com';$/;"	c
+kFAILED_UPGRADE_EMAIL_TO	Global.pm	/^use constant kFAILED_UPGRADE_EMAIL_TO => 'failed_upgrades@fonality.com';$/;"	c
+kFILE_EXPIRE_AGE	Global.pm	/^use constant kFILE_EXPIRE_AGE => 86400;$/;"	c
+kHAS_BACKUP_FILE	Global.pm	/^use constant kHAS_BACKUP_FILE  => '\/etc\/asterisk\/standby';$/;"	c
+kHUD_POLICY_FILE	Global.pm	/^use constant kHUD_POLICY_FILE            => '\/etc\/fonality\/hud_policy';$/;"	c
+kIS_BACKUP_FILE	Global.pm	/^use constant kIS_BACKUP_FILE   => '\/etc\/asterisk\/primary';$/;"	c
+kLBS_BANNER	Global.pm	/^use constant kLBS_BANNER => 3;$/;"	c
+kLOG_LOCATION	Global.pm	/^use constant kLOG_LOCATION         => "\/tmp\/upgrade_installer.log";$/;"	c
+kMINIMUM_VERSION	Global.pm	/^use constant kMINIMUM_VERSION      => '5.2';$/;"	c
+kNFS_MOUNT	Global.pm	/^use constant kNFS_MOUNT  => '\/etc\/fonality';$/;"	c
+kOLD_BACKUP_FILE	Global.pm	/^use constant kOLD_BACKUP_FILE  => '\/etc\/standby';$/;"	c
+kPBXTRA_RPM_SERVER	Global.pm	/^use constant kPBXTRA_RPM_SERVER => 'http:\/\/yum.fonality.com\/';$/;"	c
+kPHONE_CONFIG_DIRECTORY	Global.pm	/^use constant kPHONE_CONFIG_DIRECTORY => '\/tftpd';$/;"	c
+kPROVISIONING_EMAIL	Global.pm	/^use constant kPROVISIONING_EMAIL => 'provisioning@fonality.com';$/;"	c
+kPROV_DIRECTORY	Global.pm	/^use constant kPROV_DIRECTORY => $ENV{'PROV_DIRECTORY'}$/;"	c
+kPROV_F_DIRECTORY	Global.pm	/^use constant kPROV_F_DIRECTORY => $ENV{'PROV_F_DIRECTORY'}$/;"	c
+kSHIPPING_MARKUP	Shipping.pm	/^use constant kSHIPPING_MARKUP  => { '6' => 30, '7' => 30, '8' => 30,  '9' => 0 };$/;"	c
+kSHIPPING_MINIMUM	Shipping.pm	/^use constant kSHIPPING_MINIMUM => { '6' => 15, '7' => 15, '8' => 100, '9' => 0 };$/;"	c
+kSYSTEAMS_EMAIL	Global.pm	/^use constant kSYSTEAMS_EMAIL     => 'systeam@fonality.com';$/;"	c
+kSYSTEM_LOG_LOCATION	Global.pm	/^use constant kSYSTEM_LOG_LOCATION  => '\/tmp\/system_upgrade_installer.log';$/;"	c
+kTBPRO_RPM_SERVER	Global.pm	/^use constant kTBPRO_RPM_SERVER  => 'http:\/\/yum.trixbox.com\/';$/;"	c
+kUPGRADE_ASTK_TIMER	Global.pm	/^use constant kUPGRADE_ASTK_TIMER => 240;$/;"	c
+kUPGRADE_ERR_STR	Global.pm	/^use constant kUPGRADE_ERR_STR      => '[FONALITY_FAIL]';$/;"	c
+kUPGRADE_FAST_TIMER	Global.pm	/^use constant kUPGRADE_FAST_TIMER => 30;$/;"	c
+kUPGRADE_MEDM_TIMER	Global.pm	/^use constant kUPGRADE_MEDM_TIMER => 300;$/;"	c
+kUPGRADE_SLOW_TIMER	Global.pm	/^use constant kUPGRADE_SLOW_TIMER => 1800;$/;"	c
+kUPGRADE_WIN_STR	Global.pm	/^use constant kUPGRADE_WIN_STR      => '[FONALITY_COMPLETE]';$/;"	c
+kYUM_DIR	Global.pm	/^use constant kYUM_DIR              => '\/etc\/yum.repos.d\/';$/;"	c
+load	ConfLoader.pm	/^sub load {$/;"	s
+load	Model/ResConf.pm	/^sub load {$/;"	s
+login	External/NetSuite/Client.pm	/^sub login {$/;"	s
+loginResults	External/NetSuite/Client.pm	/^sub loginResults {$/;"	s
+logout	External/NetSuite/Client.pm	/^sub logout {$/;"	s
+logoutResults	External/NetSuite/Client.pm	/^sub logoutResults {$/;"	s
+map_args	External/NetSuite.pm	/^sub map_args {$/;"	s
+map_country	External/NetSuite/Config.pm	/^sub map_country {$/;"	s
+map_country	External/NetSuite/Config_2009_2.pm	/^sub map_country {$/;"	s
+map_country	External/NetSuite/Config_2011_1.pm	/^sub map_country {$/;"	s
+map_reference	Db/Fcs/Backend/Result/OrderCategory.pm	/^sub map_reference {$/;"	s
+map_reference	Model/Fcs/Backend/Result/OrderCategory.pm	/^sub map_reference {$/;"	s
+memory	Model/Cache.pm	/^sub memory {$/;"	s
+new	Bundle.pm	/^sub new {$/;"	s
+new	Customer.pm	/^sub new {$/;"	s
+new	Db/Fcs.pm	/^sub new {$/;"	s
+new	Db/Hus.pm	/^sub new {$/;"	s
+new	Db/Pbxtra.pm	/^sub new {$/;"	s
+new	External/NetSuite.pm	/^sub new {$/;"	s
+new	External/NetSuite/Client.pm	/^sub new {$/;"	s
+new	External/NetSuite/Types/Base.pm	/^sub new {$/;"	s
+new	Model/Cache.pm	/^sub new {$/;"	s
+new	Model/Cache/File.pm	/^sub new {$/;"	s
+new	Model/Cache/Memory.pm	/^sub new {$/;"	s
+new	Model/DBIx.pm	/^sub new {$/;"	s
+new	Model/DBIx/Auth.pm	/^sub new {$/;"	s
+new	Order.pm	/^sub new {$/;"	s
+new	Server.pm	/^sub new {$/;"	s
+new	ServerLicense.pm	/^sub new {$/;"	s
+new	Shipping.pm	/^sub new {$/;"	s
+new	SolvingMaze.pm	/^sub new {$/;"	s
+new	View/TT.pm	/^sub new {$/;"	s
+next	Model/DBIx/ResultSet.pm	/^sub next {$/;"	s
+ns	External/NetSuite/Types/Base.pm	/^sub ns { return $_[0]->{ns}; }$/;"	s
+opportunity	External/NetSuite.pm	/^sub opportunity  { return shift->hastype( "opportunity", "Fap::External::NetSuite::Types::Opportunity" ); }$/;"	s
+packer	Model/Cache.pm	/^sub packer {$/;"	s
+parse_name	External/NetSuite.pm	/^sub parse_name {$/;"	s
+pass	Model/DBIx/Auth.pm	/^sub pass          { return $_[0]->{db}->{pass}; }$/;"	s
+path_to	Util.pm	/^sub path_to {$/;"	s
+process	View/TT.pm	/^sub process {$/;"	s
+recordRef	External/NetSuite.pm	/^sub recordRef {$/;"	s
+remove_bundle	Server.pm	/^sub remove_bundle {$/;"	s
+remove_server_license	ServerLicense.pm	/^sub remove_server_license {$/;"	s
+remove_server_licenses	ServerLicense.pm	/^sub remove_server_licenses {$/;"	s
+reset_locale	Server.pm	/^sub reset_locale {$/;"	s
+rollback	Model/DBIx.pm	/^sub rollback {$/;"	s
+row_count	Model/DBIx/ResultSet.pm	/^sub row_count {$/;"	s
+schema	Model/DBIx.pm	/^sub schema { return $_[0]->{schema}; }$/;"	s
+schema_class	Model/Fcs.pm	/^sub schema_class { return "Fap::Model::Fcs::Backend"; }$/;"	s
+schema_class	Model/Hus.pm	/^sub schema_class { return "Fap::Model::Hus::Backend"; }$/;"	s
+schema_class	Model/Pbxtra.pm	/^sub schema_class { return "Fap::Model::Pbxtra::Backend"; }$/;"	s
+search	External/NetSuite/Client.pm	/^sub search {$/;"	s
+search	External/NetSuite/Types/Base.pm	/^sub search {$/;"	s
+searchMore	External/NetSuite/Client.pm	/^sub searchMore {$/;"	s
+searchNext	External/NetSuite/Client.pm	/^sub searchNext {$/;"	s
+searchResults	External/NetSuite/Client.pm	/^sub searchResults {$/;"	s
+send	Net/Email.pm	/^sub send {$/;"	s
+send_template	Net/Email.pm	/^sub send_template {$/;"	s
+set	Model/Cache.pm	/^sub set {$/;"	s
+set	Model/Cache/File.pm	/^sub set {$/;"	s
+set	Model/Cache/Memory.pm	/^sub set {$/;"	s
+setCount	Model/Cache.pm	/^sub setCount {$/;"	s
+setError	External/NetSuite/Client.pm	/^sub setError {$/;"	s
+set_can_link_server	Server.pm	/^sub set_can_link_server {$/;"	s
+set_error	External/NetSuite.pm	/^sub set_error {$/;"	s
+set_locale	Server.pm	/^sub set_locale {$/;"	s
+set_product_id	Server.pm	/^sub set_product_id {$/;"	s
+set_server_policy	HUD.pm	/^sub set_server_policy {$/;"	s
+set_status	Order.pm	/^sub set_status {$/;"	s
+simplify	SolvingMaze.pm	/^sub simplify {$/;"	s
+strip	Model/DBIx.pm	/^sub strip {$/;"	s
+strip	Model/DBIx/Result.pm	/^sub strip {$/;"	s
+strip_nasties	Util.pm	/^sub strip_nasties {$/;"	s
+synchronize	External/NetSuite/Client.pm	/^sub synchronize {$/;"	s
+table	Model/DBIx.pm	/^sub table {$/;"	s
+throw_error	Model/DBIx/Result.pm	/^sub throw_error {$/;"	s
+throw_error	Util.pm	/^sub throw_error {$/;"	s
+transaction	Model/DBIx.pm	/^sub transaction {$/;"	s
+type	External/NetSuite/Types/CustomRecord.pm	/^sub type { return "customRecord"; }$/;"	s
+type	External/NetSuite/Types/Customer.pm	/^sub type { return "customer"; }$/;"	s
+type	External/NetSuite/Types/Item.pm	/^sub type { return "item"; }$/;"	s
+type	External/NetSuite/Types/Opportunity.pm	/^sub type { return "opportunity"; }$/;"	s
+uniqueify	Model/DBIx/Result.pm	/^sub uniqueify {$/;"	s
+uniques	Model/DBIx.pm	/^sub uniques {$/;"	s
+update	External/NetSuite/Client.pm	/^sub update {$/;"	s
+update	External/NetSuite/Types/CustomRecord.pm	/^sub update {$/;"	s
+update	External/NetSuite/Types/Customer.pm	/^sub update {$/;"	s
+update	External/NetSuite/Types/Item.pm	/^sub update {$/;"	s
+update	External/NetSuite/Types/Opportunity.pm	/^sub update {$/;"	s
+update	Model/DBIx/Result.pm	/^sub update {$/;"	s
+update_opportunity	External/NetSuite.pm	/^sub update_opportunity {$/;"	s
+update_server_license	ServerLicense.pm	/^sub update_server_license {$/;"	s
+user	Model/DBIx/Auth.pm	/^sub user          { return $_[0]->{db}->{user}; }$/;"	s
+validate_prov_order	Order.pm	/^sub validate_prov_order {$/;"	s
+zap_order_shipping	Shipping.pm	/^sub zap_order_shipping {$/;"	s

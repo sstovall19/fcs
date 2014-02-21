@@ -1,0 +1,324 @@
+#!/usr/bin/perl
+
+###
+#
+# make_db_changes [options]
+#
+# Description:
+#       Facilitates making scheduled DB changes. Performs the following tasks:
+#           - Updates SVN repo
+#           - Commits any scheduled DB changes defined in
+#             res/data/mysql/scheduled_db_changes.sql
+#           - Regenerates DBIx
+#           - Regenerates DB schema and reference data dumps
+#           - Commits changes to SVN
+#
+# Author:
+#       Lucas Petherbridge <lpetherbridge@fonality.com>
+#
+###
+
+use strict;
+use warnings;
+
+use Fap;
+use Fap::Model::ResConf;
+use File::Slurp;
+use Getopt::Std;
+use Carp;
+
+# Globals
+our $VERSION = '1.0';
+$Getopt::Std::STANDARD_HELP_VERSION = 1;
+
+# Get options
+my %OPTS;
+getopts('u:p:h:n:s:tdm:a123', \%OPTS);
+
+# Define default vars
+chomp (my $HOME = `echo \$HOME`);
+chomp (my $CWD = `echo \$PWD`);
+$OPTS{'m'} ||= '';
+$OPTS{'s'} ||= "$HOME/fcs";
+$OPTS{'h'} ||= 'web-dev2.fonality.com';
+$OPTS{'u'} ||= 'fonality';
+$OPTS{'p'} ||= 'iNOcallU';
+# Set all by default unless another step was passed in
+if (!$OPTS{'1'} && !$OPTS{'2'} && !$OPTS{'3'})
+{
+    $OPTS{'a'} = 1
+}
+
+# Define binaries
+my $svn = '/usr/bin/svn';
+my $perl = '/usr/bin/perl';
+my $mysql = '/usr/bin/mysql';
+my $regen_dbix = Fap->path_to('bin/tools/database/regenerate_DBIx');
+my $regen_dump = Fap->path_to('bin/tools/database/schema_dump');
+my $regen_ref = Fap->path_to('bin/tools/code/generate_reference_table_classes');
+
+# Define files
+my $db_change_file = Fap->path_to('res/data/mysql/scheduled_db_changes.sql');
+my $schema_file = Fap->path_to('res/data/mysql/fcs_schema.sql');
+my $data_file = Fap->path_to('res/data/mysql/fcs_reference_data.sql');
+
+# Databases
+my $dev_db = 'fcs';
+my $test_db = 'fcstest';
+my $CHANGE_MADE = 0;
+
+main();
+
+sub main
+{
+    ###
+    # Main block
+    ###
+
+    svn_update();
+
+    if (!-s $db_change_file > 0)
+    {
+        print STDERR "\nNo DB changes are scheduled in '$db_change_file'.\n";
+
+        exit 0;
+    }
+
+    if ($OPTS{'t'})
+    {
+        apply_db_changes($test_db);
+    }
+    elsif ($OPTS{'d'})
+    {
+        # Step 1: Get snapshot before change
+        if ($OPTS{'1'} || $OPTS{'a'})
+        {
+            regen_db_files();
+            svn_commit('Saved DB snapshot before scheduled DB change. ' . $OPTS{'m'});
+        }
+
+        # Step 2: Make the change
+        if ($OPTS{'2'} || $OPTS{'a'})
+        {
+            apply_db_changes($dev_db);
+        }
+
+        # Step 3: Get snapshot after the change
+        if ($OPTS{'3'} || $OPTS{'a'})
+        {
+            regen_db_files();
+            svn_add();
+            clear_scheduled_changes();
+            svn_commit('Saved DB snapshot and updated DBIx after scheduled DB change. ' . $OPTS{'m'});
+        }
+    }
+    else
+    {
+        print <<"OPTS"
+
+Options:
+    -t    Deploy to test database: '$test_db'
+    -d    Deploy to dev database: '$dev_db'
+OPTS
+;
+
+        exit 0;
+    }
+
+    return 1;
+}
+
+sub svn_update
+{
+    # Change to SVN repo directory
+    chdir $OPTS{'s'};
+
+    # Update SVN
+    print STDERR "\nSVN updating $OPTS{'s'}...\n";
+    print STDERR "-- $svn update\n";
+    system("$svn update") == 0
+        or croak "Unable to update SVN repository $OPTS{'s'}: $!";
+
+    # Go back to current working directory
+    chdir $CWD;
+
+    return 1;
+}
+
+sub svn_commit
+{
+    my ($message) = @_;
+    $message ||= '';
+
+    # Change to SVN repo directory
+    chdir $OPTS{'s'};
+
+    my @status = split("\n", `$svn status`);
+
+    my $files = '';
+    foreach my $file (@status)
+    {
+        if ($file =~ m/\A M /xms || $file =~ m/\A A /xms)
+        {
+            my ($modify, $name) = split(" ", $file);
+            if ($name =~ m#\A lib/Fap/Model #xms || $db_change_file =~ m/ $name /xms
+                || $schema_file =~ m/ $name /xms || $data_file =~ m/ $name /xms)
+            {
+                $files .= $name . ' ';
+            }
+        }
+    }
+
+    # Commit SVN
+    print STDERR "\nCommitting SVN changes to $OPTS{'s'}...\n";
+    print STDERR "-- $svn commit $files -m \"$message\"\n";
+    if (ask("Commit"))
+    {
+        system("$svn commit $files -m \"$message\"") == 0
+            or carp "Unable to commit SVN changes for $OPTS{'s'}: $!";
+    }
+    else
+    {
+        print "\nSkipping...\n";
+    }
+
+    # Go back to current working directory
+    chdir $CWD;
+
+    return 1;
+}
+
+sub svn_add
+{
+    # Change to SVN repo directory
+    chdir $OPTS{'s'};
+
+    my @status = split("\n", `$svn status`);
+
+    my $unadded_files = '';
+    foreach my $file (@status)
+    {
+        if ($file =~ m/\A \? /xms)
+        {
+            my ($add, $name) = split(" ", $file);
+            $unadded_files .= $name . ' ';
+        }
+    }
+    if ($unadded_files eq '') { return 1; }
+
+    print STDERR "-- $svn add $unadded_files\n";
+    system("$svn add $unadded_files > /dev/null 2>&1") == 0
+        or croak "Unable to add files to SVN: $!";
+
+    # Go back to current working directory
+    chdir $CWD;
+
+    return 1;
+}
+
+sub regen_db_files
+{
+    # Regenerate DBIx
+    print STDERR "\nRegenerating DBIx...\n";
+    print STDERR "-- $perl -I$OPTS{'s'}/lib $regen_dbix\n";
+    system("$perl -I$OPTS{'s'}/lib $regen_dbix") == 0
+        or carp "Unable to regenerate DBIx: $!";
+
+    # Regenerate reference lists for the 'options' method
+    print STDERR "\nRegenerating Fcs::Ref...\n";
+    print STDERR "-- $perl -I$OPTS{'s'}/lib $regen_ref\n";
+    system("$perl -I$OPTS{'s'}/lib $regen_ref") == 0
+        or carp "Unable to regenerate Fcs::Ref: $!";
+
+    # Regenerate DB dumps
+    print STDERR "\nRegenerating DB schema and reference data dumps...\n";
+    print STDERR "-- $perl -I$OPTS{'s'}/lib $regen_dump\n";
+    system("$perl -I$OPTS{'s'}/lib $regen_dump") == 0
+        or carp "Unable to regenerate DB schema and reference data dump: $!";
+
+    return 1;
+}
+
+sub apply_db_changes
+{
+    my ($database) = @_;
+
+    print STDERR "\nApplying scheduled DB changes from '$db_change_file' to '$database'...\n";
+    print STDERR "-- $mysql -u$OPTS{'u'} -p$OPTS{'p'} -h$OPTS{'h'} $database < $db_change_file\n";
+
+    my @lines = File::Slurp::read_file($db_change_file, { binmode => ':utf8' });
+
+    print "\nThe following changes are scheduled in '$db_change_file':\n";
+    foreach my $line (@lines)
+    {
+        print $line;
+    }
+
+    # Apply DB changes
+    if (ask("Deploy Changes"))
+    {
+        system("$mysql -u$OPTS{'u'} -p$OPTS{'p'} -h$OPTS{'h'} $database < $db_change_file") == 0
+            or croak "Unable to apply scheduled DB changes to '$database' database on host '$OPTS{'h'}': $!";
+        $CHANGE_MADE = 1;
+    }
+    else {
+        print STDERR "Skipping...\n";
+    }
+
+    return 1;
+}
+
+sub clear_scheduled_changes
+{
+    if ($CHANGE_MADE)
+    {
+        print STDERR "\nRemoving scheduled DB changes from '$db_change_file'...\n";
+        File::Slurp::write_file($db_change_file, { binmode => ':utf8' }, '');
+    }
+
+    return 1;
+}
+
+sub ask
+{
+    my ($message) = @_;
+
+    print "\n$message? [y/n] ";
+    my $ans = <>;
+    chomp $ans;
+    if ($ans =~ m/\A y/xmsi)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+sub HELP_MESSAGE
+{
+
+    print <<"HELP"
+Usage: $0 [-OPTIONS [-MORE_OPTIONS]] [--] [PROGRAM_ARG1 ...]
+
+The following single-character options are accepted:
+
+        -t      Deploy changes to test DB (fcstest)
+        -d      Deploy changes to development DB (fcs)
+        -a      All Steps (Default)
+        -1      Step 1 only: Regen and Commit before DB changes
+        -2      Step 2 only: Apply DB changes
+        -3      Step 3 only: Regen and Add/Commit after DB changes
+        -m      Message for committing to SVN
+        -s      SVN repository directory
+        -u      Database username
+        -p      Database password
+        -h      Database hostname
+
+Options may be merged together.  -- stops processing of options.
+Space is not required between options and their arguments.
+HELP
+;
+    return 1;
+}

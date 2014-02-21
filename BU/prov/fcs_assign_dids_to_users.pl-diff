@@ -1,0 +1,154 @@
+23a24
+> use Fap::User;
+25c26,28
+< # for optmal search of phone_numbers
+---
+> use F::Conference;
+> use Data::Dumper;
+> # for optmal search of array of hashes
+28c31,41
+< my $client = Fap::StateMachine::Unit->new()->run();
+---
+> my $debug = 1;
+> 
+> #my $client = Fap::StateMachine::Unit->new()->run();
+> my $client;
+> my $package = "fcs_assign_dids_to_users";
+> my $input = {};
+> 
+> $input->{'order_id'} = 55741;
+> execute($package, $client, $input);
+> $input->{'did_assigned_users'} = [ 435870, 446472 ];
+> rollback($package, $client, $input);
+32a46,49
+> 	if (!Fap::Order::validate_prov_order($input)) {
+> 		#$client->displayfailure($@);
+> 	}
+> 	
+33a51,52
+> 	#my $pbxtra_dbh = Fap::Model::Fcs->new()->dbh('pbxtra');;
+> 	my $pbxtra_dbh = F::Database::mysql_connect();
+37,38c56,58
+<     if (!Fap::Order::validate_prov_order($fcs_schema, $order_id)) {
+<         $client->displayfailure("ERR: Invalid order: $order_id");
+---
+> 
+>     if (!Fap::Order::validate_prov_order($order)) {
+>         #$client->displayfailure($@);
+43c63,64
+< 		my @phone_numbers = Fap::PhoneNumbers::get_phone_numbers($fcs_schema, $server_id, undef);	
+---
+> 		my @phone_numbers = Fap::PhoneNumbers::get_phone_numbers($fcs_schema, $server_id);	
+> 		#my @phone_numbers = F::PhoneNumbers::get_phone_numbers($F::Globals::dbh, $server_id);	
+44a66
+> 		#print Dumper(@phone_numbers);
+45a68,76
+> 			my $bundle = Fap::Bundle->new(
+> 				bundle_id => $order_bundle->{'bundle_id'},
+> 				fcs_schema => $fcs_schema,
+> 			);
+> 			if (!defined($bundle)) {
+> 				#$client->displayfailure('ERR: bundle id is invalid in order group ' . $order_group->{'order_group_id'} .
+> 				#' order bundle ' . $order_bundle->{'order_bundle_id'});
+> 			}
+> 			
+50d80
+< 				# extract the DID list from the order bundle
+56c86,87
+< 				unless (defined($number))
+---
+> 				my $exten = undef;
+> 				unless ($number)
+58c89
+< 					$client->displayfailure("ERR: DID $did does not match SERVER $server_id in phone_numbers table");
+---
+> 					#$client->displayfailure("ERR: DIDs do not match in phone_numbers table");
+63c94
+< 					$client->displayfailure("ERR: DIDs not purchased yet");
+---
+> 					#$client->displayfailure("ERR: DIDs not purchased yet");
+65,66d95
+< 				# get primary extensions
+< 				my $exten = undef;
+68,70c97,99
+< 					# search for primary extension in @$phone_numbers
+< 					if (!defined(my $extension = first {defined($_->{extension}) && $_->{extension} eq $primary->{extension}} @phone_numbers)) {
+< 						# if this primary extension is unassigned, assign it
+---
+> 					# search for primary extension in @phone_numbers
+> 					next unless ($primary->{extension});
+> 					if (!(my $extension = first {defined($_->{extension}) && $_->{extension} eq $primary->{extension}} @phone_numbers)) {
+76,81c105,106
+< 				#if (!defined($name) || (!defined(Fap::CallerID::set_caller_id($server_id, $did, $name, $exten, 1)))) {
+< 				if (!defined(Fap::CallerID::set_caller_id($server_id, $did, $name, $exten, 1))) {
+< 					$client->displayfailure("ERR: failed to set caller id for server $server_id extension $exten DID $did name $name");
+< 				}
+< 				if (!defined(Fap::PhoneNumbers::update_phone_number($server_id, $did, $exten))) {
+< 					$client->displayfailure("ERR: failed to update phone number for server $server_id extension $exten DID $did");
+---
+> 				if (!defined($name) || !defined(Fap::CallerID::set_caller_id($server_id, $did, $name, $exten))) {
+> 					#$client->displayfailure("ERR: failed to set caller id for server $server_id extension $exten DID $did");
+83,85c108,113
+< 				my $u_info = Fap::User::get_user_info_by_ext_and_server($fcs_schema, $exten, $server_id); 
+< 				if (!defined($u_info)) {
+< 					$client->displayfailure("ERR: could not get user info for $server_id extension $exten");
+---
+> 				
+> 				#my $ret = Fap::PhoneNumbers::update_phone_number($server_id, $did, $exten);
+> 				my $ret = Fap::PhoneNumbers::update_phone_number($server_id, $did, $exten);
+> 				if (!defined($ret)) {
+> 					print("ERR: failed to update phone number for server $server_id extension $exten DID $did");
+> 					#$client->displayfailure("ERR: failed to update phone number for server $server_id extension $exten DID $did");
+87c115,118
+< 				push (@{$input->{'did_assigned_users'}}, $u_info->{'user_id'});
+---
+> 				my $u_info = Fap::User::get_user_info_by_ext_and_server($fcs_schema, $exten, $server_id);
+> 				#my $u_info = F::User::get_user_info_by_ext_and_server($F::Globals::dbh, $exten, $server_id);
+> 				my $user_id = $u_info->{'user_id'};
+> 				push (@{$input->{'did_assigned_users'}}, $user_id);
+90a122
+> 	
+93a126
+> 
+99,101c132,134
+< 	# make sure an array was deserialized
+< 	return $input unless ref($input->{'did_assigned_users'}) eq 'ARRAY';
+< 	foreach my $did_assigned_user (@{$input->{'did_assigned_users'}}) {
+---
+>     my $order_id = $input->{'order_id'};
+> 	my $did_assigned_users = $input->{'did_assigned_users'};			
+> 	for my $did_assigned_user (@$did_assigned_users) {
+104c137
+< 				$client->displayfailure("ERR: userid maps to no serverid: $did_assigned_user");
+---
+> 				#$client->displayfailure('ERR: userid maps to no serverid: ' . $did_assigned_user);
+108,110c141,143
+< 		my $rci = Fap::CallerID::remove_caller_id($server_id, $exten);
+< 		if (!defined($rci)) {
+< 			$client->displayfailure("ERR: failed to remove caller id for server $server_id  extension $exten");
+---
+> 		my $ret = Fap::CallerID::remove_caller_id($user->{'default_server_id'}, $user->{'extension'});
+> 		if (!defined($ret)) {
+> 			#$client->displayfailure("ERR: failed to remove caller id for server $server_id  extension$exten");
+113,115c146,149
+< 		foreach my $did (@phone_numbers) {
+< 			if (!defined($did)) {
+< 				$client->displayfailure("ERR: failed to update phone number for server $server_id extension $exten DID $did");
+---
+> 		#my $phone_numbers = F::PhoneNumbers::get_phone_numbers($F::Globals::dbh, $server_id, $exten);
+> 		foreach my $pn (@phone_numbers) {
+> 			if (!defined($pn)) {
+> 				$client->displayfailure("ERR: failed to find phone number for server $server_id extension $exten DID $pn->{number} $@");
+117c151,152
+< 			my $upn = Fap::PhoneNumbers::update_phone_number($server_id, $did->{number}, undef);
+---
+> 			#my $upn = Fap::PhoneNumbers::update_phone_number($server_id, $did, w/NULL/);
+> 			my $upn = Fap::PhoneNumbers::update_phone_number($server_id, $pn->{number}, undef);
+119c154
+< 				$client->displayfailure("ERR: failed to update phone number for server $server_id extension $exten DID $did->{number}");
+---
+> 				#$client->displayfailure("ERR: failed to update phone number for server $server_id extension $exten DID $did->{number}: $@");
+121a157,159
+> 		if (!defined($ret)) {
+> 			#$client->displayfailure("ERR: failed to update phone number for server $server_id extension $exten DID $did");
+> 		}

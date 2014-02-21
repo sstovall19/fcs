@@ -1,0 +1,10 @@
+
+<tr>
+	<td width=525 ><font class=order_text>
+		<!-- Press back on your browser and correct the error[% IF MSG_ERROR.size > 1 %]s[% END %]. -->
+	</td>
+</tr>
+
+<tr>
+	<td height=175></td>
+</tr>

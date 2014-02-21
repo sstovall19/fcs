@@ -1,0 +1,24 @@
+#!/bin/bash
+
+
+export CWD=${CWD:-`pwd -P`}
+export FCS_SOURCE_FILE=${FCS_SOURCE_FILE:-"fcs-source.tar.gz"}
+export FCS_SOURCE=${FCS_SOURCE:-"sources/$FCS_SOURCE_FILE"}
+export TEST_DIR=${TEST_DIR:-"/root"}
+export BUILDDIR=${BUILDDIR:-"build/fcs"}
+export FON_DIR=${FON_DIR:-"/usr/local/fonality"}
+export FONLIB_TARGET=${FONLIB_TARGET:-"$FON_DIR/lib"}
+export SCHEMA_TARGET=${SCHEMA_TARGET:-"$FON_DIR/schema"}
+export PERLLIB_TARGET=${PERLLIB_TARGET:-"$FON_DIR/lib"}
+export BU_TARGET=${BU_TARGET:-"$FON_DIR/BU"}
+export BIN_TARGET=${BIN_TARGET:-"$FON_DIR/bin"}
+export COLLECTOR_TARGET=${COLLECTOR_TARGET:-"/html/fcs_rest"}
+export CONF_TARGET=${CONF_TARGET:-"$FON_DIR/res/conf"}
+export RES_TARGET=${RES_TARGET:-"$FON_DIR/res"}
+export PERLLIB=${PERLLIB:-"$PERLLIB_TARGET"}
+export PDF_DIR=${PDF_DIR:-"$FON_DIR/userdata/pdf"}
+export PDF_DATA_DIR=${PDF_DATA_DIR:-"$FON_DIR/BU/quote/fcs_email_pdf/fcs_email_pdf_files"}
+export PDF_URI=${PDF_URI:-"http://ec2-184-72-10-240.us-west-1.compute.amazonaws.com"}
+export PDF_INCLUDE=${PDF_INCLUDE:-"FonalityPBXtra-datasheet_061611.pdf"}
+export JAVA_HOME=${JAVA_HOME:-"/usr/java/latest"}
+export CLASSPATH=${CLASSPATH:-"$FONLIB_TARGET/java/*:$FONLIB_TARGET/java/ext/*:$FONLIB_TARGET/java/conf/:$FONLIB_TARGET/java/fonality-fcs.jar"}

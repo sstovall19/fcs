@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="customerCdrUsageReport" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" scriptletClass="com.fonality.util.ReportScriplet" uuid="ca569e1b-0a34-4cd2-90cd-ed61eca188e9">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="782"/>
+	<style name="cellStyle">
+		<box topPadding="6" leftPadding="6" bottomPadding="1" rightPadding="1">
+			<pen lineWidth="1.0"/>
+			<topPen lineWidth="1.0"/>
+			<leftPen lineWidth="1.0"/>
+			<bottomPen lineWidth="1.0"/>
+			<rightPen lineWidth="1.0"/>
+		</box>
+	</style>
+	<style name="detailCell" fontSize="7">
+		<box topPadding="1" leftPadding="1" bottomPadding="2" rightPadding="1">
+			<pen lineWidth="1.0"/>
+			<topPen lineWidth="0.0"/>
+			<leftPen lineWidth="1.0"/>
+			<bottomPen lineWidth="0.0"/>
+			<rightPen lineWidth="1.0"/>
+		</box>
+	</style>
+	<style name="detailBand">
+		<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
+			<pen lineWidth="1.0"/>
+			<topPen lineWidth="1.0"/>
+			<leftPen lineWidth="0.0"/>
+			<bottomPen lineWidth="0.0"/>
+			<rightPen lineWidth="0.0"/>
+		</box>
+	</style>
+	<style name="cellStyle2" fontSize="11">
+		<box topPadding="4" leftPadding="1" bottomPadding="1" rightPadding="1">
+			<pen lineWidth="1.0"/>
+			<topPen lineWidth="1.0"/>
+			<leftPen lineWidth="1.0"/>
+			<bottomPen lineWidth="1.0"/>
+			<rightPen lineWidth="1.0"/>
+		</box>
+	</style>
+	<subDataset name="dataset1" scriptletClass="com.fonality.util.ReportScriplet" uuid="59a5337e-c6ac-4100-8642-51d01dec63ca">
+		<parameter name="server_header_logo_path" class="java.io.InputStream" isForPrompting="false"/>
+		<parameter name="sub_report_param" class="java.io.InputStream" isForPrompting="false"/>
+		<parameter name="cdr_list_dataset" class="java.util.List" isForPrompting="false">
+			<defaultValueExpression><![CDATA[new ArrayList()]]></defaultValueExpression>
+		</parameter>
+		<field name="addr1" class="java.lang.String"/>
+		<field name="orderGroupId" class="java.lang.Integer"/>
+		<field name="serverId" class="java.lang.Integer"/>
+		<field name="billableCdrList" class="java.util.List"/>
+		<field name="durationSum" class="java.lang.Integer"/>
+		<field name="billedAmount" class="java.math.BigDecimal"/>
+		<field name="callTypeCdrList" class="java.util.List"/>
+	</subDataset>
+	<parameter name="server_cdr_list" class="java.util.List" isForPrompting="false">
+		<defaultValueExpression><![CDATA[new ArrayList()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="header_logo_path" class="java.io.InputStream" isForPrompting="false"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="server_report_param" class="java.io.InputStream" isForPrompting="false"/>
+	<parameter name="summary_report_param" class="java.io.InputStream" isForPrompting="false"/>
+	<parameter name="start_date" class="java.util.Date" isForPrompting="false">
+		<defaultValueExpression><![CDATA[new Date()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="end_date" class="java.util.Date" isForPrompting="false">
+		<defaultValueExpression><![CDATA[new Date()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="call_type_summary" class="java.util.List" isForPrompting="false"/>
+	<parameter name="server_summary_report_param" class="java.io.InputStream" isForPrompting="false"/>
+	<queryString>
+		<![CDATA[select 1 as 'NA']]>
+	</queryString>
+	<variable name="rowExists" class="java.lang.Boolean"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="800">
+			<printWhenExpression><![CDATA[$V{REPORT_COUNT} > 0]]></printWhenExpression>
+			<subreport isUsingCache="true">
+				<reportElement uuid="35653ee4-7c6e-41e8-9c1c-ab4543bb07f3" x="0" y="0" width="555" height="800"/>
+				<subreportParameter name="server_cdr_list">
+					<subreportParameterExpression><![CDATA[$P{server_cdr_list}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="end_date">
+					<subreportParameterExpression><![CDATA[$P{end_date}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="server_summary_report">
+					<subreportParameterExpression><![CDATA[$P{server_summary_report_param}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="header_logo_path">
+					<subreportParameterExpression><![CDATA[$P{header_logo_path}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="call_type_summary">
+					<subreportParameterExpression><![CDATA[$P{call_type_summary}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="start_date">
+					<subreportParameterExpression><![CDATA[$P{start_date}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[$P{summary_report_param}]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="800">
+			<componentElement>
+				<reportElement uuid="f61972e4-1775-49d6-a200-cbabbc506ab1" positionType="Float" stretchType="RelativeToTallestObject" x="0" y="0" width="555" height="800" isRemoveLineWhenBlank="true"/>
+				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
+					<datasetRun subDataset="dataset1" uuid="99a4aacb-ac2f-4031-85de-db2d488c4a08">
+						<datasetParameter name="cdr_list_dataset">
+							<datasetParameterExpression><![CDATA[$P{server_cdr_list}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="server_header_logo_path">
+							<datasetParameterExpression><![CDATA[$P{header_logo_path}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="sub_report_param">
+							<datasetParameterExpression><![CDATA[$P{server_report_param}]]></datasetParameterExpression>
+						</datasetParameter>
+						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{server_cdr_list})]]></dataSourceExpression>
+					</datasetRun>
+					<jr:listContents height="800" width="555">
+						<subreport isUsingCache="true">
+							<reportElement uuid="35653ee4-7c6e-41e8-9c1c-ab4543bb07f3" x="0" y="0" width="555" height="800"/>
+							<subreportParameter name="durationSum">
+								<subreportParameterExpression><![CDATA[$F{durationSum}]]></subreportParameterExpression>
+							</subreportParameter>
+							<subreportParameter name="addr1">
+								<subreportParameterExpression><![CDATA[$F{addr1}]]></subreportParameterExpression>
+							</subreportParameter>
+							<subreportParameter name="header_logo_path">
+								<subreportParameterExpression><![CDATA[$P{server_header_logo_path}]]></subreportParameterExpression>
+							</subreportParameter>
+							<subreportParameter name="amountSum">
+								<subreportParameterExpression><![CDATA[$F{billedAmount}]]></subreportParameterExpression>
+							</subreportParameter>
+							<subreportParameter name="cdr_list">
+								<subreportParameterExpression><![CDATA[$F{billableCdrList}]]></subreportParameterExpression>
+							</subreportParameter>
+							<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{billableCdrList})]]></dataSourceExpression>
+							<subreportExpression><![CDATA[$P{sub_report_param}]]></subreportExpression>
+						</subreport>
+					</jr:listContents>
+				</jr:list>
+			</componentElement>
+		</band>
+	</detail>
+</jasperReport>

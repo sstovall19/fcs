@@ -1,0 +1,43 @@
+[% UNLESS HOST %]
+	[%# SET HOST = 'http://' _ env.HTTP_HOST _ '/pbxtra/' %]
+	[% SET HOST = '/' %]
+[% END %]
+
+[% UNLESS metakeywords %]
+	[% metakeywords = 'pbx,ip pbx,pbxtra,fonality,voip,voip pbx,phone systems,pbx phone system,voip phone system,v.o.i.p,business phone system,small business phone systesms' %]
+[% END %]
+
+[% UNLESS TITLE %]
+	[% TITLE = 'IP PBX Phone System - Top Rated VoIP PBX Phone Systems for Businesses' %]
+[% END %]
+
+[% UNLESS metadescription %]
+	[% metadescription = 'Fonality\'s PBXtra is changing the face of IP telephony with its innovative IP PBX phone systems created especially for small and medium sized businesses.' %]
+[% END %]
+
+
+[% UNLESS PAGE %]
+	[% PAGE = env.SCRIPT_NAME FILTER remove('.html$') %]
+	[% PAGE = PAGE FILTER remove('(^\/)') %]
+	[% PAGE = PAGE FILTER remove('/index') %]
+	[% PAGE = PAGE FILTER replace('/','-') %]
+[% END %]
+[% UNLESS BODY_CLASSES %]
+	[% BODY_CLASSES = '' %]
+[% END %]
+
+[% SET COLOR1 = "#FF6500" %]
+
+[% BLOCK ERROR_BLOCK %]
+<div class="error">
+	<p>[% MSG_ERROR_HEADER %]Please correct the [% MSG_ERROR.size %] error[% IF MSG_ERROR.size > 1 %]s[% END %] in your form!</p>
+	<ul class="pbxlite">		
+	[% FOREACH MSG=MSG_ERROR %]
+		<li style="padding-left: 20">
+			[% MSG %]
+		</li>
+	[% END %]
+	</ul>
+</div>
+[% END %]
+

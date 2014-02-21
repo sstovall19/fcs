@@ -1,0 +1,6 @@
+<p>Thank you for your interest in a Fonality VoIP Phone System!</p>
+<p>We have a few questions about the information you provided. A Fonality representative will contact you shortly and assist in determining the best communications solution for your business needs.</p>
+[% IF LOGIN_ERROR %]
+<p>If you are a Reseller or a Fonality Sales Representative, please make sure you are logged in.</p>
+[% END %]
+

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+"-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+        <property name="hibernate.show_sql">false</property>
+     	<mapping class="com.fonality.bu.entity.Bundle" />
+        <mapping class="com.fonality.bu.entity.BundleRelationship" />
+        <mapping class="com.fonality.bu.entity.TransactionJob" />
+        <mapping class="com.fonality.bu.entity.OrderCategory" />
+        <mapping class="com.fonality.bu.entity.BundlePacking" />
+        <mapping class="com.fonality.bu.entity.OrderTransactionLog" />
+        <mapping class="com.fonality.bu.entity.ServerBundle" />
+        <mapping class="com.fonality.bu.entity.PromoDeployment" />
+        <mapping class="com.fonality.bu.entity.OrderLabel" />
+        <mapping class="com.fonality.bu.entity.Provider" />
+        <mapping class="com.fonality.bu.entity.PromoRole" />
+        <mapping class="com.fonality.bu.entity.OrderGroup" />
+        <mapping class="com.fonality.bu.entity.LicensePerm" />
+        <mapping class="com.fonality.bu.entity.PriceModel" />
+        <mapping class="com.fonality.bu.entity.ServerProvider" />
+        <mapping class="com.fonality.bu.entity.Deployment" />
+        <mapping class="com.fonality.bu.entity.BillingSchedule" />
+        <mapping class="com.fonality.bu.entity.EntityContact" />
+        <mapping class="com.fonality.bu.entity.IntranetSearchable" />
+        <mapping class="com.fonality.bu.entity.Role" />
+        <mapping class="com.fonality.bu.entity.ResellerDiscount" />
+        <mapping class="com.fonality.bu.entity.IntranetRole" />
+        <mapping class="com.fonality.bu.entity.Product" />
+        <mapping class="com.fonality.bu.entity.TransactionStep" />
+        <mapping class="com.fonality.bu.entity.TaxMapping" />
+        <mapping class="com.fonality.bu.entity.BundlePriceModel" />
+        <mapping class="com.fonality.bu.entity.PromoKit" />
+        <mapping class="com.fonality.bu.entity.Feature" />
+        <mapping class="com.fonality.bu.entity.IntranetUserRoleXref" />
+        <mapping class="com.fonality.bu.entity.PromoCode" />
+        <mapping class="com.fonality.bu.entity.Discount" />
+        <mapping class="com.fonality.bu.entity.CustomerAddress" />
+        <mapping class="com.fonality.bu.entity.BundleFeature" />
+        <mapping class="com.fonality.bu.entity.LicenseType" />
+        <mapping class="com.fonality.bu.entity.DiscountCategory" />
+        <mapping class="com.fonality.bu.entity.PromoAction" />
+        <mapping class="com.fonality.bu.entity.UserLicense" />
+        <mapping class="com.fonality.bu.entity.OrderShipping" />
+        <mapping class="com.fonality.bu.entity.CountryRegion" />
+        <mapping class="com.fonality.bu.entity.ConcordCdrTest" />
+        <mapping class="com.fonality.bu.entity.IntranetLog" />
+        <mapping class="com.fonality.bu.entity.HudLicenseMap" />
+        <mapping class="com.fonality.bu.entity.ResellerType" />
+        <mapping class="com.fonality.bu.entity.LicenseFeature" />
+        <mapping class="com.fonality.bu.entity.OrderStatus" />
+        <mapping class="com.fonality.bu.entity.IntranetUser" />
+        <mapping class="com.fonality.bu.entity.IntranetSession" />
+        <mapping class="com.fonality.bu.entity.GroupUser" />
+        <mapping class="com.fonality.bu.entity.ServerLicense" />
+        <mapping class="com.fonality.bu.entity.RegionAreaCode" />
+        <mapping class="com.fonality.bu.entity.BundleLicense" />
+        <mapping class="com.fonality.bu.entity.IntranetAudit" />
+        <mapping class="com.fonality.bu.entity.IntranetPermission" />
+        <mapping class="com.fonality.bu.entity.BundleCategory" />
+        <mapping class="com.fonality.bu.entity.OrderBundleDetail" />
+        <mapping class="com.fonality.bu.entity.CollectorUserIp" />
+        <mapping class="com.fonality.bu.entity.IntranetSetting" />
+        <mapping class="com.fonality.bu.entity.ProviderCountry" />
+        <mapping class="com.fonality.bu.entity.OrderTransaction" />
+        <mapping class="com.fonality.bu.entity.CollectorUser" />
+        <mapping class="com.fonality.bu.entity.Orders" />
+        <mapping class="com.fonality.bu.entity.IntranetRoleXref" />
+        <mapping class="com.fonality.bu.entity.LicensePrereq" />
+        <mapping class="com.fonality.bu.entity.UserRole" />
+        <mapping class="com.fonality.bu.entity.DiscountType" />
+        <mapping class="com.fonality.bu.entity.TransactionSubmit" />
+        <mapping class="com.fonality.bu.entity.NetsuiteSalesperson" />
+        <mapping class="com.fonality.bu.entity.Country" />
+        <mapping class="com.fonality.bu.entity.EntityCreditCard" />
+        <mapping class="com.fonality.bu.entity.OrderBundle" />
+        <mapping class="com.fonality.bu.entity.OrderTransactionItem" />
+        <mapping class="com.fonality.bu.entity.BundleDiscount" />
+        <mapping class="com.fonality.bu.entity.IntranetUserPermissionXref" />
+        <mapping class="com.fonality.bu.entity.RolePerm" />
+        <mapping class="com.fonality.bu.entity.Groups" />
+        <mapping class="com.fonality.bu.entity.CustomerContact" />
+        <mapping class="com.fonality.bu.entity.EntityAddress" />
+        <mapping class="com.fonality.bu.entity.DiscountLimit" />
+        <mapping class="com.fonality.bu.entity.CollectorPermission" />
+        <mapping class="com.fonality.bu.entity.OrderDiscount" />
+        <mapping class="com.fonality.bu.entity.Datacenter" />
+        <mapping class="com.fonality.bu.entity.RoleTollrestriction" />
+        <mapping class="com.fonality.bu.entity.OrderCategoryLabelXref" />
+        <mapping class="com.fonality.bu.entity.Perm" />
+        <mapping class="com.fonality.bu.entity.PaymentMethod" />
+        <mapping class="com.fonality.bu.entity.UnboundCdrTest" />
+    </session-factory>
+</hibernate-configuration>

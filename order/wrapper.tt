@@ -1,0 +1,131 @@
+<html lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="keywords" content="[% metakeywords %]" />	
+		<meta name="description" content="[% metadescription %]" />
+		<meta name="robots" content="noydir" />
+
+		[% IF PAGE == "order_start" %]
+			<link href="/javascripts/jquery/jquery-ui.css" rel="stylesheet" type="text/css"/>
+			<script src="/javascripts/jquery/jquery.min.js"></script>
+			<script src="/javascripts/jquery/jquery-ui.min.js"></script>
+
+
+<script type="text/javascript" src="javascripts/jquery.validate.js"></script>
+<script type="text/javascript" src="/javascripts/jquery.nestedAccordion.js"></script>
+
+<script>
+	jQuery.validator.addMethod("positiveNumber", function(value) { 
+        	return Number(value) >= 0;
+	}, 'Enter a valid number.');
+</script>
+
+
+<script type="text/javascript">
+$("html").addClass("js");
+$.fn.accordion.defaults.container = false; 
+$(function() {
+  $("#acc3").accordion({initShow : "#current"});
+  $("#acc1").accordion({
+      el: ".h", 
+      head: "h4, h5", 
+      next: "div", 
+      initShow : "div.outer:eq(1)"
+  });
+  $("#acc2").accordion({
+      obj: "div", 
+      wrapper: "div", 
+      el: ".h", 
+      head: "h4, h5", 
+      next: "div", 
+      showMethod: "slideFadeDown",
+      hideMethod: "slideFadeUp",
+      initShow : "div.shown"
+    });
+  $("html").removeClass("js");
+    $("#quoteForm").validate({
+        rules: {
+            AccordionField: {
+                required: true
+            }
+        },
+        ignore: []
+    });
+});
+</script>
+
+ 		[% END %] 
+
+		<title>[% IF PAGE != 'index' %]Fonality - [% END %][% TITLE %]</title>
+
+		<script type="text/javascript" src="javascripts/java_script.js"></script>
+
+		[% IF PAGE == "order_interview" %]
+			<script type="text/javascript" src="javascripts/scrolltip.js"></script>
+			<script type="text/javascript" src="javascripts/dw_rolltip_sel.js"></script>
+			<script type="text/javascript" src="javascripts/dw_viewport.js"></script>
+			<script type="text/javascript" src="javascripts/dw_event.js"></script>
+			<script type="text/javascript">
+				myAddEvent( window, "load", function(){RollTip.init()} );
+			</script>
+		[% END %]
+
+		<link rel="stylesheet" href="[% HOST %]stylesheets/style.css?02262010" type="text/css" media="screen" />
+
+		[% UNLESS HOST %]
+			[% HOST = '/' %]
+		[% END  %]
+
+		[%# default phone num  %]
+		[% phone = '1-800-791-3714' %]
+
+	</head>
+	<body id="[% PAGE %]">
+
+		<div id="container">
+			<div id="header" style="height: 100px">
+				<div id="headerphone">
+					<a onClick="return callback(1006, null, 'call_fonality', 'please', 'http:%2F%2Fpbxtra.fonality.com', 'http:%2F%2Fpbxtra.fonality.com', 'Sales_CnC')" href="javascript:void(0)">[% phone %]</a>
+				</div>
+
+				<div class="title" id="header-title">
+					<a href="[% HOST %]">Fonality</a>
+				</div>
+											
+				<div style="background: url('images/background-green.png') no-repeat top left;
+				            height: 46px;
+							left: 12px;
+							line-height: 38px;
+							padding-left: 28px;
+							position: absolute;
+							top: 81px;
+							width: 849px;
+							z-index: 99;"></div>
+
+			</div> <!-- // header -->
+			
+			<div id="page">
+				<div id="content">
+
+					[% content %]
+
+				</div><!-- // content -->				
+			</div> <!-- // page-->
+			<div id="footer">
+				<ul class="footer-navigation">
+					<li class="phonenumber first">[% phone %]</li>
+					<li class="about-us"><a href="http://www.fonality.com/company/about-fonality.html">About Us</a></li>
+					<li class="careers"><a href="http://www.fonality.com/company/careers.html">Careers</a></li>
+					<li class="resellers"><a href="http://www.fonality.com/lp/partner-program.html">Resellers</a></li>
+					<li class="contact-us"><a href="http://www.fonality.com/company/contact-us.html">Contact Us</a></li>
+					<li class="site-map"><a href="http://www.fonality.com/sitemap">Site Map</a></li>
+					<li class="privacy-policy"><a href="http://www.fonality.com/legal/privacypolicy.html">Privacy Policy</a></li>
+					<li class="terms-and-conditions last"><a href="http://www.fonality.com/legal/terms-service-license-agreement.html">Terms and Conditions</a></li>
+				</ul>
+				<div class="copyright" id="footer-copyright">
+					&copy; 2011 Fonality, Inc. Fonality, PBXtra, trixbox, and HUD are registered trademarks of Fonality. Hybrid-Hosted and Anywhere Management are trademarks of Fonality. Other trademarks are the property of their respective holders.
+				</div>
+			</div><!-- // footer-->
+		</div><!-- // container -->
+
+</body></html>

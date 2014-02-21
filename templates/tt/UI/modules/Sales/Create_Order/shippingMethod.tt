@@ -1,0 +1,23 @@
+<div id="shippingMethod">
+    <div class="sectionHeadr"><h4>Choose Shipping Method</h4></div>
+    <div id="shippingTypes">
+      [% FOREACH method IN order.order_group.0.shipping_rates %]
+    
+        [% IF loop.count == 4 %]
+          <div id="moreShipMethods" style="display:none;">
+        [% END %]
+        
+        <!-- [% method.shipping_text %] -->
+        <div class="form_element"><input class="ui-widget ui-corner-all no_sync shipping_method" type="radio" name="shippingMethod" value="[% method.order_shipping_id %]" [% IF loop.count == 1 %]checked[% END %]></div>
+        <div class="form_label" category_id="shipping" description="UPS">[% method.shipping_text %]</div>
+        <div class="shippingAmount">$[% method.shipping_rate %]</div>
+        <div class="form_clear"></div>
+        [% IF loop.count == 3 %]
+          <div id="moreMethods">(<span>more</span>)</div>
+        [% END %]
+        [% IF loop.count == order.order_group.0.shipping_rates.size %]
+         </div>
+        [% END %]
+      [% END %]
+    </div> 
+</div>

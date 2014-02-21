@@ -1,0 +1,63 @@
+        <div class="display_right_preview_form">
+                <form id="form_[% IF CATEGORY == 'shipping' %]Shipping[% ELSE %]Payment[% END %]" guid="[% order.order_group.0.order_group_id %]">   
+                    <div class="form_label no_image" category_id="[% IF CATEGORY == 'shipping' %]shipping[% ELSE %]payment[% END %]" description="Your shipping street address">* Street Address:</div>
+                    <div class="form_element"><input class="ui-widget ui-corner-all no_sync" type="text" name="addr1" id="addr1" size="18" value="[% order.order_group.0.shipping_address.0.addr1 %]"></div>
+                    <div class="form_clear"></div>
+                    
+                    <div class="form_label no_image" category_id="[% IF CATEGORY == 'shipping' %]shipping[% ELSE %]payment[% END %]" description="Additional Address Information.  Suite, Office, etc.">Street Address 2:</div>
+                    <div class="form_element"><input class="ui-widget ui-corner-all no_sync" type="text" name="addr2" id="addr2" size="18" value="[% order.order_group.0.shipping_address.0.addr2 %]"></div>
+                    <div class="form_clear"></div>
+                    
+                    <div class="form_label no_image" category_id="[% IF CATEGORY == 'shipping' %]shipping[% ELSE %]payment[% END %]" description="Your shipping city">* City:</div>
+                    <div class="form_element"><input class="ui-widget ui-corner-all no_sync" type="text" name="city" id="city" size="18" value="[% order.order_group.0.shipping_address.0.city %]"></div>
+                    <div class="form_clear"></div>
+                    
+                    <div class="form_label" category_id="[% IF CATEGORY == 'shipping' %]shipping[% ELSE %]payment[% END %]" description="Shipping State or Province">* State / Province:</div>
+                    <div class="form_element">
+                        <select name="state_prov" id="state_prov" class="ui-widget ui-corner-all no_sync" style="width: 125px;">
+                            [% FOREACH S IN state_list.keys.sort %]
+                                <option value="[% S %]" [% IF S == order.order_group.0.shipping_address.0.state_prov %]selected[% END %]>[% state_list.$S %]</option>
+                            [% END %]
+                        </select>
+                    </div>
+                    <div class="form_clear"></div>
+                
+                    <div class="form_label no_image" category_id="[% IF CATEGORY == 'shipping' %]shipping[% ELSE %]payment[% END %]" description="Your shipping postal or Zip code">* Postal Code:</div>
+                    <div class="form_element"><input class="ui-widget ui-corner-all no_sync" type="text" name="postal" id="postal" size="5" value="[% order.order_group.0.shipping_address.0.postal %]"></div>
+                    <div class="form_clear"></div>
+            
+                    <div class="form_label" category_id="[% IF CATEGORY == 'shipping' %]shipping[% ELSE %]payment[% END %]" description="Shipping Country">* Country:</div>
+                    <div class="form_element">
+                        <select name="country" id="country" class="ui-widget ui-corner-all no_sync" style="width: 125px;">
+                            [% FOREACH C IN country_list.keys.sort %]
+                                <option value="[% C %]" class="[% IF country_list.$C.state_prov %]requires_state_prov[% END %][% IF country_list.$C.postal_code %] requires_postal_code[% END %]"  [% IF C == order.order_group.0.shipping_address.0.country %]selected[% END %]>[% country_list.$C.full_name %]</option>
+                            [% END %]
+                        </select>
+                    </div>
+                    <!-- ######################################################################################## -->
+                    <!-- if page is SHIPPING PAGE -->
+                    [% IF CATEGORY == 'shipping' %]
+                       <div id="addrCheck">
+                         <div class="form_label">Address is correct</div>
+                         <input class="ui-widget ui-corner-all no_sync" type="checkbox" name="correctAddr" id="correctAddr"/>
+                       </div> 
+                       
+                       [% PROCESS 'modules/Sales/Create_Order/shippingMethod.tt'  %]
+                    [% END %]   
+                    <!-- END if page is shipping -->
+                    <!-- ######################################################################################## -->
+                    <!-- if page is PAYMENT PAGE -->
+                    [% IF CATEGORY == 'payment' %]
+                       [% PROCESS 'modules/Sales/Create_Order/ccInfo.tt'  %]
+                    [% END %]   
+                    <!-- END if page is payment -->
+                     <!-- ######################################################################################## -->
+                     <div class="form_clear"></div>
+                    <div class="nav_buttons">
+                    [% IF CATEGORY == 'shipping' %]
+                     <input class="nav_prev_button quote_nav_button" category_id="[% IF CATEGORY == 'shipping' %]shipping[% ELSE %]payment[% END %]" type="button" name="previous" id="previous" value="Previous">
+                    [% END %] 
+                     <input class="nav_next_button quote_nav_button" category_id="[% IF CATEGORY == 'shipping' %]shipping[% ELSE %]payment[% END %]" type="button" name="continue" id="continue" value="Continue"/>
+                    </div> 
+                </form>
+       </div>

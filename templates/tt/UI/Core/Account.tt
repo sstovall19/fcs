@@ -1,0 +1,14 @@
+[% INCLUDE 'header.tt' %]
+[% USE date %]
+	<b>Name: </b>[% USER_INFO.first_name _ ' ' _ USER_INFO.last_name %]
+	<br>
+	<b>Password last updated: </b>[% date.format(PASSWORD_EXPIRES) %]
+	<br>
+	<b>Session Created: </b>[% date.format(SESSION_CREATED) %]
+	<br>
+	<b>Session Expires: </b>[% date.format(SESSION_EXPIRES) %]
+
+	<hr>
+	<a href="/?mode=Core.Reset_Password">Change Password</a>
+
+[% INCLUDE 'footer.tt' %]

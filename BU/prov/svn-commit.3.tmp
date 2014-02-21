@@ -1,0 +1,4 @@
+Moved get_user_list_for_server outside the main loop; changed rollback to use user_id lookups.
+--This line, and those below, will be ignored--
+
+M    fcs_assign_dids_to_users.pl

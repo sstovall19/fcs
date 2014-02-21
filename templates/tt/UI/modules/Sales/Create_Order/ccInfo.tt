@@ -1,0 +1,51 @@
+<div id="ccInfo">
+    <div class="sectionHeadr"><h4>Credit Card Info</h4></div>
+    <!-- card holder name -->
+    <div class="form_label no_image" category_id="payment" description="Name on card">* Name on card:</div>
+    <div class="form_element"><input class="ui-widget ui-corner-all no_sync" type="text" name="fullName" id="fullName"/></div>
+    <div class="form_clear"></div>
+    
+    <!-- cc number -->
+    <div class="form_label no_image" category_id="payment" description="Name on card">* Credit Card Number:</div>
+    <div class="form_element"><input class="ui-widget ui-corner-all no_sync" type="text" name="ccNumber" id="ccNumber" maxlenght="16"/></div>
+    <div class="form_clear"></div>
+    
+    <!-- cc experation month -->
+    <div class="form_label no_image" category_id="payment" description="Name on card">* Expiration Date:</div>
+    <div class="form_element">
+        <select id="expMonth">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+        </select>
+    </div>
+    <!-- should be dynamic (current year + 10) -->
+    <select id="expYear">
+      <option value="2013">2013</option>
+      <option value="2014">2014</option>
+      <option value="2015">2015</option>
+      <option value="2016">2016</option>
+      <option value="2017">2017</option>
+      <option value="2018">2018</option>
+      <option value="2019">2019</option>
+      <option value="2020">2020</option>
+      <option value="2021">2021</option>
+      <option value="2022">2022</option>
+      <option value="2023">2023</option>
+      <option value="2024">2024</option>
+    </select>
+    <div class="form_clear"></div>
+    
+    <div class="form_label no_image" category_id="payment" description="CCV">* CCV:</div>
+    <div class="form_element"><input class="ui-widget ui-corner-all no_sync" type="text" name="ccv" id="ccv" maxlenght="3"/></div>
+    <div class="form_clear"></div>
+</div>

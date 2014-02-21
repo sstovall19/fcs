@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head><META http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body>
+[% USE money=format('%.2f') %]
+[% USE date %]
+<div>
+<p><img src="http://www.brendan-fortune.com/FonalityBannerwithQuote.png" width="640" height="77" align="top"></p>
+<table width="640" border="0">
+  <tr>
+    <th width="13%" height="23" bgcolor="#CCCCCC" scope="col">Date</th>
+    <th width="13%" bgcolor="#CCCCCC" scope="col">Expires</th>
+    <th width="18%" bgcolor="#CCCCCC" scope="col">Estimate #</th>
+    <th width="24%" bgcolor="#CCCCCC" scope="col"><div align="left">Sales Rep</div></th>
+    <th width="32%" bgcolor="#CCCCCC" scope="col"><div align="left">Prepared For</div></th>
+  </tr>
+  <tr>
+    <td><div align="center">[% date.format(format => "%m/%d/%Y") %]</div></td>
+    <td><div align="center">XX/XX/XXXX</div></td>
+    <td><div align="center">[% PROPOSAL_ID %]</div></td>
+    <td><div align="center">
+      <p align="left">[% SALES_PERSON_NAME %]<br>
+        [% SALES_PERSON_EMAIL %]<br>
+        [% SALES_PERSON_PHONE %]<br>
+      </p>
+</div></td>
+    <td><div align="center">
+      <p align="left">[% NAME %]<br>
+        [% COMPANY %]<br>
+        [% EMAIL %]<br>
+        [% PHONE %]<br>
+      </p>
+</div></td>
+  </tr>
+</table>
+<br>
+<table width="640" border="0">
+  <tr>
+    <th height="40" colspan="6" bgcolor="#9DBD2E" scope="col"><div align="center"><h2>Summary</h2></div></th>
+  </tr>
+  <tr>
+    <th width="8%" bgcolor="#CCCCCC" scope="col">Term</th>
+    <th width="17%" bgcolor="#CCCCCC" scope="col">Total One-Time Cost</th>
+    <th width="18%" bgcolor="#CCCCCC" scope="col">Total Monthly Cost</th>
+    <th width="15%" bgcolor="#CCCCCC" scope="col">Total Cost of Ownership</th>
+    <th width="17%" bgcolor="#CCCCCC" scope="col">Average Cost per User</th>
+    <th width="25%" bgcolor="#CCCCCC" scope="col">Cost of One Additional User<sup>4</sup></th>
+  </tr>
+  <tr>
+    <td><div align="center">[% TERM_MONTHS %] months</div></td>
+    <td><div align="center">[% ONE_TIME_TOTAL %]<sup>1</sup></div></td>
+    <td><div align="center">$XXX.XX<sup>2</sup></div></td>
+    <td><div align="center">$X,XXX.XX</div></td>
+    <td><div align="center">$XX.XX/month</div></td>
+    <td><p><strong>FCS:</strong> $XX.XX/month<strong><br>
+      FCS Pro:</strong> $XX.XX/month<br>
+    </p></td>
+  </tr>
+</table>
+[% FOREACH x IN ITEMS.keys %]
+<br>
+<table width="640" border="0">
+  <tr>
+    <th bgcolor="#9DBD2E" scope="col">Ship to: [% ITEMS.$x.SHIPPING_ADDR %]</th>
+  </tr>
+</table>
+<table width="640" border="1">
+  <tr>
+    <td width="11%" bgcolor="#CCCCCC"><div align="center"><strong>Quantity</strong></div></td>
+    <td width="42%" bgcolor="#CCCCCC"><div align="center"><strong>Item</strong></div></td>
+    <td width="21%" bgcolor="#CCCCCC"><div align="center"><strong>Price</strong></div></td>
+    <td width="13%" bgcolor="#CCCCCC"><div align="center"><strong>One-Time Total</strong></div></td>
+    <td width="13%" bgcolor="#CCCCCC"><div align="center"><strong>Monthly Total</strong></div></td>
+  </tr>
+
+[% FOREACH ITEM = ITEMS.$x.ORDER_ITEMS %]
+
+  <tr>
+    <td><div align="center">[% ITEM.quantity %]</div></td>
+    <td><p>[% ITEM.name %]</p></td>
+    <td><div align="center">[% ITEM.unit_price %]<div></td>
+    <td><div align="center">[% ITEM.subtotal_purchase %]</div></td>
+    <td><div align="center">[% ITEM.subtotal_lease %]</div></td>
+  </tr>
+
+[% END %]
+
+[% IF PRORATE_AMOUNT > 0 %]  <tr>    <td colspan="2"></td>
+    <td colspan="1"><div align="center"><strong>Pro-Rated</strong><sup></sup></div></td>
+    <td><div align="center">[% IF ITEMS.$x.TOTAL_PRORATE_PURCHASE != '$0.00' %]-[% ITEMS.$x.TOTAL_PRORATE_PURCHASE %][% ELSE %]N/A[% END %]
+      [% IF ITEMS.$x.TOTAL_PRORATE_PURCHASE != '$0.00' %]<br>([% PRORATE_AMOUNT %] %)[% END %]
+    </div></td>
+    <td><div align="center">[% IF ITEMS.$x.TOTAL_PRORATE_LEASE != '$0.00' %]-[% ITEMS.$x.TOTAL_PRORATE_LEASE %][% ELSE %]N/A[% END %]<br>
+      [% IF ITEMS.$x.TOTAL_DISCOUNT_LEASE != '$0.00' %]<br>([% DISCOUNT_PERCENT %] %)[% END %]
+    </div></td>
+  </tr>
+[% END %]
+
+[% IF DISCOUNT_PERCENT > 0 %]
+  <tr>
+    <td colspan="2"></td>
+    <td colspan="1"><div align="center"><strong>Discounts</strong><sup></sup></div></td>
+    <td><div align="center">[% IF ITEMS.$x.TOTAL_DISCOUNT_PURCHASE != '$0.00' %]-[% ITEMS.$x.TOTAL_DISCOUNT_PURCHASE %][% ELSE %]N/A[% END %]
+      [% IF ITEMS.$x.TOTAL_DISCOUNT_PURCHASE != '$0.00' %]<br>([% DISCOUNT_PERCENT %] %)[% END %]
+    </div></td>
+    <td><div align="center">[% IF ITEMS.$x.TOTAL_DISCOUNT_LEASE != '$0.00' %]-[% ITEMS.$x.TOTAL_DISCOUNT_LEASE %][% ELSE %]N/A[% END %]<br>
+      [% IF ITEMS.$x.TOTAL_DISCOUNT_LEASE != '$0.00' %]<br>([% DISCOUNT_PERCENT %] %)[% END %]
+    </div></td>
+  </tr>
+[% END %]
+
+  <tr>
+    <td colspan="2"></td>
+    <td colspan="1"><div align="center"><strong>Taxes &amp; Fees</strong><sup>*</sup></div></td>
+    <td><div align="center">[% ITEMS.$x.TOTAL_SALES_TAX %]</div></td>
+    <td><div align="center">N/A</div></td>
+  </tr>
+
+  <tr>
+    <td colspan="2"></td>
+    <td colspan="1"><div align="center"><strong>Total Before Shipping</strong><br>
+    </div></td>
+    <td><div align="center"> [% ITEMS.$x.PURCHASE_TOTAL_BEFORE_SHIPPING %]</div></td>
+    <td><div align="center">[% ITEMS.$x.LEASE_TOTAL_BEFORE_SHIPPING %]</div></td>
+  </tr>
+
+  <tr>
+    <td colspan="2"></td>
+    <td colspan="1"><div align="center"><strong>Shipping Options</strong><br>
+[% FOREACH SHIP = ITEMS.$x.SHIPPING %]
+      [% SHIP.text %]<br>
+[% END %]
+    </div></td>
+    <td colspan="2"><div align="center"><br>
+[% FOREACH SHIP = ITEMS.$x.SHIPPING %]
+      [% money(SHIP.rate) %]<br>
+[% END %]
+    </div></td>
+    </tr>
+</table>
+<br>
+[% END %]
+<br>
+<p><sup>1</sup> First-month&#39;s payment plus one-time costs<br>
+  <sup>2</sup> This new value takes into account the downpayment <br>
+<sup>3</sup> Including Polycom IP 331 and Gold Support<br>
+<p><sup>* </sup>Taxes &amp; Fees are based on the address of service and may change on receipt of full address details. They include government fees and taxes that we collect
+  and are required by federal, state or local law to remit to the appropriate governmental entity (including, but not limited to, sales, use, excise, public utility, and
+  E911). This section may also include certain fees and costs incurred by us as a result of providing services, such as universal service fees. We elect to collect
+  them in order to recover or help defray the costs we incur. These fees, and what is in cludedin fees, may vary by locale and may change from time to time without
+  notice. Please note that equipment taxes will be calculated based on Shipping Address.<br>
+<a href="http://www.fonality.com/legal/terms-service-license-agreement">Terms and Conditions</a><br>
+</p>
+</div>
+
+</body></html>

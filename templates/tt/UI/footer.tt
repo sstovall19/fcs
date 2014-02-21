@@ -1,0 +1,10 @@
+[% IF !FORM.remote %]
+	</div><!-- End main content div -->
+
+</div><!-- End page div -->
+
+
+[% TT_VAR_DUMP %]
+</body>
+</html>
+[% END %]

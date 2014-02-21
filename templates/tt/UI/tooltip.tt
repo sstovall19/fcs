@@ -1,0 +1,27 @@
+<script type="text/javascript">
+
+$(document).ready(function()
+{
+	tooltip();
+});
+
+
+</script>
+
+[% BLOCK tooltip %]
+
+        [% DEFAULT
+                icon = 'help'
+                text = 'No information available for this option.'
+                state = 'default'
+                position = 'right'
+        %]
+
+        [% icon = 'ui-icon-' _ icon %]
+        [% state = 'ui-state-' _ state %]
+
+        <span class="[% state %] tooltipSpan"><span class="help-tip ui-icon [% icon %] innerSpan" style="float: [% position %];" title="[% text %]"></span></span>
+
+
+[% END %]
+

@@ -1,0 +1,44 @@
+[% BUTTON = "quote" %]       [%# tells TT what nav button to make selected #%]
+
+[%# setting title in other tt's with title from Mom Chan  %]
+[%# TITLE  = "Build a PBXtra"  _ TITLE %] [%# sets title #%]
+[% HEADER = "quote" %]       [%# tells TT what header graphic to show #%]
+
+[% wrapper = "$BASE_DIR" _ "wrapper.tt" %]
+[% WRAPPER $wrapper %]      [%# wrapper for the main site #%]
+<script type="text/javascript" charset="utf-8">
+<!--
+function swapDivTagsToLoading()
+{
+	// hide the form and display the loading page
+	document.getElementById("displayTheLoadingPrompt").style.display    = '';
+	document.getElementById("displayTheLoadingPrompt").style.visibility = 'visible';
+	document.getElementById("displayTheOrderForm").style.display    = 'none';
+	document.getElementById("displayTheOrderForm").style.visibility = 'hidden';
+	document.getElementById("loading_image").src = document.getElementById("loading_image").src;
+	return false;
+}
+-->
+</script>
+	[% USE CGI %]
+[% IF !SCRIPT_URL.search('p.cgi') && !SCRIPT_URL.search('qwiz.cgi') %]
+<form method="post" class="inline" action="[% SCRIPT_URL %]" [% ORDER_FORM_SUBMIT %] [% ORDER_FORM_NAME %]>
+
+	[% END %]
+	<div id="displayTheOrderForm" style="padding: 20px 10px 11px 18px;">
+
+		[% IF MSG_ERROR %]<div id="order-errors">[% PROCESS ERROR_BLOCK %]</div>[% END %]
+		[% IF MSG_COMPLETED %][% FOREACH MSG=MSG_COMPLETED %]<h1>[% MSG %]</h1>[% END %][% END %]
+
+		[% content %]
+
+	</div> <!-- // displayTheOrderForm -->
+	<div class="slide displayTheLoadingPrompt" id="displayTheLoadingPrompt" style="display:none;margin:0">
+		<img id="loading_image" src="images/loading_blue.gif" alt="processing..." style="margin-bottom: 15px !important;" />
+		<p>Processing...</p>
+		[% PROCESSING_TEXT %]
+	</div>
+	[% IF !SCRIPT_URL.search('p.cgi') && !SCRIPT_URL.search('qwiz.cgi') %]
+	</form>
+	[% END %]
+[% END %]

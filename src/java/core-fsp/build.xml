@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project name="FCS Java" default="all">
+    <dirname property="basedir" file="${ant.file}"/>
+    <!-- ****************************************************** -->
+    <!-- *** Initialization/Configuration ********************* -->
+    <!-- ****************************************************** -->
+    <target name="init">
+
+        <property environment="env" />
+    	
+
+
+        <property file="${basedir}/build.properties" />
+
+        <!-- capture the build time -->
+        <tstamp>
+            <format property="time.build" pattern="yyyy-MM-dd'T'HH:mm:ss.SSSZ" />
+        </tstamp>
+
+        <!-- Compilation Classpath -->
+        <path id="compile.classpath">
+          <!-- Include all dependent JAR files from /lib -->
+            <fileset dir="${basedir}/${dir.name.lib}">
+                <include name="**/*.jar"/>
+            </fileset>
+        </path>
+       <path id="test.classpath">
+          <!-- Include all dependent JAR files from /lib -->
+            <fileset dir="${basedir}/${dir.name.lib}">
+                <include name="**/*.jar"/>
+            </fileset>
+            <fileset dir="${dir.build.dist}">
+                <include name="**/*.jar"/>
+                <include name="*.jar"/>
+            </fileset>
+            <pathelement location="${basedir}/conf/"/>
+        </path>
+        <!-- Compilation Control Options:
+        These properties control option settings on the Javac compiler when it
+        is invoked using the <javac> task.
+        * compile.debug - Should compilation include the debug option.
+        * compile.deprecation - Should compilation include the deprecation option.
+        * compile.optimize - Should compilation include the optimize option.
+        -->
+        <property name="compile.debug" value="true" />
+        <property name="compile.deprecation" value="false" />
+        <property name="compile.optimize" value="true" />
+    </target>
+
+    <!-- ****************************************************** -->
+    <!-- *** Entry point targets ****************************** -->
+    <!-- ****************************************************** -->
+    <target name="all"
+            depends="clean, dist"
+            description="Performs a clean build of the entire project"/>
+
+    <!-- ****************************************************** -->
+    <!-- *** Compile targets ********************************** -->
+    <!-- ****************************************************** -->
+    <target name="compile" depends="init">
+        <mkdir dir="${dir.build.classes}"/>
+    	<javac
+            srcdir="${dir.name.src}"
+            destdir="${dir.build.classes}"
+            debug="${compile.debug}"
+            deprecation="${compile.deprecation}"
+            optimize="${compile.optimize}"
+            includeantruntime="false">
+            <classpath refid="compile.classpath" />
+        </javac>
+    	<javac
+    	            srcdir="${dir.name.unit}"
+    	            destdir="${dir.build.classes}"
+    	            debug="${compile.debug}"
+    	            deprecation="${compile.deprecation}"
+    	            optimize="${compile.optimize}"
+    	            includeantruntime="false">
+    	            <classpath refid="compile.classpath" />
+    	        </javac>
+    </target>
+
+
+	
+	
+	
+    <target name="jar"
+            depends="init, compile">
+    	 <mkdir dir="${dir.build.dist}"/>
+    	<mkdir dir="${dir.build.dist.quote}" />
+    	<mkdir dir="${dir.build.dist.billing}" />
+    	<mkdir dir="${dir.build.dist.junit}" />
+    	
+    	 <path id="compile.classpath">
+    	 	    <fileset dir="${dir.name.conf}" includes="**/*"/>
+    	 </path>
+    	
+    	<manifestclasspath property="jar.classpath" jarfile="${dir.build.dist}/${file.name.fcsjava.jar}">
+    	      <classpath refid="compile.classpath"/>
+    	</manifestclasspath>      
+        
+        <!-- mass copy non-java files to be in jar -->      
+        <copy todir="${dir.build.classes}">
+            <fileset dir="${dir.name.src}">
+                <exclude name="**/*.java"/>
+            </fileset> 
+        	<fileset dir="${dir.name.unit}">
+                <exclude name="**/*.java"/>
+            </fileset> 
+        	
+        </copy>
+    	
+    	<copy todir="${dir.build.classes}/conf">                   
+    	             <fileset dir="conf" />                                 
+    	         </copy>
+        <jar jarfile="${dir.build.dist}/${file.name.email.notification.jar}">
+		<fileset dir="${dir.build.classes}">
+                	<include  name="**/com/fonality/bu/FailureNotificationHandler.class"/>
+                </fileset>
+            <manifest>
+                <attribute name="Implementation-Vendor" value="${impl.vendor}"/>
+                <attribute name="Implementation-Title" value="${impl.title}"/>
+                <attribute name="Build-Time" value="${time.build}"/>
+            	<attribute name="Build-System" value="${env.COMPUTERNAME}"/> 
+            	<attribute name="Class-Path" value="${jar.classpath}"/>
+            	<attribute name="Main-Class" value="com.fonality.bu.FailureNotificationHandler"/>
+            </manifest>   	
+        </jar>
+    	
+    	<jar jarfile="${dir.build.dist.quote}/${file.name.tax.calculator.jar}">
+		 <fileset dir="${dir.build.classes}">
+                        <include name="**/com/fonality/bu/quote/TaxCalculator.class"/>
+                </fileset>
+
+            <manifest>
+                <attribute name="Implementation-Vendor" value="${impl.vendor}"/>
+                <attribute name="Implementation-Title" value="${impl.title}"/>
+                <attribute name="Build-Time" value="${time.build}"/>
+                <attribute name="Build-System" value="${env.COMPUTERNAME}"/> 
+                <attribute name="Class-Path" value="${jar.classpath}"/>
+            	<attribute name="Main-Class" value="com.fonality.bu.quote.TaxCalculator"/>
+            </manifest>     
+        </jar>
+    	
+    	 <jar jarfile="${dir.build.dist.junit}/${file.name.junit.jar}"
+    	             basedir="${dir.build.classes}">    	        	
+	            <manifest>
+	                <attribute name="Implementation-Vendor" value="${impl.vendor}"/>
+	                <attribute name="Implementation-Title" value="${impl.title}"/>
+	                <attribute name="Build-Time" value="${time.build}"/>
+	            	<attribute name="Build-System" value="${env.COMPUTERNAME}"/> 
+	            	<attribute name="Class-Path" value="${jar.classpath}"/>
+	            	<attribute name="Main-Class" value="com.fonality.test.FCSTestSuite"/>
+	            </manifest>   	
+    	 </jar>
+    	 <jar jarfile="${dir.build.dist.billing}/${file.name.billing.jar}"
+    	             basedir="${dir.build.classes}">    	        	
+	            <manifest>
+	                <attribute name="Implementation-Vendor" value="${impl.vendor}"/>
+	                <attribute name="Implementation-Title" value="${impl.title}"/>
+	                <attribute name="Build-Time" value="${time.build}"/>
+	            	<attribute name="Build-System" value="${env.COMPUTERNAME}"/> 
+	            	<attribute name="Class-Path" value="${jar.classpath}"/>
+	            	<attribute name="Main-Class" value="com.fonality.billing.BillingMain"/>
+	            </manifest>   	
+    	 </jar>
+	<jar destfile="${dir.build.dist}/fonality-fcs.jar">
+		<fileset dir="${dir.build.classes}">
+		<exclude name="**/conf/"/>
+		<exclude name="**/content/"/>
+		<exclude name="**/bu/quote/"/>
+		<exclude name="**/bu/order/"/>
+		<exclude name="**/hibernate.reveng.xml"/>
+		<exclude name="**/com/fonality/test/"/>
+		<exclude name="**/bu/FailureNotificationHandler.class" />
+		</fileset>
+	</jar>
+		
+    </target>
+    <target name="test" depends="init">
+      <junit fork="yes" haltonfailure="no" showoutput="yes" printsummary="true">
+        <test name="com.fonality.test.FCSTestSuite" todir="../../../../junit_output" />
+        <formatter type="xml"/>
+	<env key="CONF_TARGET" value="../../../res/conf" />
+	 <classpath refid="test.classpath" />
+      </junit>
+    </target>
+    <!-- ****************************************************** -->
+    <!-- *** Cleaning targets ********************************* -->
+    <!-- ****************************************************** -->
+    <!--
+    The "clean" target deletes any previous build artifacts, so that
+    we can be ensured the application can be built from scratch.
+    -->
+    <target name="clean"
+            depends="init">
+    	
+        <delete dir="${dir.name.build}"/>
+    </target>
+
+    <!-- ****************************************************** -->
+    <!-- *** Dist Target ************************************** -->
+    <!-- ****************************************************** -->
+    <!--
+    The "dist" targets create a binary distribution of the application
+    in a directory structure ready to be archived in a jar file.
+    -->
+    <target name="dist"
+            depends="compile, jar"/>   
+
+</project>

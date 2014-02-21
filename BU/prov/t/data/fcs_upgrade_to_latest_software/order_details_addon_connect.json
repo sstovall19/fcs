@@ -1,0 +1,62 @@
+{
+  "order": {
+    "total_price": "0.00",
+    "order_groups": [
+      {
+        "sales_tax_rate": "10.00000",
+        "order_type": "NEW",
+        "total_price": "4000.00",
+        "shipping_type_id": "4020",
+        "order_id": "52914",
+        "netsuite_opportunity_id": "1000",
+        "order_bundles": [
+          {
+            "total_price": "0.00",
+            "order_bundle_id": "10001",
+            "quantity": "1",
+            "order_group_id": "10000",
+            "bundle_id": "95",
+            "list_price": "0.00",
+            "order_bundle_details": [
+              {
+                "did_number": "123456",
+                "order_bundle_detail_id": "1000",
+                "order_bundle_id": "1000",
+                "extension_number": "123",
+                "lnp": "1"
+              }
+            ],
+            "unit_price": "0.00"
+          }
+        ],
+        "shipping_address_id": "1",
+        "server_id": "15226",
+        "total_sales_tax": "10.00",
+        "order_group_id": "10000",
+        "product_id": "8",
+        "address": {
+          "addr2": "",
+          "country": "USA",
+          "city": "Manchester",
+          "addr1": "322GrasselliStreet",
+          "entity_address_id": "1",
+          "postal": "03109",
+          "label": "Home",
+          "state": "NH"
+        }
+      }
+    ],
+    "status": "NEW",
+    "order_id": "52914",
+    "netsuite_salesperson_id": null,
+    "order_type": "ADDON",
+    "record_type": "ORDER",
+    "created": "2012-11-1120: 02: 28",
+    "balance": "0.00",
+    "customer_id": "28140",
+    "netsuite_lead_id": "0",
+    "contact_id": null,
+    "updated": null,
+    "reseller_id": null
+  }
+}

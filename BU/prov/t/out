@@ -1,0 +1,64 @@
+ok 1 - use Fap::StateMachine::Unit;
+test_order_id1=56418 test_order_id2=56419
+test_order_group1=33678 test_order_group2=33679
+pn=13101234567 test_order_bundle_detail_id=25146
+$VAR1 = bless( {
+                 'input' => '{"order_id": 56419}',
+                 'status' => 'FAILURE',
+                 'return_code' => 1,
+                 'output' => '',
+                 'conf' => {
+                             'status' => {
+                                           'ok' => '0',
+                                           'process_error' => '3',
+                                           'transaction_processed' => '1',
+                                           'transaction_halted' => '4',
+                                           'no_transaction_found' => '2'
+                                         },
+                             'java_paths' => [
+                                               'lib/java/core-fsp/lib/ext/*',
+                                               'lib/java/core-fsp/lib/*',
+                                               'lib/java/core-fsp/conf/'
+                                             ],
+                             'return_codes' => {
+                                                 '99' => 'HALTED',
+                                                 '1' => 'FAILURE',
+                                                 '88' => 'RESTART',
+                                                 '0' => 'SUCCESS'
+                                               },
+                             'port' => '50005',
+                             'java_home' => '/usr/java/latest',
+                             'host' => '0.0.0.0',
+                             'rollback_return_codes' => {
+                                                          '1' => 'ROLLBACK_FAILURE',
+                                                          '0' => 'ROLLBACK_SUCCESS'
+                                                        },
+                             'pidfile' => '/tmp/statemachine.pid',
+                             'deferred' => {
+                                             'run_transaction' => '1',
+                                             'submit_and_run_transaction' => '1',
+                                             'count_to' => '1',
+                                             'run_units' => '1',
+                                             'restart_units' => '1'
+                                           },
+                             'logfile' => '/dev/shm/statemachine.log'
+                           },
+                 'run3args' => [
+                                 '/usr/bin/perl',
+                                 '-I/home01/sstovall/trunk/fcs//lib',
+                                 '/home01/sstovall/trunk/fcs/BU/prov/fcs_assign_dids_to_users.pl',
+                                 '-j '
+                               ],
+                 'step' => {},
+                 'error' => '"$VAR1 = {\\n          \'provisioned_on\' => \'1970-01-01 00:00:00\',\\n          \'bundle\' => {\\n                        \'model\' => \'\',\\n                        \'netsuite_mrc_id\' => undef,\\n                        \'category_id\' => \'8\',\\n                        \'category\' => {\\n                                        \'bundle_category_id\' => \'8\',\\n                                        \'created\' => \'2013-01-21 13:40:33\',\\n                                        \'name\' => \'phone_number\',\\n                                        \'updated\' => \'2013-01-30 14:35:45\',\\n                                        \'discount_category_id\' => \'1\'\\n                                      },\\n                        \'updated\' => \'2013-02-26 15:30:50\',\\n                        \'is_inventory\' => \'0\',\\n                        \'base_price\' => \'0.00\',\\n                        \'display_priority\' => \'1\',\\n                        \'name\' => \'did_number\',\\n                        \'display_name\' => \'Local Number\',\\n                        \'description\' => \'Phone number from Inphonex/Symbio\',\\n                        \'cost_price\' => \'3.55\',\\n                        \'order_label_id\' => \'13\',\\n                        \'created\' => \'2013-01-03 16:57:26\',\\n                        \'is_active\' => \'1\',\\n                        \'netsuite_id\' => \'2674\',\\n                        \'manufacturer\' => \'Fonality\',\\n                        \'bundle_id\' => \'54\',\\n                        \'bundle_price_models\' => [\\n                                                   {\\n                                                     \'created\' => \'2013-02-11 11:26:21\',\\n                                                     \'bundle_price_model_id\' => \'35\',\\n                                                     \'bundle_id\' => \'54\',\\n                                                     \'tax_mapping_id\' => \'1\',\\n                                                     \'updated\' => \'2013-02-11 11:26:21\',\\n                                                     \'price_model_id\' => \'2\',\\n                                                     \'price_model\' => {\\n                                                                        \'name\' => \'Monthly\',\\n                                                                        \'price_model_id\' => \'2\'\\n                                                                      }\\n                                                   }\\n                                                 ],\\n                        \'mrc_price\' => \'5.00\'\\n                      },\\n          \'discounted_price\' => \'0.00\',\\n          \'is_rented\' => \'0\',\\n          \'order_bundle_id\' => \'35402\',\\n          \'quantity\' => \'2\',\\n          \'one_time_total\' => undef,\\n          \'order_group_id\' => \'33679\',\\n          \'bundle_id\' => \'54\',\\n          \'mrc_total\' => \'0.00\',\\n          \'order_bundle_details\' => [],\\n          \'list_price\' => \'0.00\',\\n          \'tax_mapping_id\' => undef,\\n          \'unit_price\' => \'0.00\'\\n        };\\n"
+',
+                 'executable' => '/home01/sstovall/trunk/fcs/BU/prov/fcs_assign_dids_to_users.pl',
+                 'config' => {
+                               'return_codes' => {}
+                             }
+               }, 'Fap::StateMachine::Worker' );
+not ok 2 - Assigning DIDs to users, returned success
+#   Failed test 'Assigning DIDs to users, returned success'
+#   at fcs_assign_dids_to_users.t line 75.
+1..2
+# Looks like you failed 1 test of 2.

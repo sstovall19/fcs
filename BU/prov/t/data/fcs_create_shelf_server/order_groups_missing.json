@@ -1,0 +1,19 @@
+{
+  "order": {
+    "order_id": "52914",
+    "order_type": "NEW",
+    "record_type": "ORDER",
+    "created": "2012-11-11 20:02:00",
+    "updated": "2012-11-11 20:12:00",
+    "total_price": "4000.00",
+    "balance": "0.00",
+    "netsuite_lead_id": "21134",
+    "netsuite_salesperson_id": "11234",
+    "customer_id": "1",
+    "reseller_id": "",
+    "contact_id": "1",
+    "status": "INPROGERSS",
+    "test_host_server_id": "5559",
+    "order_groups": []
+  }
+}

@@ -1,0 +1,313 @@
+[% PROCESS 'header.tt' %]
+
+<script type="text/javascript">
+
+	var support_is_displayed = false;
+	var server_list_is_displayed = false;
+
+	$(document).ready(function()
+	{
+
+		$('#customer_tabs').tabs();
+
+		// validate input
+		$('#customer_id_search').validate({
+				rules: {
+					customer_id: {
+						required: true,
+						minlength: 1,
+						maxlength: 7
+					}
+				},
+				messages: {
+					customer_id: {
+						required: "Please enter a valid customer ID",
+						rangelength: jQuery.format("Enter between {0} and {1} digits for customer id"),
+						minlength: jQuery.format("Enter at least {0} digits for customer id")
+					}
+				},
+				invalidHandler: function(form)
+				{
+					return false;
+				}
+		});
+	
+		$('#server_id_search').validate({
+				rules: {
+					server_id: {
+						required: true,
+						minlength: 4,
+						maxlength: 6
+					}
+				},
+				messages: {
+					server_id: {
+						required: "Please enter a valid server ID",
+						rangelength: jQuery.format("Enter between {0} and {1} digits for server id"),
+						minlength: jQuery.format("Enter at least {0} digits for server id")
+					}
+				},
+				invalidHandler: function(form)
+				{
+					return false;
+				}
+		});
+
+	});
+
+	function launch_inphonex(id)
+	{
+		if(!id)
+			return false;
+
+		window.open('https://www.postqueue.com/secure/menu.php?customer_id='+id,'_blank');
+
+		return false;
+	}
+
+	function launch_netsuite(id)
+	{
+		if(!id)
+			return false;
+
+		window.open('https://system.netsuite.com/app/common/entity/custjob.nl?id='+id,'_blank');
+
+		return false;
+	}
+
+	function display_support_contracts(server_id)
+	{
+		if(support_is_displayed)
+			return false;
+
+		$('#customer_support').load('/',
+			{ 
+				'mode':'Billing.Support_Contracts',
+				'server_id':server_id,
+				'action':'display_support_contracts',
+				'remote':1,
+				'holder':'customer_support'
+			},
+			function(response, status, xhr)
+			{
+				try
+				{
+					response = $.parseJSON(response);	
+				}
+				catch(e)
+				{
+					support_is_displayed = true;
+					return true;
+				}
+
+				if(!response || response.TT_ALERT)
+				{
+					var err_str;
+
+					if(response.TT_ALERT)
+					{
+						err_str = response.TT_ALERT;
+					}
+					else
+					{
+						err_str = 'Unknown Error';
+					}
+
+					$(this).html(' '+err_str);
+				}
+			}
+		);
+
+	}
+
+	function display_server_list(server_id)
+	{
+		if(server_list_is_displayed)
+			return false;
+
+		$('#customer_servers').load('/',
+			{
+				'mode':'Core.Server_Details',
+				'server_id':server_id,
+				'remote':1
+			},
+			function(response, status, xhr)
+			{
+				try
+				{
+					response = $.parseJSON(response);
+				}
+				catch(e)
+				{
+					server_list_is_displayed = true;
+					return true;
+				}
+
+				if(!response || response.TT_ALERT)
+				{
+					var err_str;
+
+					if(response.TT_ALERT)
+					{
+						err_str = response.TT_ALERT;
+					}
+					else
+					{
+						err_str = 'Unknown Error';
+					}
+
+					$(this).html(' '+err_str);
+				}
+			}
+		);
+	}
+	
+</script>
+
+	[% IF !CUSTOMER_INFO %]
+		[% PROCESS infobox text="To view customer information, please enter a server ID or customer ID below." %]	
+
+		<div class="grey-round" style="margin:0 auto;width:90%; padding-top: 35px; position: absolute; overflow: visible;">
+
+			<div style="float: left;">
+
+				<form id="server_id_search" action="/" method="GET">
+				<input type="hidden" name="mode" value="Core.View_Customer">
+				<input type="hidden" name="action" value="view">
+
+				<table width="100%">
+					<tr>
+						<td style="text-align: right; vertical-align: middle;" width="20%">Server ID:</td>
+						<td width="80%" style="text-align: left;"><input type="text" name="server_id" maxlength="7"></td>
+					</tr>
+					<tr>
+						<td style="text-align: right; vertical-align: middle;" width="20%">&nbsp;</td>
+						<td width="80%" style="text-align: left;"><input type="submit" name="submit_server_id" value="Search">
+					</tr>
+				</table>
+
+				</form>
+
+			</div>
+
+			<div style="float: right;">
+
+				<form id="customer_id_search" action="/" method="GET">
+				<input type="hidden" name="mode" value="Core.View_Customer">
+				<input type="hidden" name="action" value="view">
+
+				<table width="100%">
+					<tr>
+						<td style="text-align: right; vertical-align: middle;" width="20%">Customer ID:</td>
+						<td width="80%" style="text-align: left;"><input type="text" name="customer_id" maxlength="7"></td>
+					</tr>
+					<tr>
+						<td style="text-align: right; vertical-align: middle;" width="20%">&nbsp;</td>
+						<td width="80%" style="text-align: left;"><input type="submit" name="submit_customer_id" value="Search">
+					</tr>
+				</table>
+
+				</form>
+
+			</div>
+
+		</div>
+
+	[% ELSE %]
+
+		<div class="ui-state-highlight ui-widget-header ui-corner-all" style="padding: 8px; height: 18px;">
+			<div style="float: left;"><span class="ui-widget-title" style="font-size: 18px;">[% CUSTOMER_INFO.name %]</span></div>
+		</div>
+
+		<div style="clear: both; height: 5px;">&nbsp;</div>
+		<div id="customer_tabs">
+
+			<ul id="customer_tabs_list">
+				<li><a href="#customer_overview">Overview</a></li>
+				<li><a href="#customer_support" onclick="display_support_contracts([% CUSTOMER_INFO.servers.first() %])">Support</a></li>
+				<li><a href="#customer_linking">Linked Servers</a></li>
+				<li><a href="#customer_servers" onclick="display_server_list([% CUSTOMER_INFO.servers.first() %])">Server List</a></li>
+				<li><a href="#customer_licenses" onclick="display_server_list([% CUSTOMER_INFO.servers.first() %])">License Information</a></li>
+				<li><a href="#customer_hud" onclick="display_server_list([% CUSTOMER_INFO.servers.first() %])">HUD Information</a></li>
+				<li><a href="#customer_notes" onclick="display_customer_notes([% CUSTOMER_INFO.customer_id %])">Notes</a></li>
+			</ul>
+
+			<div id="customer_overview">
+
+				<div class="grey-round" style="margin:0 auto;width:90%; padding-top: 35px;">
+
+					<table width="100%">
+						<tr>
+							<td style="text-align: right; vertical-align: middle;" width="30%">Created:</td>
+							<td width="70%" style="text-align: left;">[% CUSTOMER_INFO.created %]</td>
+						</tr>
+						<tr>
+							<td style="text-align: right; vertical-align: middle;" width="30%">Customer ID:</td>
+							<td width="70%" style="text-align: left;">[% CUSTOMER_INFO.customer_id %]</td>
+						</tr>
+						[% IF CUSTOMER_INFO.netsuite_id %]
+						<tr>
+							<td style="text-align: right; vertical-align: middle;" width="30%">Netsuite ID:</td>
+							<td width="70%" style="text-align: left;"><span class="ui-state-active" style="padding: 1px; cursor: pointer;" onclick="launch_netsuite([% CUSTOMER_INFO.netsuite_id %])">[% CUSTOMER_INFO.netsuite_id %]</span></td>
+						</tr>
+						[% END %]
+						[% IF CUSTOMER_INFO.inphonex_id %]
+						<tr>
+							<td style="text-align: right; vertical-align: middle;" width="30%">Inphonex ID:</td>
+							<td width="70%" style="text-align: left;"><span class="ui-state-active" style="padding: 1px; cursor: pointer;" onclick="launch_inphonex([% CUSTOMER_INFO.inphonex_id %])">[% CUSTOMER_INFO.inphonex_id %]</span></td>
+						</tr>
+						[% END %]
+						<tr>
+							<td style="text-align: right; vertical-align: middle;" width="30%">Status:</td>
+							<td width="70%" style="text-align: left;">
+								[% IF CUSTOMER_INFO.cancelled %]
+									<font class="ui-state-error">Cancelled ([% CUSTOMER_INFO.cancelled %]) - [% CUSTOMER_INFO.cancelled_description %]</font>
+								[% ELSE %]
+									<font color="green">Active</font>
+								[% END %]
+							</td>
+						</tr>
+						[% IF CUSTOMER_INFO.reseller_id %]
+						<tr>
+							<td style="text-align: right; vertical-align: middle;" width="30%">Reseller:</td>
+							<td width="70%" style="text-align: left;">[% CUSTOMER_INFO.reseller_id %]</td>
+						</tr>
+						[% END %]
+						<tr>
+							<td style="text-align: right; vertical-align: middle;" width="30%">Status:</td>
+							<td width="70%" style="text-align: left;">[% CUSTOMER_INFO.status %]Some status</td>
+						</tr>
+					</table>
+
+				</div>
+			</div>
+
+			<div id="customer_support">
+				<img src="images/loading.gif">
+			</div>
+
+			<div id="customer_linking">
+				Loading...
+			</div>
+
+			<div id="customer_servers">
+				<img src="images/loading.gif">
+			</div>
+
+			<div id="customer_licenses">
+				<img src="images/loading.gif">
+			</div>
+
+			<div id="customer_hud">
+				<img src="images/loading.gif">
+			</div>
+
+			<div id="customer_notes">
+				<img src="images/loading.gif">
+			</div>
+		</div>
+
+		
+	[% END %]
+
+[% PROCESS 'footer.tt' %]

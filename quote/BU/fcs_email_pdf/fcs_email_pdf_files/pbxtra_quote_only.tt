@@ -1,0 +1,10 @@
+[% TEXT_COLOR = '#565557' %]
+
+<html>
+<head></head>
+<body>
+
+[% INCLUDE pbxtra_quote.tt %]
+
+</body>
+</html>

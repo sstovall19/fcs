@@ -1,0 +1,226 @@
+#!/usr/bin/perl
+use strict;
+use DBIx::Class::Schema::Loader;
+use Try::Tiny;
+use Fap;
+use File::Copy;
+use File::Slurp;
+use Fap::Model::DBIx::Result;
+use Data::Dumper;
+use Fap::View::TT;
+
+
+$ENV{DBIC_DONT_VALIDATE_RELS} =1;
+
+try {
+	DBIx::Class::Schema::Loader::make_schema_at(
+      	'Fap::Model::Fcs::Backend',
+      	{ debug => 0,
+        	dump_directory =>Fap->path_to("lib"),
+		overwrite_modifications=>1,
+        	#exclude=>qr/cdr\_|love|sugar.*/,
+        	#constraint=>qr/^bundle|item|order|quote|user|customer|server|collector_|transaction|sugar_salesperson|contact_dropdown_options|reseller/,
+        	generate_pod=>0,
+        	use_moose=>0,
+		result_base_class=>'Fap::Model::DBIx::Result',
+		
+      	},
+      	[ 'dbi:mysql:fcs', 'fonality', 'iNOcallU',
+         	#{ loader_class => 'F::PbDb' } # optionally
+      	],
+  	);
+} catch {print "$_\n";};
+if (grep {$_=~/pbxtra/} @ARGV) {
+try {
+	DBIx::Class::Schema::Loader::make_schema_at(
+      'Fap::Model::Pbxtra::Backend',
+      { debug => 0,
+        dump_directory =>Fap->path_to("lib"),
+        overwrite_modifications=>1,
+        #exclude=>qr/cdr\_|love|sugar.*/,
+        constraint=>qr/^user|customer|server|collector_|contact_dropdown_options|extension|provider_dids|devices|upgrade_.*|cid|phone_numbers|unbound_map|contact|audio|perm_*|e911_address$/,
+        generate_pod=>0,
+        use_moose=>0,
+	result_base_class=>'Fap::Model::DBIx::Result',
+      },
+      [ 'dbi:mysql:pbxtra', 'fonality', 'iNOcallU',
+         #{ loader_class => 'F::PbDb' } # optionally
+      ],
+  );
+} catch {
+print STDERR "$_\n";
+};
+}
+if (0) {
+	print STDERR "HUS\n";
+	try {
+		DBIx::Class::Schema::Loader::make_schema_at(
+      	'Fap::Model::Hus::Backend',
+      	{ debug => 0,
+        	dump_directory =>Fap->path_to("lib"),
+        	overwrite_modifications=>1,
+        	generate_pod=>0,
+        	use_moose=>0,
+        	result_base_class=>'Fap::Model::DBIx::Result',
+      	},
+      	[ 'dbi:mysql:hus', 'fonality', 'iNOcallU',
+         	#{ loader_class => 'F::PbDb' } # optionally
+      	],
+  	);
+	
+	} catch {
+		print STDERR "$_\n";
+	};
+}
+if (0) {
+
+print STDERR "CONF\n";
+try {
+        DBIx::Class::Schema::Loader::make_schema_at(
+      'Fap::Model::Config::Backend',
+      { debug => 0,
+        dump_directory =>Fap->path_to("lib"),
+        overwrite_modifications=>1,
+        generate_pod=>0,
+        use_moose=>0,
+	constraint=>qr/^cdr_1000$/,
+        result_base_class=>'Fap::Model::DBIx::Result',
+      },
+      [ 'dbi:mysql:config', 'fonality', 'iNOcallU',
+         #{ loader_class => 'F::PbDb' } # optionally
+      ],
+  );
+
+} catch {
+        print STDERR "$_\n";
+};
+}
+
+try {
+        DBIx::Class::Schema::Loader::make_schema_at(
+      'Fap::Model::MyDNS::Backend',
+      { debug => 0,
+        dump_directory =>Fap->path_to("lib"),
+        overwrite_modifications=>1,
+        generate_pod=>0,
+        use_moose=>0,
+        constraint=>qr/^rr$/,
+        result_base_class=>'Fap::Model::DBIx::Result',
+      },
+      [ 'dbi:mysql:mydns', 'fonality', 'iNOcallU',
+         #{ loader_class => 'F::PbDb' } # optionally
+      ],
+  );
+
+} catch {
+        print STDERR "$_\n";
+};
+
+try {
+        DBIx::Class::Schema::Loader::make_schema_at(
+      'Fap::Model::MyDNSConnectInternal::Backend',
+      { debug => 0,
+        dump_directory =>Fap->path_to("lib"),
+        overwrite_modifications=>1,
+        generate_pod=>0,
+        use_moose=>0,
+        constraint=>qr/^rr$/,
+        result_base_class=>'Fap::Model::DBIx::Result',
+      },
+      [ 'dbi:mysql:mydns_connect_internal', 'fonality', 'iNOcallU',
+         #{ loader_class => 'F::PbDb' } # optionally
+      ],
+  );
+
+} catch {
+        print STDERR "$_\n";
+};
+
+
+
+print STDERR "CDR\n";
+
+###### ADD database table imports here
+
+my $cross_import = {
+	server=>{table=>"pbxtra.server",package=>"Server",source=>"Pbxtra",dest=>"Fcs"},
+	server_ext=>{table=>"hus.server_ext",package=>"ServerExt",source=>"Hus",dest=>"Fcs"},
+	provider_dids=>{table=>"pbxtra.provider_dids",package=>"ProviderDid",source=>"Pbxtra",dest=>"Fcs"},
+	conf_files=>{table=>"config.conf_files",package=>"ConfFile",source=>"Config",dest=>"Fcs"},
+	licenses=>{table=>"hus.licenses",package=>"License",source=>"Hus",dest=>"Fcs"},
+	update_policy=>{table=>"hus.update_policy",package=>"UpdatePolicy",source=>"Hus",dest=>"Fcs"},
+	build_info=>{table=>"hus.build_info",package=>"BuildInfo",source=>"Hus",dest=>"Fcs"},
+	download_sites=>{table=>"hus.download_sites",package=>"DownloadSite",source=>"Hus",dest=>"Fcs"},
+	customer_ext=>{table=>"hus.customer_ext",package=>"CustomerExt",source=>"Hus",dest=>"Fcs"},
+	hud_edition=>{table=>"hus.hud_edition",package=>"HudEdition",source=>"Hus",dest=>"Fcs"},
+	server_ext=>{table=>"hus.server_ext",package=>"ServerExt",source=>"Hus",dest=>"Fcs"},
+	user_ext=>{table=>"hus.user_ext",package=>"UserExt",source=>"Hus",dest=>"Fcs"},
+	user_stat=>{table=>"hus.user_stat",package=>"UserStat",source=>"Hus",dest=>"Fcs"},
+	devices=>{table=>"pbxtra.devices",package=>"Device",source=>"Pbxtra",dest=>"Fcs"},
+	user=>{table=>"pbxtra.user",package=>"User",source=>"Pbxtra",dest=>"Fcs"},
+	extensions=>{table=>"pbxtra.extensions",package=>"Extension",source=>"Pbxtra",dest=>"Fcs"},
+	devices=>{table=>"pbxtra.devices",package=>"Device",source=>"Pbxtra",dest=>"Fcs"},
+	unbound_map=>{table=>"pbxtra.unbound_map",package=>"UnboundMap",source=>"Pbxtra",dest=>"Fcs"},
+	upgrade_user_defined=>{table=>"pbxtra.upgrade_user_defined",package=>"UpgradeUserDefined",source=>"Pbxtra",dest=>"Fcs"},
+	upgrade_stats=>{table=>"pbxtra.upgrade_stats",package=>"UpgradeStat",source=>"Pbxtra",dest=>"Fcs"},
+	upgrade_master=>{table=>"pbxtra.upgrade_master",package=>"UpgradeMaster",source=>"Pbxtra",dest=>"Fcs"},
+	customer=>{table=>"pbxtra.customer",package=>"Customer",source=>"Pbxtra",dest=>"Fcs"},
+	cid=>{table=>"pbxtra.cid",package=>"Cid",source=>"Pbxtra",dest=>"Fcs"},
+	phone_numbers=>{table=>"pbxtra.phone_numbers",package=>"PhoneNumber",source=>"Pbxtra",dest=>"Fcs"},
+	unbound_map=>{table=>"pbxtra.unbound_map",package=>"UnboundMap",source=>"Pbxtra",dest=>"Fcs"},
+        contact=>{table=>"pbxtra.contact",package=>"Contact",source=>"Pbxtra",dest=>"Fcs"},
+	audio=>{table=>"pbxtra.audio",package=>"Audio",source=>"Pbxtra",dest=>"Fcs"},
+	server_user_xref=>{table=>"pbxtra.server_user_xref",package=>"ServerUserXref",source=>"Pbxtra",dest=>"Fcs"},
+	e911_address=>{table=>"pbxtra.e911_address",package=>"E911Address",source=>"Pbxtra",dest=>"Fcs"},
+};
+
+my @yams = glob(Fap->path_to("lib/Fap/Model/Fcs/Backend/Result/*.pm"));
+my @classes_to_load;
+foreach my $file (@yams) {
+	next if ($file=~/Pbxtra|Config|Hus/);
+	$file = "Result::".substr($file,rindex($file,"/")+1,rindex($file,"."));
+	$file=~s/\.pm$//;
+	push(@classes_to_load,$file);
+}
+
+foreach my $table (keys %$cross_import) {
+	my $map = $cross_import->{$table};
+	
+	File::Copy::copy(Fap->path_to("lib/Fap/Model/$map->{source}/Backend/Result/$map->{package}.pm"),Fap->path_to("lib/Fap/Model/$map->{dest}/Backend/Result/$map->{source}$map->{package}.pm"));
+	my $txt = File::Slurp::read_file(Fap->path_to("lib/Fap/Model/$map->{dest}/Backend/Result/$map->{source}$map->{package}.pm"));
+	$txt=~s/Model::$map->{source}::Backend::Result::$map->{package}/Model::$map->{dest}::Backend::Result::$map->{source}$map->{package}/;
+	$txt=~s/table\("$table"\)/table("$map->{table}")/;
+	if ($map->{dest} eq "Fcs") {
+		push(@classes_to_load,"Fap::Model::Fcs::Backend::Result::$map->{source}$map->{package}");
+	}
+	my @lines = split(/\n/,$txt);
+	my @res;
+	my $skip=0;
+	my $can_skip=1;
+	foreach my $line (@lines) {
+		if ($line=~/(has_many|has_one|belongs_to|might_have)\(/ && $can_skip) {
+			$skip=1;
+			if ($line=~/;$/) {
+				$skip=0;
+			}
+			next;
+		}
+		if ($skip) {
+			if ($line=~/;$/) {
+				$skip=0;
+			}
+			next;
+		}
+		if ($line=~/DO NOT MODIFY THIS OR ANYTHING ABOVE/) { $can_skip = 0; }
+		if ($line=~/Fap::Model::$map->{source}::Backend/) {
+			next;
+		}
+		push(@res,"$line\n");
+	}
+	File::Slurp::write_file(Fap->path_to("lib/Fap/Model/$map->{dest}/Backend/Result/$map->{source}$map->{package}.pm"),@res);
+}
+#my $outp = Fap::View::TT->new(paths=>["res/code_templates"])->process("Backend.pm",{classes=>[@classes_to_load]});
+#File::Slurp::write_file(Fap->path_to("lib/Fap/Model/Fcs/Backend.pm"),$outp);
+
+	
+

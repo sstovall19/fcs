@@ -1,0 +1,48 @@
+#order_details, #order_entry{
+	/*width: 50%;*/
+	margin-top: 10px;
+}
+
+#order_entry{padding: 10px;}
+#order_entry_form{
+	/*width: 50%;*/
+    margin: 0 auto;
+    padding: 30px 10px 10px 0;
+    height: 100px;
+}
+
+.floatLeft{
+	float: left;
+}
+
+.floatRight{
+	float: right;
+}
+
+.ui-widget-header{
+	height: 16px;
+	padding: 2px;
+}
+
+#validation-block, #order_details_form{
+	clear: both;
+}
+
+.h3{
+	font-size: 1.5em;
+    line-height: 1.2;
+    margin-bottom: .476em;
+    font-weight: bold;
+}
+
+.order_header{
+	margin-bottom: 10px;
+}
+
+ul{
+	list-style-type: none;
+}
+
+#scan_phones, #get_order{padding: 2px;}
+.server_section {padding: 10px;}
+.server_headers{margin-bottom: 10px;}

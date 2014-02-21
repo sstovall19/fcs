@@ -1,0 +1,61 @@
+#!/usr/bin/perl
+
+use JSON;
+use Fap::Db::Fcs;
+use Fap::NetSuite::Engine;
+
+
+my $db = Fap::Db::Fcs->new();
+my $ns = Fap::NetSuite::Engine->new(mode=>"sandbox");
+
+my @bulk;
+my $z = {};
+my $defaults = {};
+
+my $taxlist = $ns->base->getAll("taxGroup");
+if ($ns->hasError) {
+	$ns->dumpError();
+	exit;
+}
+
+foreach my $row (@{$taxlist->{recordList}}) {
+	next if (!$row->{state});
+	my $insr = {state=>$row->{state},rate=>$row->{rate}/100};
+	if ($row->{city}) {
+		foreach my $zip (map {substr($_,index($_,"_")+1)} split(/\,/,$row->{city})) {
+			if (!$z->{$zip} && $zip=~/^\d+$/) {
+				push(@bulk,{%$insr,zip=>$zip});
+				$z->{$zip} = 1;
+			}
+		}
+	}
+	if ($row->{county}) {
+		foreach my $zip (map {substr($_,index($_,"_")+1)} split(/\,/,$row->{county})) {
+                        if (!$z->{$zip} && $zip=~/^\d+$/) {
+                                push(@bulk,{%$insr,zip=>$zip});
+                                $z->{$zip} = 1;
+                        }
+                }
+        }
+	if (!defined $defaults->{$row->{state}}) {
+		foreach my $type (@{$row->{taxItemList}}) {
+			if ($type->{taxType} eq "State") {
+				$defaults->{$row->{state}} = $type->{rate};
+				last;
+			}
+		}
+	}
+}
+
+foreach my $state (keys %$defaults) {
+	push(@bulk,{state=>$state,rate=>$defaults->{$state}/100,zip=>0});
+}
+
+my $s = $db->schema;
+$s->txn_do(sub {
+	$db->table("SalesTaxRate")->delete;
+	$db->table("SalesTaxRate")->populate(\@bulk);
+});
+
+exit;
+	

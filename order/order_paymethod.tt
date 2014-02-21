@@ -1,0 +1,215 @@
+[% PAGE = 'order_payoptions' %]
+[% TITLE = ' :: New Order' %]
+
+[% ALL_PAYMENTS     = ["VISA", "MASTERCARD", "American Express", "Discover Card", "Check", "Wire Transfer"] %]
+[% ONLY_CC_PAYMENTS = ["VISA", "MASTERCARD", "American Express", "Discover Card"] %]
+[% NO_CC_PAYMENTS   = ["Check", "Wire Transfer"] %]
+
+
+<style type="text/css">
+	#quote input,
+	#quote select {
+	width: 300px;
+	}
+</style>
+
+<script language='javascript'>
+<!--
+function swapDivTagsCreditCards()
+{
+	// display or hide the Credit Card info as the customer changes the Payment Method
+	selected_payment_method = document.form.payment_method[document.form.payment_method.selectedIndex].value;
+	if (selected_payment_method == "American Express" ||
+		selected_payment_method == "MASTERCARD" ||
+		selected_payment_method == "Discover Card" ||
+		selected_payment_method == "VISA")
+	{
+		document.getElementById("displayTheCreditCardInfo").style.display    = '';
+		document.getElementById("displayTheCreditCardInfo").style.visibility = 'visible';
+	}
+	else
+	{
+		document.getElementById("displayTheCreditCardInfo").style.display    = 'none';
+		document.getElementById("displayTheCreditCardInfo").style.visibility = 'hidden';
+	}
+	return false;
+}
+
+function changePayment60days()
+{
+	var promo_60daypay = document.form.promo_60daypay.checked;
+	var my_payment_method = document.form.payment_method;
+
+	[% IF CAN_USE_CREDITCARD %]
+		if (promo_60daypay)
+		{
+			if (my_payment_method.selectedIndex == 5 || my_payment_method.selectedIndex == 6)
+			{
+				my_payment_method.selectedIndex = 0; // set the selected option back to nothing if check or wire was previously selected
+			}
+			var checkOption = my_payment_method.options[5];
+			var wireOption  = my_payment_method.options[6];
+			checkOption.disabled = 1;
+			wireOption.disabled  = 1;
+		}
+		else
+		{
+			var checkOption = my_payment_method.options[5];
+			var wireOption  = my_payment_method.options[6];
+			checkOption.disabled = 0;
+			wireOption.disabled  = 0;
+		}
+	[% ELSE %]
+		[%# This is a sale that is too big for credit cards but will be OK if promo_60daypay is checked %]
+		// reset dropdown
+		my_payment_method.options.length = 1;
+		if (promo_60daypay)
+		{
+			[% FOREACH NEXT_METHOD = ONLY_CC_PAYMENTS %]
+				my_payment_method.options[my_payment_method.options.length] = new Option("[% NEXT_METHOD %]", "[% NEXT_METHOD %]");
+			[% END %]
+		}
+		else
+		{
+			[% FOREACH NEXT_METHOD = NO_CC_PAYMENTS %]
+				my_payment_method.options[my_payment_method.options.length] = new Option("[% NEXT_METHOD %]", "[% NEXT_METHOD %]");
+			[% END %]
+			// get rid of Credit Card details if it is still displayed
+			swapDivTagsCreditCards();
+		}
+	[% END %]
+
+	return true;
+}
+
+window.onload = init;
+
+function init()
+{
+	document.form.payment_method.focus();
+	swapDivTagsCreditCards();
+	changePayment60days();
+}
+-->
+</script>
+<div id="quote" style="width:auto">
+<input type="hidden" name="oid" value="[% OID %]" />
+
+	<div class="order_step_heading">
+		<div class="steps">
+			[% IF ADDON OR ORDER_TYPE == 'addon' %]Add-On[% END %]
+			Order Step&nbsp;
+			<span style="color:[% GRAYED_OUT %]">1</span>&nbsp;
+			<span style="color:[% GRAYED_OUT %]">2</span>&nbsp;
+			<span style="color:[% GRAYED_OUT %]">3</span>&nbsp;
+			<span style="color:[% GRAYED_OUT %]">4</span>&nbsp;
+			<span style="color:[% GRAYED_OUT %]">5</span>&nbsp;
+			<span style="color:[% COLOR1 %]">6</span>&nbsp;
+			<span style="color:[% GRAYED_OUT %]">7</span>
+		</div>
+		<h1>Payment Method</h1>
+		<div style="clear:both"><!-- --></div>
+	</div>
+<br>
+	<div align="center">
+		<label for="payment_method">* Payment Method:</label>
+		<select name="payment_method" onChange="swapDivTagsCreditCards();">
+			<option value="">- please select a Payment Method -</option>
+			[% IF CREDITCARD_ONLY %]
+				[% PAYMENT_METHODS = ONLY_CC_PAYMENTS %]
+			[% ELSIF CAN_USE_CREDITCARD %]
+				[% PAYMENT_METHODS = ALL_PAYMENTS %]
+			[% ELSE %]
+				[% PAYMENT_METHODS = NO_CC_PAYMENTS %]
+			[% END %]
+			[% FOREACH NEXT_METHOD = PAYMENT_METHODS %]
+				<option [% IF PAYMENT_METHOD == NEXT_METHOD %]selected="selected"[% END %] value="[% NEXT_METHOD %]">[% NEXT_METHOD %]</option>
+			[% END %]
+		</select>
+	</div>
+
+	<div id="displayTheCreditCardInfo" style="display: none;">
+		<label for="cc_number">* Credit Card Number:</label>
+		<input type="text" name="cc_number" value="[% CC_NUMBER %]" style="width: [% FIELD_WIDTH %];" maxlength="20" />
+		<input type="hidden" name="cc_number_old" value="[% CC_NUMBER %]" />
+		<label for="cc_name">* Name on Card:</label>
+		<input type="text" name="cc_name" value="[% CC_NAME %]" style="width: [% FIELD_WIDTH %];" maxlength="60" />
+		<label for="cc_expire_month">* Card Expiration date:</label>
+		<select name="cc_expire_month" style="width: 42px !important;">
+			[% EXPIRATION_MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] %]
+			[% FOREACH NEXT_MONTH = EXPIRATION_MONTHS %]
+				<option [% IF CC_EXPIRE_MONTH == NEXT_MONTH %]selected="selected"[% END %] value="[% NEXT_MONTH %]">[% NEXT_MONTH %]</option>
+			[% END %]
+		</select>
+		<select name="cc_expire_year" style="width: 55px !important; clear: right !important;">
+			[% USE date %]
+			[% CURRENT_YEAR = date.format(date.now, '%Y') %]
+			[% ENDING_YEAR  = CURRENT_YEAR + 18 %]
+			[% EXPIRATION_YEARS = [CURRENT_YEAR..ENDING_YEAR] %]
+			[% FOREACH NEXT_YEAR = EXPIRATION_YEARS %]
+				<option [% IF CC_EXPIRE_YEAR == NEXT_YEAR %]selected="selected"[% END %] value="[% NEXT_YEAR %]">[% NEXT_YEAR %]</option>
+			[% END %]
+		</select>
+		<br />
+		<label for="cc_code" style="clear: both !important; float: left !important;">* Credit Card Code:</label>
+		<input type="text"
+			   name="cc_code"
+			   value="[% CC_CODE %]"
+			   style="width: 42px !important; clear: none !important; float: left !important;"
+			   maxlength="4" />
+	</div>
+
+	[% UNLESS CASH_SALE %]
+		<div style="padding-left: 160px !important;">
+			[% IF CAN_USE_CREDITCARD %]
+				Your credit card will not be charged until your
+				[% IF ADDON %]
+					addon order items ship.
+				[% ELSE %]
+					PBXtra server ships.
+				[% END %]
+				<BR>
+				Your bank may call to pre-authorize the order amount.
+			[% ELSE %]
+				Orders over $10,000 must be paid by check or wire transfer.
+			[% END %]
+		</div>
+	[% END %]
+
+	[% IF PROMO_60_DAY_PAYMENT %]
+		<div>
+			<table class="noborder">
+				<tr>
+					<td valign="top">
+						<input type="checkbox" style="float: left; width: 10px;" name="promo_60daypay" onClick="changePayment60days();"
+							[% FOREACH ITEM = ORDER_ITEMS %]
+								[% IF ITEM.netsuite_id == PROMO_60_DAY_NETSUITE_ID %]
+
+									checked
+
+								[% END %]
+							[% END %]
+						/>
+					</td>
+					<td valign="top">
+						<label for="promo_60daypay" style="width: 500px; text-align: left;">
+							I want to pay in three equal installment payments.
+							One payment is due upon shipment and two additional payments are due 30 and 60 days later.
+							By checking here, I authorize Fonality to automatically charge my credit card for all three payments.
+							I understand that there will be an additional 5% processing fee added to each monthly installment,
+							and that non-payment will be cause for termination of your system access, as noted in our Terms and Conditions.
+						</label>
+					</td>
+				</tr>
+			</table>
+		</div>
+	[% END %]
+
+	<div>
+		<br>
+		<input class="button" style="width:150px" type="submit" name="act" value="Continue to Step 7" />
+	</div>
+
+	<div style="clear:both"><!-- --></div>
+</div>
+</form>

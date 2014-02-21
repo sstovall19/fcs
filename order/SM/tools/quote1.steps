@@ -1,0 +1,45 @@
+[
+    {
+        familyname => 'QUOTE'
+    },
+    {
+        sequence 		=> 'A',
+        objectname 		=> 'example unit',
+        sequence_success 	=> 'B',
+        sequence_failure	=> 'Z',
+	objectlocation		=> '/home01/ekelly/SM/examples/example_unit.pl',
+        iterations		=> 3,
+    },
+    {
+        sequence                => 'B',
+        objectname              => 'example unit 2',
+        sequence_success        => 'C',
+        sequence_failure        => 'Z',
+        objectlocation          => '/home01/ekelly/SM/examples/example_unit.pl',
+        iterations              => 3,
+    },
+    {
+        sequence                => 'C',
+        objectname              => 'example unit 3',
+        sequence_success        => 'D',
+        sequence_failure        => 'Z',
+        objectlocation          => '/home01/ekelly/SM/examples/example_unit.pl',
+        iterations              => 3,
+    },
+    {
+        sequence                => 'D',
+        objectname              => 'email unit',
+        sequence_success        => '',
+        sequence_failure        => 'Z',
+        objectlocation          => '/home01/ekelly/SM/examples/email_unit.pl',
+        iterations              => 3,
+    },
+    {
+        sequence                => 'Z',
+        objectname              => 'failure unit',
+        sequence_success        => '',
+        sequence_failure        => '',
+        objectlocation          => '/home01/ekelly/SM/examples/email_unit.pl',
+        iterations              => 3,
+    },
+]

@@ -1,0 +1,29 @@
+<div id="dialog-message" title="Dialog">
+	<p>
+		<span id="dialog-message-icon" class="ui-icon dialogIcon"></span>
+		<span id='dialog-message-text'></span>
+	</p>
+</div>
+
+<script>
+
+$(document).ready(function()
+{
+    var isValidate = [% IF !NO_VALIDATE %]false[% ELSE %]true[% END %];
+	validatorDefaults(isValidate);
+});
+
+/* Handle errors automatically on AJAX requests ( assumes JSON data ).
+** If you don't want this to happen, just set the complete function
+** in your ajax request.
+*/
+
+  ajaxErrorHandler();
+
+// This is for queing up alert and info messages if the dialog is already shown.  This way, you can show multiple alert or info windows even with the lack of blocking capabilities
+var dialog_messages = new Array();
+
+$(function() {
+queueMessages();
+});
+</script>

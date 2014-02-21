@@ -1,0 +1,49 @@
+[% CATEGORY = 'payment' %]
+<div id="Payment" class="form_category_div ui-tabs-hide" category_title="Payment Information" nextTab="Terms" prevTab="Sign" tab="5">
+    <div class="wrapperDiv">
+        <div class="floatLeft">
+            <h3 style="">Complete your order</h3>
+        </div>
+    </div>  
+    <div class="customerAddr">
+      <h4>
+        [% IF order.order_group.size > 1 %]
+          <div class="dd ddcommon borderRadius" id="addr_msdd">
+            <div class="ddTitle borderRadiusTp" style="">
+                 <span class="divider"></span>
+                 <span class="arrow arrowoff"></span>
+                 <div class="ddTitleText" id="[% order.order_group.0.order_group_id %]_title">
+                    <div class="ddlabel">[% address1 %]</div>
+                    <span class="description" style="display: none;"></span>  
+                 </div>
+             </div>
+             <input id="addr_titleText" type="text" autocomplete="off" class="text shadow borderRadius" style="display: none;">
+            
+             <div class="ddChild ddchild_ border shadow" id="addr_dropdown">
+            
+              <ul id="order_groups">
+                <li class="enabled _msddli_" value="-1">
+                   <span class="ddlabel">Select</span>
+                   <div class="clear"></div>
+                 </li>
+                [% FOREACH order_group IN order.order_group %]
+                 <li class="enabled _msddli_ [% IF loop.count == 1 %]selected[% END %]" id="[% order_group.order_group_id %]" value="[% (loop.count - 1) %]">
+                   <span class="ddlabel">[% order_group.shipping_address.0.addr1 %]</span>
+                   <div class="clear"></div>
+                 </li>
+                [% END %]
+              </ul>
+            </div>
+         </div>  
+        [% ELSE %]
+           [% address1 %]
+        [% END %]
+       <h4> 
+    </div>
+    <div class="display_right_preview_form">
+        <div class="sectionHeadr">
+        <h4>Verify your billing address</h4>
+        </div>
+        [% PROCESS 'modules/Sales/Create_Order/shippingForm.tt'  CATEGORY = CATEGORY %]
+    </div>
+</div>

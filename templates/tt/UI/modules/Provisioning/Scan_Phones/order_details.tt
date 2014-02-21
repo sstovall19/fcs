@@ -1,0 +1,36 @@
+<div id="order_details">
+<span class="order_mode" style="display:none" id="[% form_fields.order_details.mode %]"></span>
+<span class="order_action" style="display:none" id="[% form_fields.order_details.action %]"></span>
+<div class="ui-state-active ui-widget-header">
+  <div class="floatLeft">Order ID: [% order_details.order_id %]</div><div class="floatRight">Company: [% order_details.company_name %]</div>
+</div>
+<form id="order_details_form" name="[% order_details.order_id %]" class="ui-state-highlight">
+[% scanned_phones = phone_list %]
+[% FOREACH SERVER IN scanned_phones.keys %]
+<div class="server_section" id="[% SERVER %]">
+ <h4>Server ID: [% SERVER %]</h4>
+   [% FOREACH manufacturer IN scanned_phones.$SERVER.keys %]
+   <ul>
+    <li>
+     <div class="Mfc" id="[% manufacturer %]">
+        [% FOREACH phoneType IN scanned_phones.$SERVER.$manufacturer.keys %]
+             <div class="pType" id="[% phoneType %]">
+                <div class="server_headers">[% manufacturer %] - [% phoneType %]</div>
+                [% phoneCount = 1 %]
+                [% FOREACH MAC IN scanned_phones.$SERVER.$manufacturer.$phoneType.sort.reverse %]
+                   <label for="mac_[% SERVER _ phoneType _ loop.count %]">Phone [% phoneCount %]:</label>
+                   <input type="text" name="mac_[% SERVER _ phoneType _ loop.count %]" class="mac" id="mac_[% SERVER _ phoneType _ loop.count %]" value="[% MAC %]" maxlength="12"/>[% IF MAC != '' %] <span class="scanned">* Scanned</span>[% END %]
+                   <br/>
+                   [% phoneCount = phoneCount + 1 %]
+                [% END %]
+              </div>  
+        [% END %] 
+     </div> 
+    </li>
+   </ul>   
+  [% END %] 
+  <input type="button" name="scan_phones" id="scan_phones" value="Apply All Changes" class="ui-state-active"/> 
+ </div> 
+[% END %]
+</form>
+</div>

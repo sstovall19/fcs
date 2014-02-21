@@ -1,0 +1,106 @@
+[% item = CATEGORY.name.replace(' ', '_') %]
+<div id="category_[% item %]" category_title="[% CATEGORY.name %]" category_id="[% CATEGORY.category_id %]"  class="form_category_div[% IF HIDDEN == 1 %] displayNone[% END %]">
+   
+    [% PROCESS 'modules/Sales/Create_Quote/nav_buttons.tt' %] 
+
+    <div class="display_right_preview_form">
+
+    <form id="form_category_[% CATEGORY.name.replace(' ', '_') %]">
+        [% FIELDS = CATEGORY.label %]
+    [% IF FIELDS.keys %]
+        [% FIELDS = [ FIELDS ] %]
+    [% END %]
+    
+    [% HAS_BUY_OPTION = 0 %]
+    [% HAS_RENT_OPTION = 0 %]
+
+    [% FOREACH FIELD IN FIELDS %]
+        [% FOREACH BUNDLE IN FIELD.bundles %]
+            [% IF BUNDLE.mrc_price && BUNDLE.mrc_price > 0 %]
+                [% HAS_RENT_OPTION = 1 %]
+            [% END %]
+
+            [% IF BUNDLE.base_price && BUNDLE.base_price > 0 %]
+                [% HAS_BUY_OPTION = 1 %]
+            [% END %]
+        [% END %]
+    [% END %]
+
+    <!-- DISPLAY HEADER -->
+    <div class="form_header_label">Item</div>
+    <div class="form_header_qty">Qty</div>
+    [% IF HAS_BUY_OPTION && HAS_RENT_OPTION %]<div class="form_header_rent_qty">Rent</div>[% END %]
+    <div class="form_clear"></div>
+
+    [% FOREACH FIELD IN FIELDS.nsort('priority') %]
+        [% USE String(FIELD.display) %]
+        
+        [% IF String.upper == 'DROPDOWN' %]
+            <div class="form_label" category_id="[% CATEGORY.category_id %]" description="[% FIELD.description %]">[% IF FIELD.required == "yes" %]* [% END %][% FIELD.name %]</div>
+            <div class="form_element">
+            <select name="[% FIELD.label_id %]" class="ui-widget ui-corner-all">
+                [% IF FIELD.dropdown_has_null == 1 %]
+                    <option value="">[% FIELD.dropdown_null_text %]</option>
+                [% END %]
+                [% FOREACH ITEM IN FIELD.bundles %]
+                    <option value="[% ITEM.bundle_id %]">[% ITEM.display_name %]</option>
+                [% END %]
+            </select>
+            </div>
+
+         
+        [% ELSIF String.upper == 'RADIO' %]
+
+        [% ELSIF String.upper == 'CHECKBOX' %]
+
+        [% ELSIF String.upper == 'NUMBER' %]
+
+            [% FOREACH BUNDLE IN FIELD.bundles %]
+
+                <div class="form_label[% IF NO_IMAGE %] no_image[% END %]" category_id="[% CATEGORY.category_id %]" description="[% BUNDLE.description %]">
+                    [% IF FIELD.required == "yes" %]* [% END %][% FIELD.name %]
+                </div>
+
+                <div class="form_element">
+                    <input class="ui-widget ui-corner-all buy" type="text" name="[% BUNDLE.bundle_id %]" size="5"[% IF FIELD.min %] value="[% FIELD.min %]"[% END %]>
+                </div>
+
+                <div class="mrc_element">
+                    <input class="ui-widget ui-corner-all mrc mrc_[% BUNDLE.bundle_id %]" type="checkbox" size="5">
+                </div>
+
+                <div class="form_clear"></div>
+
+            [% END %]
+
+        [% ELSIF String.upper == 'TEXT' %]
+
+            [% FOREACH BUNDLE IN FIELD.bundles %]
+
+                <div class="form_label[% IF NO_IMAGE %] no_image[% END %]" category_id="[% CATEGORY.category_id %]" description="[% BUNDLE.description %]">
+                    [% IF FIELD.required == "yes" %]* [% END %][% FIELD.name %]
+                </div>
+
+                <div class="form_element">
+                    <input class="ui-widget ui-corner-all" type="text" name="[% BUNDLE.bundle_id %]" size="18">
+                </div>
+
+                <div class="mrc_element">
+                    <input class="ui-widget ui-corner-all mrc mrc_[% BUNDLE.bundle_id %]" type="checkbox" size="5">
+                </div>
+
+            <div class="form_clear"></div>
+
+            [% END %]
+
+        [% ELSE %]
+
+            NO DISPLAY METHOD [% FIELD.display %]
+
+        [% END %]
+
+    [% END %]
+    </form>
+    </div>
+    <div id="preview_panel_[% CATEGORY.category_id %]" class="display_right_preview_panel">[% CATEGORY.description %]</div>
+</div>

@@ -1,0 +1,39 @@
+[% INCLUDE 'header.tt' %]
+
+[% IF SESSION.username %]
+
+	You are logged in as [% SESSION.username %].
+
+[% ELSE %]
+
+<table class="super-centered">
+	<tr>
+		<td>
+			<div class="grey-round" style="margin:0 auto;width:280px; padding-top: 35px;">
+
+				<form method="POST" action="/" autocomplete="off">
+				<input type="hidden" name="mode" value="Core.Login">	
+				<input type="hidden" name="action" value="login">
+					<table width="100%" cellspacing="2" cellpadding="2">
+						<tr>
+							<td align="right" valign="bottom" width="30%" >Username:</td>
+							<td align="left" width="70%"><input type="text" name="username" value="" maxlength="36" class="ui-corner-all ui-widget"></tc>
+						</tr>
+						<tr>
+							<td align="right" valign="bottom" width="30%">Password:</td>
+							<td align="left" width="70%"><input type="password" name="password" value="" maxlength="36" class="ui-corner-all ui-widget"></tc>
+						</tr>
+						<tr>
+							<td align="right" colspan="2" width="100%">
+								<input type="submit" value="Log in">
+							</td>
+						</tr>
+					</table>
+				<form>
+			</div>
+		</td>
+	</tr>
+</table>
+
+[% END %]
+[% INCLUDE 'footer.tt' %]

@@ -1,0 +1,181 @@
+{
+  "order": {
+    "order_id": "52914",
+    "order_type": "NEW",
+    "record_type": "ORDER",
+    "created": "2012-11-11 20:02:00",
+    "updated": "2012-11-11 20:12:00",
+    "total_price": "4000.00",
+    "balance": "0.00",
+    "netsuite_lead_id": "21134",
+    "netsuite_salesperson_id": "11234",
+    "customer_id": "abc",
+    "reseller_id": "",
+    "contact_id": "1",
+    "status": "INPROGERSS",
+    "test_host_server_id": "5559",
+    "order_groups": [
+      {
+        "order_group_id": "1",
+        "order_id": "52914",
+        "shipping_address_id": "1",
+        
+        "product_id": "6",
+        "netsuite_id": "15523",
+        "total_price": "3000.00",
+        "total_sales_tax": "300.00",
+        "sales_tax_rate": "10.00",
+        "added_can_link": "1",
+        "added_support_contract_id": "4423",
+        "added_voip_provider": "inphonex",
+        "added_voip_sip": "FonalityVoIP-15037",
+        "added_inphonex_id": "44332",
+        "added_HUD": "3.5.650",
+        "order_bundles": [
+          {
+            "order_bundle_id": "1",
+            "bundle_id": "55",
+            "created_server_bundle_id": "1231",
+            "order_group_id": "1",
+            "quantity": "3",
+            "list_price": "200.00",
+            "unit_price": "300.00",
+            "total_price": "900.00",
+            "phone_type": "polycom",
+            "phone_model": "Polycom IP331",
+            "order_bundle_details": [
+              {
+                "order_bundle_detail_id": "1",
+                "order_bundle_id": "1",
+                "did_number": "",
+                "extension_number": "7000",
+                "lnp": "0",
+                "created_user_id": "1532",
+                "phone_mac": "0004F221BE9",
+                "added_device_id": "143221",
+                "assigned_extension_number": "7000"
+              },
+              {
+                "order_bundle_detail_id": "2",
+                "order_bundle_id": "1",
+                "did_number": "",
+                "extension_number": "7001",
+                "lnp": "0",
+                "created_user_id": "1533",
+                "phone_mac": "0004F221BED",
+                "added_device_id": "143222",
+                "assigned_extension_number": "7001"
+              },
+              {
+                "order_bundle_detail_id": "3",
+                "order_bundle_id": "1",
+                "did_number": "",
+                "extension_number": "7002",
+                "lnp": "0",
+                "created_user_id": "1534",
+                "phone_mac": "0004F221CE9",
+                "added_device_id": "143223",
+                "assigned_extension_number": "7002"
+              }
+            ]
+          },
+          {
+            "order_bundle_id": "2",
+            "bundle_id": "2050",
+            "order_group_id": "1",
+            "quantity": "4",
+            "list_price": "5.00",
+            "unit_price": "10.00",
+            "total_price": "400.00",
+            "order_bundle_details": [
+              {
+                "order_bundle_detail_id": "4",
+                "order_bundle_id": "2",
+                "did_number": "310",
+                "extension_number": "",
+                "lnp": "0",
+                "created_did": "3104312233",
+                "assigned_user_id": "1532",
+                "assigned_extension_number": "7000"
+              },
+              {
+                "order_bundle_detail_id": "5",
+                "order_bundle_id": "2",
+                "did_number": "310",
+                "extension_number": "",
+                "lnp": "0",
+                "created_did": "3104312234",
+                "assigned_user_id": "1533",
+                "assigned_extension_number": "7001"
+              },
+              {
+                "order_bundle_detail_id": "6",
+                "order_bundle_id": "2",
+                "did_number": "310",
+                "extension_number": "",
+                "lnp": "0",
+                "created_did": "3104312235",
+                "assigned_user_id": "1534",
+                "assigned_extension_number": "7002"
+              },
+              {
+                "order_bundle_detail_id": "7",
+                "order_bundle_id": "2",
+                "did_number": "310",
+                "extension_number": "",
+                "lnp": "0",
+                "created_did": "3104312236"
+              }
+            ]
+          },
+          {
+            "order_bundle_id": "3",
+            "bundle_id": "2041",
+            "order_group_id": "1",
+            "quantity": "1",
+            "list_price": "0.00",
+            "unit_price": "1000.00",
+            "total_price": "1000.00"
+          },
+          {
+            "order_bundle_id": "4",
+            "bundle_id": "2043",
+            "order_group_id": "1",
+            "quantity": "3",
+            "list_price": "200.00",
+            "unit_price": "300.00",
+            "total_price": "900.00"
+          },
+          {
+            "order_bundle_id": "4",
+            "bundle_id": "2045",
+            "order_group_id": "1",
+            "quantity": "2",
+            "list_price": "200.00",
+            "unit_price": "300.00",
+            "total_price": "900.00"
+          },
+          {
+            "order_bundle_id": "3",
+            "bundle_id": "2048",
+            "order_group_id": "1",
+            "quantity": "2",
+            "list_price": "0.00",
+            "unit_price": "10.00",
+            "total_price": "20.00",
+            "added_conference_bridges": [
+              {
+                "index": "1",
+                "extension": "8505"
+              },
+              {
+                "index": "2",
+                "extension": "8506"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

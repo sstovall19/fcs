@@ -1,0 +1,305 @@
+[% PROCESS 'header.tt' %]
+
+<script type="text/javascript">
+	$(document).ready(function()
+	{
+		$('.toggle_log_level').click(function()
+		{
+			[% IF PERMISSION.can('change_levels', 'w') %]
+			var element = $(this);
+			var enabled = 1;
+			if($(element).hasClass('ui-state-active'))
+				enabled = 0;
+
+			var log_level = $(element).html();
+
+			$(element).effect("pulsate", {}, 'slow');
+
+			$.ajax({
+				url: '/',
+				data: { mode: 'Admin.Log_Viewer', action: 'toggle_log_level', log_level: log_level, value: enabled },
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(data)
+				{
+					if(data && data.success)
+					{
+						if(data.success == 1)
+						{
+							$(element).removeClass('ui-state-error').addClass('ui-state-active').fadeIn();
+						}
+						else
+						{
+							$(element).removeClass('ui-state-active').addClass('ui-state-error').fadeIn();
+						}
+					}
+					else
+					{
+						$(this).fadeIn();
+					}
+				}
+			});
+			[% ELSE %]
+				alert('No permission to change log levels', 'Permission error');
+				return false;
+			[% END %]
+		});
+
+		$('#range_start').datepicker({
+			defaultDate: "+0d",
+			changeMonth: true,
+			numberOfMonths: 2,
+			onSelect: function( selectedDate )
+			{
+				$('#range_end').datepicker('option', 'minDate', selectedDate);
+			},
+			dateFormat: 'yy-mm-dd',
+			onClose: function()
+			{
+				update_fields('module');
+				update_fields('function');
+			}
+		 });
+
+		$('#range_end').datepicker({
+			defaultDate: "+0d",
+			changeMonth: true,
+			numberOfMonths: 2,
+			onSelect: function( selectedDate )
+			{
+				$('#range_start').datepicker('option', 'maxDate', selectedDate);
+			},
+			dateFormat: 'yy-mm-dd',
+			onClose: function()
+			{
+				update_fields('module');
+				update_fields('function');
+			}
+		});
+
+		$('#log_level').dropdownchecklist();
+		//$('#user').dropdownchecklist();
+
+		$('#log_level, #user, #ip, #module, #function').change(function()
+		{
+			if($(this).attr('id') == 'module')
+			{
+				update_fields('function');
+			}
+			else if($(this).attr('id') == 'function')
+			{
+				update_fields('module');
+			}
+			else
+			{
+				update_fields('module');
+				update_fields('function');
+			}
+		});
+
+		$('#search').click(function(){search();});
+		$('#next').click(function(){search(limit);});
+		$('#prev').click(function(){search(0-limit);});
+
+	});
+
+	var field_delay = new Array();
+
+	function update_fields(distinct)
+	{
+		var form_data = {};
+
+		// Disable the select boxes so that we know they are updating
+		$('#module, #function').attr('disabled', 'disabled').effect('pulsate', {}, 'slow');
+
+		var fields = [ 'log_level', 'range_start', 'range_end', 'user', 'ip', 'module', 'function' ];
+		clearTimeout(field_delay[distinct]);
+		field_delay[distinct] = setTimeout(function()
+		{
+			for(i in fields)
+			{
+				if(fields[i] != distinct && $('#'+fields[i]).val() && $('#'+fields[i]).val() != "")
+				{
+					form_data[fields[i]] = $('#'+fields[i]).val();
+				}
+			}
+			if($.isEmptyObject(form_data))
+			{
+				$('#module, #function').removeAttr('disabled');
+				return false;
+			}
+
+			var selected = $('#'+distinct).val();
+
+			form_data.distinct = distinct;
+			form_data.mode = 'Admin.Log_Viewer';
+			form_data.action = 'distinct';
+		
+			$('#'+distinct).attr('disabled', 'disabled');
+	
+			$.ajax({
+				url: '/',
+				type: 'POST',
+				dataType: 'JSON',
+				data: form_data,
+				success: function(data)
+				{
+					if(data && data.values)
+					{
+						$('#'+distinct).empty();
+						$('#'+distinct).append($('<option/>', { value: '' }));
+						for( i in data.values )
+						{
+							if(selected && data.values[i] == selected)
+							{
+								$('#'+distinct).append($('<option/>', { value: data.values[i], text: data.values[i], selected: 'selected' }));
+							}
+							else
+							{
+								$('#'+distinct).append($('<option/>', { value: data.values[i], text: data.values[i] }));
+							}
+						}
+					}
+
+					$('#module, #function').removeAttr('disabled');
+				}
+			});
+
+		}, 3000);
+
+	}
+
+	var start = 0;
+	var limit = 100;
+
+	function search(offset)
+	{
+		$('#search').val('Searching..').attr('disabled', 'disabled');
+		$("#results_table").find('tr').slice(2).remove();
+		var form_data = {};
+
+		var fields = [ 'log_level', 'range_start', 'range_end', 'user', 'ip', 'module', 'function' ];
+
+		for(i in fields)
+		{
+			if($('#'+fields[i]).val() && $('#'+fields[i]).val() != "")
+			{
+				form_data[fields[i]] = $('#'+fields[i]).val();
+			}
+		}
+
+		form_data.mode = 'Admin.Log_Viewer';
+		form_data.action = 'search';
+		form_data.start = start + offset;
+		form_data.limit = limit;
+
+		if(form_data.start < 0)
+			form_data.start = 0;
+
+		$.ajax({
+			type: 'POST',
+			url: '/',
+			data: form_data,
+			dataType: 'JSON',
+			success: function(data)
+			{
+				if(data && data.results)
+				{
+					if($.isEmptyObject(data.results[0]))
+					{
+						$('#results_table').append('<tr><td class="ui-state-default" colspan="7">No results</td></tr>');
+						$('#search').val('Search').removeAttr('disabled');
+						return false;
+					}
+
+					for(i in data.results)
+					{
+						var log = data.results[i];
+						$('#results_table').append('<tr><td class="ui-state-default">'+log.ts+'</td><td class="'+log.level+'">'+log.level+'</td><td class="ui-state-default">'+log.userid+'</td><td class="ui-state-default">'+log.ip+'</td><td class="ui-state-default">'+log.module+'</td><td class="ui-state-default">'+log.function+'</td><td class="ui-state-default">'+log.message+'</td></tr>');
+					}
+				}
+
+				$('#search').val('Search').removeAttr('disabled');
+			}
+		});
+
+	}
+
+</script>
+
+
+	<div class="ui-state-highlight ui-widget-header ui-corner-all" style="padding: 8px; height: 18px;">
+		<div style="float: left;"><span class="ui-widget-title" style="font-size: 15px;">Enabled Log Levels</span></div>
+	</div>
+
+	[% IF PERMISSION.can('change_levels', 'w') %]
+		[% PROCESS infobox text="Click on a level to enable or disable that log level" %]
+	[% ELSE %]
+		[% PROCESS infobox text="These are the currently enabled log levels" %]
+	[% END %]
+
+		<table width="100%" cellspacing="5" style="text-align: center;">
+			<tr>[% DBG = 'DEBUG' %]
+				<td style="padding: 5px; font-weight: bold; cursor: pointer;" class="toggle_log_level ui-widget [% IF LOG_LEVELS.$DBG %]ui-state-active[% ELSE %]ui-state-error[% END %]">DEBUG</td>
+				<td style="padding: 5px; font-weight: bold; cursor: pointer;" class="toggle_log_level ui-widget [% IF LOG_LEVELS.VERBOSE %]ui-state-active[% ELSE %]ui-state-error[% END %]">VERBOSE</td>
+				<td style="padding: 5px; font-weight: bold; cursor: pointer;" class="toggle_log_level ui-widget [% IF LOG_LEVELS.INFO %]ui-state-active[% ELSE %]ui-state-error[% END %]">INFO</td>
+			</tr>
+			<tr>
+				<td style="padding: 5px; font-weight: bold; cursor: pointer;" class="toggle_log_level ui-widget [% IF LOG_LEVELS.WARN %]ui-state-active[% ELSE %]ui-state-error[% END %]">WARN</td>
+				<td style="padding: 5px; font-weight: bold; cursor: pointer;" class="toggle_log_level ui-widget [% IF LOG_LEVELS.ERROR %]ui-state-active[% ELSE %]ui-state-error[% END %]">ERROR</td>
+				<td style="padding: 5px; font-weight: bold; cursor: pointer;" class="toggle_log_level ui-widget [% IF LOG_LEVELS.TTDUMP %]ui-state-active[% ELSE %]ui-state-error[% END %]">TTDUMP</td>
+			</tr>
+		</table>
+
+
+
+
+	<div class="ui-state-highlight ui-widget-header ui-corner-all" style="padding: 8px; height: 18px; margin-top: 50px;">
+		<div style="float: left;"><span class="ui-widget-title" style="font-size: 15px;">View / Search System Logs</span></div>
+	</div>
+
+	[% PROCESS infobox text="Choose by any of the below critera and then press the search button to find the associated logs" %]
+
+	<table width="100%" cellspacing="3" style="text-align: center;" id="results_table" class="logs">
+		<tr>
+			<td class="ui-state-active">Date/Time</td>
+			<td class="ui-state-active">Level</td>
+			<td class="ui-state-active">User</td>
+			<td class="ui-state-active">IP</td>
+			<td class="ui-state-active">Application</td>
+			<td class="ui-state-active">Function</td>
+			<td class="ui-state-active">Message</td>
+		</tr>
+		<tr>
+			<td class="ui-state-active" style="text-align: center;"><div><input type="text" size="10" id="range_start"></div> to <div><input type="text" size="10" id="range_end"></div></td>
+			<td class="ui-state-active">
+				<select id="log_level" size="1" multiple>
+					[% FOR L IN [ 'DEBUG', 'VERBOSE', 'INFO', 'WARN', 'ERROR' ] %]
+					<option value="[% L %]">[% L %]</option>
+					[% END %]
+				</select>
+			</td>
+			<td class="ui-state-active">
+				<select id="user">
+					<option></option>
+					[% FOR U IN USER_LIST.sort('first_name') %]
+					<option value="[% U.username %]">[% U.first_name _ ' ' _ U.last_name %]</option>
+					[% END %]
+				</select>
+			</td>
+			<td class="ui-state-active"><input id="ip" size="10" maxlength="15"></td>
+			<td class="ui-state-active">
+				<select id="module" size="1" style="width: 150px;">
+			</td>
+			<td class="ui-state-active">
+				<select id="function" size="1" style="width: 150px;"></select>
+			</td>
+			<td class="ui-state-active">
+				<input id="prev" type="button" class="ui-widget-button" value="<">
+				<input id="search" type="button" class="ui-widget-button" value="Search">
+				<input id="next" type="button" class="ui-widget-button" value=">">
+			</td>
+		</tr>
+	</table>
+
+[% INCLUDE 'footer.tt' %]

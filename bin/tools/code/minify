@@ -1,0 +1,35 @@
+#!/usr/bin/perl
+use strict;
+use Fap;
+use Fap::View::TT;
+use File::Slurp;
+
+
+my $conf = Fap->load_conf("code/minifier");
+my $tt = Fap::View::TT->new(paths=>[""]);
+foreach my $type (keys %$conf) {
+	my @sources;
+	my $w = $conf->{$type};
+	foreach my $source (@{$w->{sources}}) {
+		my @srcs;
+		my @txt;
+		print STDERR Fap->path_to("$w->{path}/$source\n");
+		open(FI,Fap->path_to("$w->{path}/$source"));
+		while (my $line = <FI>) {
+			chomp($line);
+			if ($line=~/\/\//) {
+				$line = substr($line,0,index($line,"//"));#."/* ".substr($line,rindex($line,"//")+2)."*/";
+			}
+			push(@txt,$line);
+		}
+		my $newtext = join("\n",@txt);
+		$newtext=~s/\/\*(?:.*?)\*\///sg;
+		push(@sources,$newtext);
+	}
+	print STDERR "MINIFYING $type....";
+	my $w = $conf->{$type};
+	my $output = $tt->process("minifier.tt",{sources=>[@sources]});
+	File::Slurp::write_file(Fap->path_to("$w->{path}/$w->{output}"),$output);
+	print STDERR "done!\n";
+}
+

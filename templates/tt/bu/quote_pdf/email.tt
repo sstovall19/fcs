@@ -1,0 +1,32 @@
+[% WRAPPER "email/wrapper.tt" %]
+<style type="text/css">
+body {
+font-family: Verdana, Arial;
+color: #000000;
+font-size: 11px;
+}
+</style>
+<p class="text_small bold">
+Dear [% NAME %]
+</p>
+<br><p>
+Thank you for your interest in Fonality. Below is a link to your itemized proposal:
+</p>
+<div style="text-align:center">
+<a href="[% THE_SERVER_NAME %]/[% PROPOSAL_DIR %]/[% PROPOSAL_FILE %]">Click here to view your Proposal</a>
+<p><a href="[% THE_SERVER_NAME %]/?m=Sales.Create_Quote&order_id=[% PROPOSAL_ID %]">Click Here to modify this proposal</a>
+&bull;
+<a href="[% THE_SERVER_NAME %]/?m=Sales.Create_Order&order_id=[% PROPOSAL_ID %]">Click here to place this Order</a>
+<table border=0 width='92%' height=40>
+<tr>
+<td align='left'>
+<span style='[% CP_TEXT_SMALL %]'>
+Please reply to this email if you have any questions. We look forward to working with you!<br><br>
+</span>
+<hr size=1 width=120 align='left' />
+[% SALES_PERSON_NAME %]<br>Fonality, Inc.<br>[% SALES_PERSON_PHONE %]<br><br>
+</td>
+</tr>
+</table>
+</div>
+[% END %]

@@ -1,0 +1,9 @@
+[% IF TT_INFO %]
+	<div class="ui-widget margin5">
+		<div class="ui-state-highlight ui-corner-all fDiv">
+			[% FOREACH INFO IN TT_INFO %]<span class="ui-icon ui-icon-info fSpan"></span>&nbsp;[% INFO %]<br>[% END %]
+		</div>
+	</div>
+
+	<br>
+[% END %]

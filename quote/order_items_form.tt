@@ -1,0 +1,82 @@
+			[%#	=================================================================================================
+			  #	display all categories of order items (software, phones, etc.), labels and bundles for each label
+			  # ================================================================================================= %]
+
+			[% FOREACH category_priority IN ORDER_FORM_DATA.keys.sort %]
+				<fieldset><!-- // encompass each item category -->
+					<legend>[% ORDER_FORM_DATA.$category_priority.category_name %]</legend>
+
+					[%# labels are distinct items or dropdown lists of multiple items %]
+					[%# get all labels for this category %]
+					[% LABELS = ORDER_FORM_DATA.$category_priority.labels %]
+
+					[% FOREACH label_priority IN ORDER_FORM_DATA.$category_priority.labels.keys.sort %]
+						<div>
+							<label>[% LABELS.$label_priority.label_name %]</label>
+							[% IF LABELS.$label_priority.label_display == 'dropdown' %]
+								<select class="input-wide" name="label_[% LABELS.$label_priority.label_id %]_server_[% servernumber %]">
+									[% IF LABELS.$label_priority.dropdown_has_null %]
+										<option value="[% LABELS.$label_priority.dropdown_null_text %]">[% LABELS.$label_priority.dropdown_null_text %]</option>
+									[% END %]
+									[%# get all the bundles that should go in this dropdown %]
+									[% BUNDLES = LABELS.$label_priority.bundles %]
+									[% FOREACH bundle_priority IN BUNDLES.keys.sort %]
+										<option value="[% BUNDLES.$bundle_priority.netsuite_id %]">[% BUNDLES.$bundle_priority.bundle_name %]</option>
+									[% END %]
+								</select>
+							[% ELSIF LABELS.$label_priority.label_display == 'checkbox' %]
+								<input type="checkbox" class="checkbox" name="label_[% LABELS.$label_priority.label_id %]_server_[% servernumber %]" value="1" />
+							[% ELSIF LABELS.$label_priority.label_display == 'number' %]
+								<input type="text" size="4" maxlength="3" name="label_[% LABELS.$label_priority.label_id %]_server_[% servernumber %]" id="" value="" autocomplete="off" style="width: 35px" class="positiveNumber"/>
+							[% END %]
+						</div>
+					[% END %]
+
+				</fieldset><!-- // end item category -->
+			[% END %]
+
+			[%#	===================================== 
+			  #	SHIPPING info per new server
+			  # ====================================%]
+	  
+			<fieldset>
+				<legend>Shipping Estimate</legend>
+
+				<div>
+					<label for="shipping_country">* Country</label>			
+					<select class="input-wide" name="shipping_country_server_[% servernumber %]" onChange="select_shipping_country();">
+						[% FOREACH COUNTRY = COUNTRY_LIST %]
+							[% NEXT IF COUNTRY == "" %]
+							<option value="[% COUNTRY %]"
+								[% IF COUNTRY == SHIPPING_COUNTRY %] selected[% END %]
+							>[% COUNTRY %]</option>
+						[% END %]
+					</select>
+				</div>
+		
+				<div>
+					<label for="shipping_state">State</label>			
+					<select class="input-wide" name="shipping_state_server_[% servernumber %]">
+						<option  value="">-- select a state if USA --</option>
+						[% FOREACH STATE = USA_STATE_LIST %]
+							<option value="[% STATE.1 %]"
+								[% IF STATE.1 == SHIPPING_STATE %] selected[% END %]
+							>[% STATE.0 %]</option>
+						[% END %]
+					</select>
+				</div>
+		
+				<div>
+					<label for="shipping_city">* City</label>			
+					<input class="input-wide" type="text" name="shipping_city_server_[% servernumber %]" value="[% SHIPPING_CITY %]" maxlength="50" />
+				</div>			
+		
+				<div>
+					<label for="shipping_zip">* ZIP Code</label>
+					<input class="input-wide" type="text" name="shipping_zip_server_[% servernumber %]" value="[% SHIPPING_ZIP %]"  maxlength="50" />
+				</div>
+
+				<div>
+					<label for="shipping_service">Shipping service</label>
+					<select class="input-wide" name="shipping_service_server_[% servernumber %]"></select>
+				</div>

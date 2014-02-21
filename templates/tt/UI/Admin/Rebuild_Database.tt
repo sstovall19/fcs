@@ -1,0 +1,58 @@
+[% PROCESS 'header.tt' %]
+
+	[% PROCESS infobox text="Here are the results from the permission database rebuild" %]
+
+	<table width="100%" cellspacing="3" cellpadding="2" style="text-align: left;" id="results_table" class="logs">
+		<tr>
+			<td style="padding: 2px;" class="ui-state-active">Application</td>
+			<td style="padding: 2px;" class="ui-state-active">Permission</td>
+			<td style="padding: 2px;" class="ui-state-active">Result</td>
+		</tr>
+		[% FOREACH P IN PARENT_PERMS.keys.sort %]
+		<tr>
+			<td style="padding: 2px;" class="ui-state-highlight">[% P %]</td>
+			<td style="padding: 2px;" class="ui-state-highlight ui-state-disabled">&nbsp;</td>
+			<td style="padding: 2px;" class="ui-state-highlight">[% IF PARENT_PERMS.$P.removed %]Removed[% ELSE %]Failed to remove[% END %]</td>
+		</tr>
+		[% END %]
+		[% FOREACH P IN CHILD_PERMS.keys.sort %]
+			[% FOREACH C IN CHILD_PERMS.$P.keys.sort %]
+			<tr>
+				<td style="padding: 2px;" class="ui-state-highlight ui-state-disabled">&nbsp;->&nbsp;[% P %]</td>
+				<td style="padding: 2px;" class="ui-state-highlight">[% C %]</td>
+				<td style="padding: 2px;" class="ui-state-highlight">[% IF CHILD_PERMS.$P.$C.removed %]Removed[% ELSE %]Failed to remove[% END %]</td>
+			</tr>
+			[% END %]
+		[% END %]
+		[% FOREACH P IN NEW_PERMS.keys.sort %]
+		<tr>
+			<td style="padding: 2px;" class="ui-state-highlight">[% P %]</td>
+			<td style="padding: 2px;" class="ui-state-highlight ui-state-disabled">&nbsp;</td>
+			<td style="padding: 2px;" class="ui-state-highlight">[% IF NEW_PERMS.$P.updated %]Updated[% ELSIF NEW_PERMS.$P.added %]Added[% ELSE %]Failed to process[% END %]</td>
+		</tr>
+			[% FOREACH C IN NEW_PERMS.$P.PERMISSIONS.keys.sort %]
+			<tr>
+				<td style="padding: 2px;" class="ui-state-highlighti ui-state-disabled">&nbsp;->&nbsp;[% P %]</td>
+				<td style="padding: 2px;" class="ui-state-highlight">[% C %]</td>
+				<td style="padding: 2px;" class="ui-state-highlight">[% IF NEW_PERMS.$P.PERMISSIONS.$C.updated %]Updated[% ELSIF NEW_PERMS.$P.PERMISSIONS.$C.added %]Added[% ELSE %]Failed to process[% END %]</td>
+			</tr>
+			[% END %]
+		[% END %]
+	</table>	
+
+	[% PROCESS infobox text="Here are the results for the searchable database rebuild" %]
+
+	<table width="100%" cellspacing="3" cellpadding="2" style="text-align: left;" id="results_table" class="logs">
+		<tr>
+			<td style="padding: 2px;" class="ui-state-active">Application</td>
+			<td style="padding: 2px;" class="ui-state-active">Result</td>
+		</tr>
+		[% FOREACH APP IN SEARCH_UPDATES %]
+		<tr>
+			<td style="padding: 2px;" class="ui-state-highlight">[% APP.mode %]</td>
+			<td style="padding: 2px;" class="ui-state-highlight">[% IF APP.removed %]Removed[% ELSIF APP.added %]Added[% ELSIF APP.updated %]Updated[% ELSE %]Failed to process[% END %]</td>
+		</tr>
+		[% END %]
+	</table>
+	
+[% PROCESS 'footer.tt' %]

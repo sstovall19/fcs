@@ -1,0 +1,104 @@
+[% PROCESS 'header.tt'  %]
+
+<link href="/css/jquery.mCustomScrollbar.css" rel="stylesheet" type="text/css" />
+<link href="/css/Sales.Create_Quote.css" rel="stylesheet" type="text/css" />
+
+<script src="/js/jquery.mousewheel.min.js"></script>
+<script src="/js/jquery.mCustomScrollbar.js"></script>
+[% USE date %]
+<script src="/js/jquery.orderDependencies.js?[% date.format %]"></script>
+<script src="/js/createQuote.js"></script>
+
+[% IF PERMISSION.can('mix_and_match', 'w') %]
+	<h4>* !You have mix and match permissions</h4>
+[% END %]
+
+[% IF PERMISSION.can('manager_discount', 'w') %]
+	<h4>* !You can add manager discounts</h4>
+[% END %]
+
+[% PROCESS 'modules/dialogBox.tt'  %]
+[% PROCESS 'modules/Sales/Create_Quote/ReviewWindowPanel.tt'  %]
+[% PROCESS 'modules/Sales/Create_Quote/EditQuoteForm.tt'  %]
+
+<table width="100%">
+	<tr>
+		<td align="center">
+          [% PROCESS 'modules/Sales/Create_Quote/nav.tt'  %]
+          [% PROCESS 'modules/Sales/Create_Quote/formContainer.tt'  %]
+		</td>
+	</tr>
+</table>
+
+<img src="/images/loading_large.gif" style="display: none;">
+
+[% PROCESS 'footer.tt' %]
+
+[% BLOCK right_preview %]
+
+[% PROCESS 'modules/Create_Quote/rightPreview.tt' %]
+[% END %]
+
+[% #This display method will display a list of images along the bottom of a preview window positioned at the top of the form.  Must use label_display dropdown and have only one label for the category or the display will revert to right_preview of multiple items %]
+
+[% BLOCK top_preview_image %]
+
+   [% PROCESS 'modules/Create_Quote/topPreview.tt' %]
+
+[% END %]
+
+[% BLOCK 'right_preview_select_bundle' %]
+
+  [% PROCESS 'modules/Create_Quote/rightPreviewSelectBundle.tt' %]
+
+[% END %]
+
+<script type="text/javascript">
+ var quoteServer = '';
+   var shippingServer = '';
+   var contact = '';
+   var fadeNext = false;
+   var bundle_list = {};
+   var hasDiscounts = false;
+   var isSelectedDeployment = [% IF selected_deployment %]true[% ELSE %]false[% END %];
+   var isUserTypeView = [% IF pre_form_categories %]true[% ELSE %]false[% END %];
+   var show_rent = [% IF HAS_BUY_OPTION && HAS_RENT_OPTION %]true[% ELSE %]false[% END %];
+   var deploymentId = "[% selected_deployment %]";
+ 
+  $(document).ready(function()
+    {  
+        //initalizing current server
+       [% IF SESSION.current_server %]
+          var current_server = [% SESSION.current_server %];
+       [% ELSE %]
+          var current_server = 1;
+       [% END %]
+         
+       //initializing quote server
+      [% IF SESSION.server_quote.SERVERS %]
+           [% CURRENT_SERVER = SESSION.current_server %]
+           [% IF SESSION.server_quote.SERVERS.$CURRENT_SERVER %]
+               quoteServer = [% SESSION.server_quote.SERVERS.$CURRENT_SERVER %];                       
+           [% END %]
+       [% END %]
+       
+       //initializing shipping server
+       [% IF SESSION.server_quote.SHIPPING %]
+            [% IF SESSION.server_quote.SHIPPING.$CURRENT_SERVER %]
+                shippingServer = [% SESSION.server_quote.SHIPPING.$CURRENT_SERVER %];
+            [% END %]
+       [% END %]
+       
+       //initializing contact   
+       [% IF SESSION.server_quote.CONTACT %]
+             contact = [% SESSION.server_quote.CONTACT %];
+       [% END %]
+       
+       //we should fade the next button
+       [% IF selected_deployment && !pre_form_categories %]
+            fadeNext = true;
+       [% END %]
+   });
+
+init();
+</script>

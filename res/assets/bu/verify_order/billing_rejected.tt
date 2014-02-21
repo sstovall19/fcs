@@ -1,0 +1,13 @@
+Greetings.<br/><br/>
+A order ([% order.order_id %]) has been halted due to billing rejection!<br/>
+<br/>
+Company: [% order.company_name %]<br/>
+First Name: [% order.contact.first_name %]<br/>
+Last Name: [% order.contact.last_name %]<br/>
+Email: [% order.contact.email %]<br/>
+<br/>
+<br/>
+<br/>
+Info:  This file is billing_rejected.tt, which contains an HTML template to display<br/>
+when an order is submitted.  The "order" data structure is passed along, and<br/>
+is available for display or manipulation.<br/>

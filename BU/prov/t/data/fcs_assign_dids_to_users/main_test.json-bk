@@ -1,0 +1,80 @@
+{
+  "order": {
+    "order_id": "52914",
+    "order_type": "ADDON",
+    "record_type": "ORDER",
+    "created": "2012-11-11 20:02:00",
+    "updated": "2012-11-11 20:12:00",
+    "total_price": "4000.00",
+    "balance": "0.00",
+    "netsuite_lead_id": "21134",
+    "netsuite_salesperson_id": "11234",
+    "customer_id": "22031",
+    "reseller_id": "",
+    "contact_id": "219",
+    "status": "INPROGERSS",
+    "order_groups": [
+      {
+        "order_group_id": "1",
+        "order_id": "52914",
+        "server_id": "12354",
+        "address_id": "25",
+        "shipping_type_id": "1",
+        "product_id": "6",
+        "netsuite_oppotunity_id": "15523",
+        "total_price": "3000.00",
+        "total_sales_tax": "300.00",
+        "sales_tax_rate": "10.00",
+        "added_can_link": "1",
+        "added_support_contract_id": "4423",
+        "added_voip_provider": "inphonex",
+        "added_voip_sip": "FonalityVoIP-15037",
+        "added_inphonex_id": "44332",
+        "added_HUD": "3.5.650",
+        "order_bundles": [
+          {
+            "order_bundle_id": "1",
+            "bundle_id": "83",
+            "created_server_bundle_id": "1231",
+            "order_group_id": "1",
+            "quantity": "3",
+            "list_price": "200.00",
+            "unit_price": "300.00",
+            "total_price": "900.00",
+            "phone_type": "polycom",
+            "phone_model": "Polycom IP331",
+            "order_bundle_details": [
+              {
+                "order_bundle_detail_id": "1",
+                "order_bundle_id": "1",
+                "did_number": "",
+                "lnp": "0",
+                "created_user_id": "1532",
+                "phone_mac": "0004F221BE01",
+                "extension_number": "7226"
+              },
+              {
+                "order_bundle_detail_id": "2",
+                "order_bundle_id": "1",
+                "did_number": "",
+                "lnp": "0",
+                "created_user_id": "1533",
+                "phone_mac": "0004F221BE02",
+                "extension_number": "7227"
+              },
+              {
+                "order_bundle_detail_id": "3",
+                "order_bundle_id": "1",
+                "did_number": "",
+                "lnp": "0",
+                "created_user_id": "1534",
+                "phone_mac": "0004F221BE03",
+                "extension_number": "7228"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

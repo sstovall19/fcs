@@ -1,0 +1,325 @@
+<!-- MEDIA TOP 70mm -->
+[% TEXT_COLOR = '#565557' %]
+<html><body><img src="FonalityLogo.jpg" width="180" height="35" align="right" />
+<font color="#333333">
+<table align="left" width="680"><tr><td width="40"></td>
+<td>
+[% TH_BG_COLOR = "#dddddd" %]
+[% HEADER_FONT_SIZE = "3" %]
+[% TH_FONT_SIZE = "2" %]
+[% TD_FONT_STYLE = '<font size="1" color="#666666">' %]
+[% IF VALID_RESELLER %]
+	[% TABLE_WIDTH = 600 %]
+[% ELSE %]
+	[% TABLE_WIDTH = 600 %]
+[% END %]
+
+[% ITEM_GROUP_LIST = [
+						'PBXtra Software',
+						'PBXtra HUD',
+						'PBXtra User Licenses',
+						'PBXtra Optional Software',
+						'servers',
+						'redundancy',
+						'warranty',
+						'cpu',
+						'ram',
+						'raid',
+						'power',
+						'Cards - Digital',
+						'analog_base_pci',
+						'analog_base_pcie',
+						'analog_exp1',
+						'analog_exp2',
+						'Cards - Analog',
+						'Cards - Other',
+						'IP Phones',
+						'Channel Bank',
+						'Miscellaneous',
+						'Annual Support Group',
+						'Configuration Fees Group',
+						'Reseller Phone Provisioning Fee',
+						'Reseller Phone Provisioning Credit',
+						'discount'
+] %]
+
+[% BLOCK ITEM_GROUP_HEADER %]
+	<thead>
+		[% IF VALID_RESELLER %]
+			<th bgcolor="[% TH_BG_COLOR %]" width="350" align="left"><font size="[% TH_FONT_SIZE %]">Description</font></th>
+			<th bgcolor="[% TH_BG_COLOR %]" width="70" align="center"><font size="[% TH_FONT_SIZE %]">Retail</font></th>
+			<th bgcolor="[% TH_BG_COLOR %]" width="30" align="right"><font size="[% TH_FONT_SIZE %]">Qty</font></th>
+			<th bgcolor="[% TH_BG_COLOR %]" width="70" align="center"><font size="[% TH_FONT_SIZE %]">Price</font></th>
+			<th bgcolor="[% TH_BG_COLOR %]" width="70" align="center" nowrap="nowrap"><font size="[% TH_FONT_SIZE %]">Sub Total</font></th>
+		[% ELSE %]
+			<th bgcolor="[% TH_BG_COLOR %]" width="420" align="left"><font size="[% TH_FONT_SIZE %]">Description</font></th>
+			<th bgcolor="[% TH_BG_COLOR %]" width="70" align="center"><font size="[% TH_FONT_SIZE %]">Price</font></th>
+			<th bgcolor="[% TH_BG_COLOR %]" width="30" align="right"><font size="[% TH_FONT_SIZE %]">Qty</font></th>
+			<th bgcolor="[% TH_BG_COLOR %]" width="70" align="center" nowrap="nowrap"><font size="[% TH_FONT_SIZE %]">Sub Total</font></th>
+		[% END %]
+	</thead>
+[% END %]
+
+[% BLOCK ITEM_GROUP_ROW %]
+<tr>
+				<td>[% TD_FONT_STYLE %][% ITEM.name %] ([% ITEM.group_name %])</font></td>
+				<td align="right">
+					<table border="0" width="100%">
+						<tr>
+							<td>[% TD_FONT_STYLE %]$</font></td>
+							<td align="right">[% TD_FONT_STYLE %][% ITEM.price %]</font></td>
+						</tr>
+					</table>
+				</td>
+				<td align="center">[% TD_FONT_STYLE %][% ITEM.quantity %]</font></td>
+				[% IF VALID_RESELLER %]
+					<td align="right">
+						<table border="0" width="100%">
+							<tr>
+								<td>[% TD_FONT_STYLE %]$</font></td>
+								<td align="right">[% TD_FONT_STYLE %][% ITEM.reseller_price %]</font></td>
+							</tr>
+						</table>
+					</td>
+					<td align="right">
+						<table border="0" width="100%">
+							<tr>
+								<td>[% TD_FONT_STYLE %]$</font></td>
+								<td align="right">[% TD_FONT_STYLE %][% ITEM.reseller_subtotal %]</font></td>
+							</tr>
+						</table>
+					</td>					
+				[% ELSE %]
+					<td align="right">
+						<table border="0" width="100%">
+							<tr>
+								<td>[% TD_FONT_STYLE %]$</font></td>
+								<td align="right">[% TD_FONT_STYLE %][% ITEM.subtotal %]</font></td>
+							</tr>
+						</table>
+					</td>
+				[% END %]	
+			</tr>	
+[% END %]
+
+<span color="[% TEXT_COLOR %]">
+[%# Agent and User info  %]
+[% USE date  %]
+<table border="0" cellpadding="0" cellspacing="0" width="[% TABLE_WIDTH %]">
+	<tr valign="top">
+		<td width="40%">
+			<table border="0">
+				<tr>
+					<td>Date: [% date.format(format => "%B %d, %Y") %]</td>
+				</tr>
+				<tr>
+					<td>Proposal Number: <strong>[% PROPOSAL_ID %]</strong></td>
+				</tr>
+			</table>
+		</td>
+		<td width="60%" align="right">
+			<table border="0">
+				<tr>
+					<td align="right">Account Manager:</td>
+					<td nowrap="nowrap">[% SALES_PERSON_NAME %], [% SALES_PERSON_TITLE %]</td>
+				</tr>
+				<tr>
+					<td align="right">Phone:</td>
+					<td>[% SALES_PERSON_PHONE %]</td>
+				</tr>
+				<tr>
+					<td align="right">Email:</td>
+					<td>[% SALES_PERSON_EMAIL %]</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
+
+<p>[% NAME %]<br>
+[% EMAIL %]<br>
+</p>
+<strong><font size="[% HEADER_FONT_SIZE %]">Systems &amp; Solutions</font></strong><br>
+<table border="1px" width="[% TABLE_WIDTH %]" cellpadding="5">
+	[% PROCESS ITEM_GROUP_HEADER %]
+	<tbody>
+		[% FOREACH ITEM = ORDER_ITEMS %]
+		[% IF ITEM.group_name.search('PBXtra')%]
+			[% PROCESS ITEM_GROUP_ROW %]
+		[% END %]
+	[% END %]
+	</tbody>
+</table>
+<br>
+<p><strong><font size="[% HEADER_FONT_SIZE %]">Phones &amp; Hardware</font></strong></p>
+<table border="1px" width="[% TABLE_WIDTH %]" cellpadding="5">
+	[% PROCESS ITEM_GROUP_HEADER %]
+	<tbody>
+		[% FOREACH ITEM = ORDER_ITEMS %]
+		[% IF ITEM.group_name == "servers"
+		|| ITEM.group_name == "redundancy" 
+		|| ITEM.group_name == "cpu" 
+		|| ITEM.group_name == "ram" 
+		|| ITEM.group_name == "raid" 
+		|| ITEM.group_name == "Cards - Digital" 
+		|| ITEM.group_name == "analog_base_pci" 
+		|| ITEM.group_name == "analog_base_pcie" 
+		|| ITEM.group_name == "analog_exp1" 
+		|| ITEM.group_name == "analog_exp2" 
+		|| ITEM.group_name == "Cards - Analog" 
+		|| ITEM.group_name == "Cards - Other" 
+		|| ITEM.group_name == "IP Phones" 
+		|| ITEM.group_name == "Channel Bank" 
+		
+		%]
+			[% PROCESS ITEM_GROUP_ROW %]
+		[% END %]
+	[% END %]
+	</tbody>
+</table>
+<br>
+<p><strong><font size="[% HEADER_FONT_SIZE %]">Misc</font></strong></p>
+<table border="1px" width="[% TABLE_WIDTH %]" cellpadding="5">
+	[% PROCESS ITEM_GROUP_HEADER %]
+	<tbody>
+		[% FOREACH ITEM = ORDER_ITEMS %]
+			[% IF ITEM.group_name == "Miscellaneous"
+			|| ITEM.group_name == "Annual Support Group" 
+			|| ITEM.group_name == "Configuration Fees Group" 
+			|| ITEM.group_name == "Reseller Phone Provisioning Fee" 
+			|| ITEM.group_name == "Reseller Phone Provisioning Credit" 
+			|| ITEM.group_name == "discount" 
+			%]
+				[% PROCESS ITEM_GROUP_ROW %]	
+		[% END %]
+	[% END %]
+	</tbody>
+</table>
+<br>
+[% RIGHT_CELL  = 100 %]
+[% LEFT_CELL_WIDTH = 490 %]
+[%# LEFT_CELL_WIDTH = TABLE_WIDTH - MIDDLE_CELL - RIGHT_CELL %]
+
+<table cellpadding="5" width="[% TABLE_WIDTH %]">
+	[% IF VALID_RESELLER %]
+			<tr>
+				<th align="right"><font size="[% TH_FONT_SIZE %]">TOTAL RETAIL:</font></th>
+				<td align="right" width="[% RIGHT_CELL %]">[% TD_FONT_STYLE %]$[% RETAIL_TOTAL %]</font></td>
+				
+			</tr>
+			<tr>
+				<th align="right"><font size="[% TH_FONT_SIZE %]">RESELLER DISCOUNT:</font></th>
+				<td align="right" width="[% RIGHT_CELL %]">[% TD_FONT_STYLE %](<span color="red">[% RESELLER_DISCOUNT %]</span>)</font></td>
+			</tr>
+	[% END %]
+
+	[% IF DOLLAR_AMT_DEDUCTION_ALLOWED AND DOLLAR_AMT_DEDUCTION > 0 %]
+		<tr>
+			<th align="right"><font size="[% TH_FONT_SIZE %]">MANAGER'S DISCOUNT (expires [% DOLLAR_AMT_EXPIRE %]):</font></th>
+			<td align="right" width="[% RIGHT_CELL %]">[% TD_FONT_STYLE %](<span color="red">[% DOLLAR_AMT_DEDUCTION %]</span>)</td>
+		</tr>
+	[% END %]
+
+	[% IF SMALL_SERVER_DISCOUNT %]
+		<tr>
+			<td align="right" width="[% LEFT_CELL_WIDTH %]">
+				[% TD_FONT_STYLE %]Limited Time Promotion for 10 Seats or Less:
+			</td>
+			
+			<td align="right" width="[% RIGHT_CELL %]">
+				[% TD_FONT_STYLE %]$(<span color="red">[% SMALL_SERVER_DISCOUNT %]</span>)
+			</td>
+		</tr>
+	[% END %]
+
+	[% IF PROMO_CODE %]
+		<tr>
+			<th align="right"><font size="[% TH_FONT_SIZE %]">
+				PROMOTIONAL DISCOUNT:
+			</font></th>	
+			<td align="right" width="[% RIGHT_CELL %]">
+				[% TD_FONT_STYLE %]$(<span color="red">[% PROMO_CODE_DISCOUNT %]</span>)
+			</td>
+		</tr>
+	[% END %]
+
+		<tr>
+			<th width="490" align="right"><font size="[% TH_FONT_SIZE %]">
+				SUB TOTAL:
+			</font></th>
+			<td align="right" width="[% RIGHT_CELL %]">
+				[% TD_FONT_STYLE %]$[% SUBTOTAL %]
+			</td>
+		</tr>
+
+	[% IF SALES_TAX > 0 %]
+		<tr>
+			<th align="right"><font size="[% TH_FONT_SIZE %]">			
+					[% SALES_TAX_ASTERISKS %] Estimated [% SHIPPING_STATE %] Sales Tax ([% SALES_TAX_ENGLISH %]%):
+				
+			</font></th>
+			<td align="right" width="[% RIGHT_CELL %]">
+				[% TD_FONT_STYLE %]$[% SALES_TAX %]
+			</font></td>
+		</tr>
+	[% END %]
+
+		<tr>
+			<th align="right"><font size="[% TH_FONT_SIZE %]">
+				Shipping and Handling ([% SHIPPING_SERVICE %]):
+			</font></th>
+			<td align="right" width="[% RIGHT_CELL %]">[% TD_FONT_STYLE %]
+				$[% SHIPPING_COST %]
+			</td>
+		</tr>
+
+	<tr>
+		<th align="right"><font size="[% TH_FONT_SIZE %]">
+			[% IF WIZARD %][% WIZARD_ASTERISKS %]&nbsp;[% END %]TOTAL:
+		</font></th>
+		<td align="right" width="[% RIGHT_CELL %]">[% TD_FONT_STYLE %]
+			[% TD_FONT_STYLE %]$[% QUOTE_TOTAL %]</font>
+		</td>
+	</tr>
+</table>
+<br>
+[%#	===================================== 
+  #	FOOTNOTES
+  # ====================================%]
+  
+	[% IF BACKUP_SERVER_SELECTED %]
+		<font size="1">[% BACKUP_SERVER_STARS %]
+				Live Back-up Servers must be provisioned with the same expansion cards as the main server.</font><br>
+	[% END %]
+
+	[% IF SHOW_SUPPORT_MSG %]
+		<font size="1">
+				[% SUPPORT_STARS %] ([% PHONE_CNT %] Phone[% UNLESS PHONE_CNT == 1 %]s[% END %]
+			+ [% PORT_CNT %] Phone Port[% UNLESS PORT_CNT == 1 %]s[% END %])
+			= [% PHONE_CNT + PORT_CNT %]&nbsp;[% SUPPORT_NAME_WITHOUT_STARS %]
+		</font><br>
+	[% END %]
+
+	[% IF SALES_TAX > 0 %]
+		<font size="1">
+			[% SALES_TAX_ASTERISKS %]
+			This is an estimate based on your state. This amount may vary slightly based on your exact tax jurisdiction and will be confirmed in your final invoice.
+		</font><br>
+	[% END %]
+
+	[% IF WIZARD %]
+		<font size="1">
+			[% WIZARD_ASTERISKS %]
+			This is a simple quote estimate based on preliminary information provided by you. A dedicated Fonality phone system expert will contact you for a more detailed and accurate price quote.
+		</font><br>
+	[% END %]
+
+	<p align="center"><a href='[% SERVER_NAME %]/q.cgi?src=[% TT_DIR %]&recall=[% PROPOSAL_ID %]&email=[% EMAIL %]&utm_source=proposal&utm_medium=quote&utm_campaign=sales-team&utm_content=body-text-changeproposal'>Click here to change this Proposal</a></p>
+			
+[% UNLESS WIZARD OR PCMALL %]
+	<p align="center"><a href='[% SCRIPT_URL %]?src=[% TT_DIR %]&convert=[% PROPOSAL_ID %]&eml=[% EMAIL %]&utm_source=proposal&utm_medium=quote&utm_campaign=sales-team&utm_content=body-text-placeorder'>Click here to place this Order</a></p>		
+[% END %]
+</div>
+</td><td width="40"></td></tr></table></font>
+</body>
+</html>

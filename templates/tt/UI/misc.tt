@@ -1,0 +1,6 @@
+[% BLOCK infobox %]
+	<div class="ui-widget ui-widget-content ui-corner-all infobox">
+		[% text %]
+	</div>
+[% END %]
+

@@ -1,0 +1,83 @@
+  <div id="form_container">
+
+                    [% FOREACH CATEGORY IN categories.nsort('priority') %]
+                        [% HIDE = 0 %]
+        
+                        [% IF CATEGORY.name == 'Users' && !PERMISSION.can('mix_and_match', 'w') %]
+                            [% HIDE = 1 %]
+                        [% END %]
+        
+                          
+                            [%  IF CATEGORY.display_type == 'no_preview' %]
+                                [% PROCESS no_preview CATEGORY=CATEGORY %]
+                            [% ELSE %]
+                                [% PROCESS right_preview CATEGORY=CATEGORY HIDDEN=HIDE %]
+                            [% END %]
+        
+                     [% END %]
+
+                 <div class="tabs-bottom tabs-centre tabs-min tabs-fixed-height" id="form_components">   
+                        [% PROCESS 'modules/Sales/Create_Order/shipping.tt'  %]
+                        [% PROCESS 'modules/Sales/Create_Order/orderYourPhone.tt'  %]
+                        [% PROCESS 'modules/Sales/Create_Order/bringYourOwnPhone.tt'  %]
+                        [% IF PERMISSION.can('send_echosign', 'w') %]
+                        <script>showSign = true;</script>
+                         [% PROCESS 'modules/Sales/Create_Order/sendEcho.tt'  %]
+                        [% END %] 
+                        [% PROCESS 'modules/Sales/Create_Order/payment.tt'  %]
+                        
+                 </div>
+                 [% PROCESS 'modules/Sales/Create_Order/terms.tt'  %]
+                 [% PROCESS 'modules/Sales/Create_Order/confirmation.tt'  %]
+                  <div id="review_panel" class="review_results">
+                   <img src="/images/loading_large.gif"/>      
+                   </div>
+    </div>
+    <div style="clear: both;" id="form_cat_nav" class="tabs-min">
+       <ul id="form_categories" class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-corner-bottom">
+         <li class="ui-state-default ui-tabs-selected ui-state-active ui-corner-bottom">
+            <a href="#Shipping">
+                <div id="icon_Shipping" class="navtabs_text icons">
+                    <img width="25" height="25" src="/iconify?&w=25&h=25&icon=shipping"><br/>Shipping
+                </div>
+            </a>
+        </li>
+        <li class="ui-state-default ui-corner-bottom">
+            <a href="#Pick">
+                <div id="icon_Pick" class="navtabs_text icons">
+                    <img width="25" height="25" src="/iconify?&w=25&h=25&icon=phones"><br/>Pick Phone
+                </div>
+            </a>
+        </li>
+        <li class="ui-state-default ui-corner-bottom">
+            <a href="#RePro">
+                <div id="icon_Repro" class="navtabs_text icons">
+                    <img width="25" height="25" src="/iconify?&w=25&h=25&icon=reprovisioned_phone"><br/>Repro Phone
+                </div>
+            </a>
+        </li>
+        [% IF PERMISSION.can('send_echosign', 'w') %]
+        <li class="ui-state-default ui-corner-bottom">
+            <a href="#Sign">
+                <div id="icon_Sign" class="navtabs_text icons">
+                    <img width="25" height="25" src="/iconify?&w=25&h=25&icon=sign"><br/>EchoSign
+                </div>
+            </a>
+        </li>
+        [% END %]
+        <li class="ui-state-default ui-corner-bottom">
+            <a href="#Payment">
+                <div id="icon_Payment" class="navtabs_text icons">
+                    <img width="25" height="25" src="/iconify?&w=25&h=25&icon=payment"><br/>Payment
+                </div>
+            </a>
+        </li>
+        <li class="ui-state-default ui-corner-bottom">
+            <a href="#Terms">
+                <div id="icon_Terms" class="navtabs_text icons">
+                    <img width="25" height="25" src="/iconify?&w=25&h=25&icon=terms"><br>Service<br>Terms
+                </div>
+            </a>
+        </li>
+      </ul>
+   </div>

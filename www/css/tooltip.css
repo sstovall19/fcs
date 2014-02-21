@@ -1,0 +1,7 @@
+.tooltipSpan{
+	background: transparent; border: 0; padding: 0; position: relative;
+}
+
+.tooltipSpan .innerSpan{
+	margin-right: 0.3em; position: relative;
+}

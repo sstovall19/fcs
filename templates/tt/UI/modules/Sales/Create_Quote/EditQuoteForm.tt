@@ -1,0 +1,22 @@
+<!-- Edit quote form -->
+<table class="super-centered" id="edit-quote-form">
+        <tr>
+                <td>
+            <form method="GET" action="/">
+            <input type="hidden" name="m" value="Sales.Create_Quote">
+            <input type="hidden" name="action" value="retrieve_quote">
+            <div class="grey-round" id="round">
+            <div id="close-edit-quote-form">[close]</div>
+                <h4>Edit an existing quote</h4>
+                <div class="form_label">Quote number:</div>
+                <div class="form_element"><input id="retrieve_quote_id" type="text" name="quote_id" value="" size="10" maxlength="10"></div>
+                <div class="form_clear"></div>
+                <div class="form_label noBorder"></div>
+                <div class="form_element"><input class="ui-widget ui-state-highlight" type="submit" name="retrieve_quote" value="Retrieve"></div>
+                <div class="form_clear"></div>
+            </div>
+            </form>
+        </td>
+    </tr>
+</table>
+<!-- End edit quote form -->

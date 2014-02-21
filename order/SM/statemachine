@@ -1,0 +1,930 @@
+#!/usr/bin/perl
+
+use warnings;
+use strict;
+
+use SM::Config qw(
+    SM_DSN
+    SM_USER
+    SM_PASS
+);
+use SM::DB;
+use SM::Exception qw( 
+    throwException 
+    isException
+);
+use SM::Model::Registry::Register;
+use SM::Model::Transaction;
+use SM::Globals qw(
+    SM_RECIEVE_ERROR
+    SM_RECIEVE_BUFFER
+    %SM_STATUS_CODES
+    %SM_STATUS_CODES_STR
+);
+use IPC::Open3;
+use File::Slurp;
+use Data::Dumper;
+use Getopt::Std;
+use Sys::Hostname;
+use Try::Tiny;
+use JSON::XS;
+use IO::Socket;
+use IO::Handle;
+use IO::Select;
+
+use constant DEBUG => 0; # turn on to get a bunch of messages.
+use constant SLEEP_TIME => 5; # new transaction polling interval, in seconds.
+use constant DEFAULT_SM_PORT => 50000; # the port the parent process will listen to.
+
+# Internal status codes.
+use constant OK				=> 0;
+use constant TRANSACTION_PROCESSED	=> 1;
+use constant NO_TRANSACTION_FOUND	=> 2;
+use constant PROCESS_ERROR		=> 3;
+
+# Telling the exception class to die in the event an exception is thrown.
+$SM::Exception::exitOnException = 1;
+
+# Globals..
+our $DB;
+our $SM_PID;
+our $SM_PORT;
+our $SM_HOST;
+our $SM_NAME;
+our $SM_STATE;
+our $SM_FAMILYNAME;
+our $registry;
+our %OPTS;
+our $SHOW_OPTIONS_HANDLER;
+our %PROCESS_TABLE;
+our $json;
+our $CURRENT_TRANS; # A reference to the current transaction being processed.
+our $CLIENT_DEBUG; # Set this flag to true to return verbose messages to the client.
+our $DEBUG;
+our $TEST_MODE; # Turns on test mode.
+our $TRANS_GUID; # The guid for a transaction.
+our $SM_MODE_IDLE; # Turns on "idle" mode.
+our $SM_STATUS;
+our $SM_DISPLAY_OP;
+
+BEGIN {
+    # Trap interrupts.
+    use sigtrap 'handler' => \&intHandler, 'INT';
+    use sigtrap 'handler' => \&intHandler, 'QUIT';
+
+    # Turn off output buffering.
+    $|=1;
+
+    # Get options.
+    getopts('hf:P:DTt:NR',\%OPTS);
+
+    $SHOW_OPTIONS_HANDLER = sub {
+        print STDOUT "\nState Machine command-line options:\n\n"
+                    ."\t -f <family name> - Family name to process.\n"
+                    ."\t -P <port> - Port to bind to.\n"
+                    ."\t -h - (switch) Display these options.\n"
+                    ."\t -D - (switch) Turn on verbose messages for debugging.\n"
+                    ."\t -T - (switch) Run in test mode.\n"
+                    ."\t -t <guid> - Run the transaction corresponding to <guid>.\n"
+                    ."\t -N - (switch) Start in \"idle\" mode. The SM will not poll for transactions.\n"
+                    ."\t -R - (switch) After startup, display operational data.\n" 
+                    ."\n";
+    };
+
+    # Make sure we've got what we need to run.
+    if ( defined $OPTS{h} ) {
+        &$SHOW_OPTIONS_HANDLER;
+        exit(0);
+    }
+    if ( !defined $OPTS{f} && !defined $OPTS{t} ) {
+        print STDOUT "You must pass in a familyname by using the -f argument.\n\n";
+        exit(0);
+    }
+
+    $DB = SM::DB->new(dsn => SM_DSN, user => SM_USER, pass => SM_PASS);
+    $SM_HOST = hostname();
+    $SM_NAME = $0;
+    $SM_PID = $$;
+    $SM_FAMILYNAME = $OPTS{f} || 'Custom';
+    $SM_STATE = 1;
+    $SM_PORT = defined $OPTS{P} ? $OPTS{P} : DEFAULT_SM_PORT;
+    $CLIENT_DEBUG = 0;
+    $DEBUG = defined $OPTS{D} ? 1 : DEBUG;
+    $TEST_MODE = defined $OPTS{T} ? 1 : $TEST_MODE;
+    $TRANS_GUID = defined $OPTS{t} ? $OPTS{t} : undef;
+    $SM_MODE_IDLE = defined $OPTS{N} ? 1 : 0;
+    $SM_STATUS = $SM_STATUS_CODES{STARTING};
+    $SM_DISPLAY_OP = defined $OPTS{R} ? 1 : 0;
+}
+
+END {
+    if ( $SM_STATE == 1) {
+        shutDown();
+    }
+}
+
+my %commandTable = (
+    'ping'                      => \&doCommandPing,
+    'restart_transaction'       => \&doCommandRestartTrans,
+    'rollback_current'		=> \&doRollbackCurrent,
+    'stop'			=> \&doStop,
+    'status'			=> \&doStatus,
+);
+
+procMsg("Starting the State Machine for \"$SM_FAMILYNAME\" transactions...\n");
+$registry = new SM::Model::Registry::Register( force_db => $DB );
+$registry->register(
+    familyname => $SM_FAMILYNAME,
+    sm_host => $SM_HOST,
+    port => $SM_PORT,
+    sm_pid  => 0,
+);
+registry($registry);
+
+pipe(P_READER, C_WRITER);
+pipe(C_READER, P_WRITER);
+C_WRITER->autoflush(1);
+P_WRITER->autoflush(1);
+P_READER->blocking(0);
+C_READER->blocking(0);
+
+my $pid = fork();
+exitError("fork failed: $!\n") if !defined $pid;
+
+&main;
+
+######### FUNCTIONS ##############
+sub main {
+    if ( $pid == 0 ) {
+        # Register the child puedo-process.
+        $PROCESS_TABLE{parent}	= $SM_PID;
+        $PROCESS_TABLE{child}	= $$;
+        $SM_PID = $$;
+
+        try {
+            close C_READER;
+            close C_WRITER;
+
+            my $trans;
+            my %regData = ( sm_pid => $SM_PID );
+
+            if ( $TRANS_GUID ) {
+                $trans = new SM::Model::Transaction( db => $DB );
+                $trans->loadSubmission( guid => $TRANS_GUID );
+                $SM_FAMILYNAME = $trans->getLoadedSubmission->familyname;
+                $regData{familyname} = $SM_FAMILYNAME;
+            }
+
+            registry()->update(%regData);
+
+            # Wait a while for the parent to catch up.
+            sleep(3);
+
+            if ( $SM_MODE_IDLE ) {
+                SM_MODE_IDLE:
+                # Sleep forever.
+                procMsg(qq&Going into "idle" mode.\n&);
+                $SM_STATUS = $SM_STATUS_CODES{IDLE};
+                sleep;
+                goto SM_MODE_IDLE if $SM_MODE_IDLE;
+            }
+            elsif ( $TRANS_GUID ) {
+                deleteJobs($trans);
+                transactionOnce($trans);
+                killAll(); # leave right after.
+            }
+            else {
+                # Begin polling for transactions.
+                registry()->update( sm_pid => $SM_PID );
+                transactionLoop();
+            }
+ 
+            close P_WRITER;
+            close P_READER;
+        }
+        catch {
+            procMsg("\nA fatal error occurred: $_\n");
+            killAll();
+        };
+    }
+    else {
+        try {
+            close P_READER;
+            close P_WRITER;
+
+            my $tries = 3;
+            my $sleepTime = 3; # in seconds.
+            my $childPid = undef;
+            while ( $tries && !$childPid ) {
+                # wait a little while for the child process to setup.
+                sleep($sleepTime);
+                $tries--;
+                registryRefresh();
+                $childPid = registryData()->sm_pid;
+            }
+
+            if ( !$childPid || (kill 0,$childPid) == 0 ) {
+                procMsg("Didn't find the child process! Assuming it's failed to start.\n");
+                shutDown();
+            }
+
+            $PROCESS_TABLE{parent} = $SM_PID = $$;
+            $PROCESS_TABLE{child}  = $childPid;
+
+            if ( $SM_DISPLAY_OP ) {
+                my $info = ">Operation Info:\n"
+                          ."\t>>SM PID:$PROCESS_TABLE{child}\n"
+                          ."\t>>SM GUID:".registryData()->guid()."\n"
+                          ."\n";
+                procMsg("\t>>Operation Info:\n$info");
+            }
+
+            while (1) {
+                listenForCommand();
+            }
+
+            close C_READER;
+            close C_WRITER;
+        }
+        catch {
+            procMsg("\nA fatal error occurred: $_\n");
+            killAll();
+        };
+    }
+}
+
+sub registry {
+    my $opt = shift;
+    $registry = $opt if $opt;
+    return $registry;
+}
+
+sub registryRefresh {
+    my $reg = registry();
+    return 0 if !$reg;
+    return 0 if !$reg->dbo;
+    $reg->dbo->update->discard_changes(); 
+    return 1;
+}
+
+sub registryData {
+    my $reg = registry();
+    return 0 if !$reg;
+    return 0 if !$reg->dbo;
+    return $reg->dbo;
+}
+
+sub json {
+    my $arg = shift;
+    $json = $arg if $arg;
+    $json = JSON::XS->new->ascii->pretty->allow_nonref if !$json;
+    return $json;
+}
+
+sub killAll {
+    my $killPid = undef;
+    if 
+    ( 
+        defined $PROCESS_TABLE{child} 
+        && ($PROCESS_TABLE{child} == $SM_PID) 
+        && defined $PROCESS_TABLE{parent} 
+    ) 
+    {
+        $killPid = $PROCESS_TABLE{parent};
+    }
+    elsif 
+    ( 
+        defined $PROCESS_TABLE{parent} 
+        && ($PROCESS_TABLE{parent} == $SM_PID) 
+        && defined $PROCESS_TABLE{child} 
+    ) 
+    {
+        $killPid = $PROCESS_TABLE{child};
+    }
+
+    my $rv = kill 1, $killPid;
+    procMsg("Couldn't stop the process pid($killPid)... it may already be gone.\n") if $rv == 0;
+
+    shutDown();
+}
+
+sub listenForCommand {
+    my $host = $SM_HOST;
+    my $port = $SM_PORT;
+
+    my $sock = new IO::Socket::INET ( 
+        LocalHost => $SM_HOST,
+        LocalPort => $SM_PORT,
+        Proto => 'tcp',
+        Listen => 1,
+        Reuse => 1,
+        #Timeout => 500,
+    );
+    throwException("Could not create socket: $!") unless $sock;
+
+    $sock->autoflush(1);
+
+    procMsg("Listening for connections on port: $SM_PORT\n");
+
+    my @lines;
+
+    while ( my $client = $sock->accept() ) {
+        $client->autoflush(1);
+        my $hostinfo = gethostbyaddr($client->peeraddr,AF_INET);
+        my $msg = sprintf "Connection from %s\n", $hostinfo ? $hostinfo : 'unknown';
+        procMsg($msg);
+
+        my $buf;
+        $client->recv($buf, SM_RECIEVE_BUFFER);
+
+        my %data;
+        my $response;
+
+        if ( !$buf ) {
+            $data{message} = "The request was empty.";
+            $response = json->encode( responseEnvelope(\%data,SM_RECIEVE_ERROR) );
+        }
+        else {
+            $response = dispatchRequest($PROCESS_TABLE{child},$buf);
+        }
+
+        print $client $response;
+    }
+
+    close($sock);
+}
+
+sub dispatchRequest {
+    my $pid = shift;
+    my $request = shift;
+
+    if ( !$pid ) {
+        throwException("Not a valid pid.");
+    }
+
+    # Pause the SM.
+    my $rv = kill 'INT',$pid;
+
+    # Send the request.
+    print C_WRITER $request."\n";
+
+    #EK -  Wait for a response... for now.
+    my $response;
+    #waitpid($pid, 0);
+    sleep(1); #EK A hack for tomorrow. Must remove!!
+
+    # Grab the response 
+    local $/;
+    $response = <C_READER>;
+
+    if ( !$rv ) {
+        throwException("Couldn't communication with the child process($pid)");
+        return 0;
+    }
+
+    return $response;
+}
+
+sub responseEnvelope {
+    my $data = shift;
+    my $status = shift;
+
+    my %struct = (
+        sm => {
+            guid => registry->dbo->guid,
+            datetime => scalar localtime(),
+        }
+    );
+
+    $struct{data} = $data;
+
+    return \%struct;
+}
+
+sub respond {
+    my $data = shift;
+    my $responseStruct = responseEnvelope($data);
+    my $responseJson = json->encode($responseStruct);
+    print P_WRITER $responseJson;
+}
+
+sub doStatus {
+    my $request = shift;
+
+    my $msg = $SM_STATUS_CODES_STR{$SM_STATUS};
+    
+    my $trans = $CURRENT_TRANS;
+    if ($trans) {
+        my $sub = $trans->getLoadedSubmission();
+        if ($sub) {
+            $msg .= ' - '.$sub->guid();
+        }
+    }
+
+    respond({ message => $msg });
+}
+
+sub doStop {
+    my $request = shift;
+    
+    my $trans = $CURRENT_TRANS;
+    if ($trans) {
+        my $sub = $trans->getLoadedSubmission();
+        if ($sub) {
+            respond({ message => 'Rolling back current transaction guid('.$sub->guid().') and shutting down the SM.' });
+            doRollbackCurrent($request);
+        }
+    }
+
+    respond({ message => 'Shutting down the SM.' });
+
+    # Shut down the SM.
+    killAll(); 
+}
+
+# EK - this function doesn't work. Fix it.
+sub doRollbackCurrent {
+    my $request = shift;
+
+    my $msg;
+    if ( !$CURRENT_TRANS ) {
+        $msg = 'There are no current transactions running on this SM.';
+        procMsg("Remote command failed: $msg\n");
+        respond({ message => $msg });
+        return;
+    }
+
+    my $trans = $CURRENT_TRANS;
+    my $sub = $trans->getLoadedSubmission();
+    if ( !$sub ) {
+        $msg = "Couldn't find the submission for the current transaction.";
+        procMsg("Remote command failed: $msg\n");
+        respond({ message => $msg });
+        return;
+    }
+
+    $msg = 'Rolling back transaction guid('.$sub->guid().')';
+    procMsg($msg);
+    respond({ message => $msg });
+
+    # Get all the jobs.
+    # From the first job, loop through each completed job
+    # and rollback. 
+    my $jobs = $trans->getAllJobs();
+    if ( $jobs && scalar @$jobs ) { 
+        foreach my $job (@$jobs) {
+            if ( $job->successful() ) {
+                my $rv = processRollback($job->objectlocation(),$trans);
+                if ( $rv eq 'ROLLBACK_FAILURE' ) {
+                    procMsg("Rollback failed... Stopping this transaction.\n\n");
+                    last;
+                } 
+            }
+        }
+    }
+
+    # Start over.
+    &main; 
+}
+
+sub doCommandPing {
+    my $request = shift;
+    respond({ message => 'I\'m alive.' });
+}
+
+sub doCommandRestartTrans {
+    my $request = shift;
+   
+    if ( ref $request->{parameters} ne 'HASH' || !defined $request->{parameters}{guid}  ) {
+        respond({ message => "Can't complete the request. Make sure the proper parameters are set." });
+    }
+    else {
+        my $guid = $request->{parameters}{guid};
+        my $trans = new SM::Model::Transaction( db => $DB );
+        if ( $trans->loadSubmission(guid => $guid) ) {
+            respond({ message => "Restarting the transaction guid($guid)" });
+            eval {
+                my $rv = deleteJobs($trans);
+                procMsg("No jobs to delete.\n") if !$rv; 
+                $rv = processTransaction($trans);
+                processTransactionFinalizer($trans,$rv);
+            };
+            if ($@) {
+                respond({ message => $@ });
+            } 
+        }
+        else {
+            respond({ message => "Couldn't load the transaction guid($guid)" });
+        }
+    }
+}
+
+sub deleteJobs {
+    my ($trans) = @_;
+    my $jobs = $trans->getAllJobs();
+    return 0 if !$jobs;
+    map { $_->dbObject->delete(); } @$jobs;
+    return 1;
+}
+
+sub requestHandler {
+    my $request = shift;
+
+    # validation
+    throwException("The command parameter is required.") if !defined $request->{command};
+
+    my $handler = $commandTable{$request->{command}};    
+
+    if (defined $handler) {
+        local $CLIENT_DEBUG;
+        $CLIENT_DEBUG = 1 if ( defined $request->{parameters} && defined $request->{parameters}{debug} );
+
+        my $rv = &$handler($request);
+    }
+    else {
+        throwException("The command \"$request->{command}\" is invalid.\"");
+    }
+}
+
+sub intHandler {
+    if ( defined $PROCESS_TABLE{parent} && $SM_PID == $PROCESS_TABLE{parent} ) { 
+        procMsg("Signal caught!\n");
+        killAll();
+    }
+    else {
+        procMsg("Dispatching message.\n");
+
+        local $/; 
+        my ($request,$input);
+        $input = <P_READER>;
+
+        if ( !defined $input ) {
+            procMsg("Didn't get a request. Assuming you want this SM to shutdown.\n");
+            killAll();
+        }
+
+        try {
+            $request = json->decode($input);
+            requestHandler($request); 
+        }
+        catch {
+            #EK - Oops! An error. We'll just return an error message in the near future.
+            #... this process should then just continue whatever it was doing. 
+            respond({ message => $_ });
+            throwException($_);
+        }; 
+    }
+}
+
+sub shutDown {
+    procMsg("Shutting down the State Machine.\n");
+
+    $SM_STATE = 0;
+
+    if ( registry() ) {
+        registry()->unregister();
+    }
+
+    exit(0);
+}
+
+sub transactionLoop {
+    while (1) {
+        my $rv = OK;
+        my $trans = new SM::Model::Transaction( db => $DB );
+
+        try {
+            $rv = transactionOnce($trans);
+            if ( $rv == NO_TRANSACTION_FOUND ) {
+                procMsg("Waiting for a transaction...\n");
+                $SM_STATUS = $SM_STATUS_CODES{IDLE};
+                sleep(SLEEP_TIME);
+            }
+        }
+        catch {
+            $SM_STATUS = $SM_STATUS_CODES{IDLE}; # Make sure this is set even if the finalizer isn't called.
+            throwException($_);
+        };
+    }
+}
+
+sub transactionOnce {
+    my $trans = shift;
+    my $rv = OK;
+
+    try {
+        processTransactionStarter();
+        $rv = processTransaction($trans);
+        processTransactionFinalizer($trans,$rv);
+    }
+    catch {
+        throwException($_);
+    };
+
+    return $rv || OK;
+}
+
+sub processTransactionStarter {
+    $SM_STATUS = $SM_STATUS_CODES{WORKING};
+}
+
+sub processTransactionFinalizer {
+    my $trans = shift;
+    my $rv = shift;
+
+    if ( $rv == NO_TRANSACTION_FOUND ) {
+        return $rv;
+    }
+    elsif ( ($rv == PROCESS_ERROR) || $@ ) {
+        # Got an error.
+        procMsg("A transaction has failed...\n");
+
+        # Format the error messages.
+        my $msg = '';
+        my $err = 'No message.';
+
+        # Get the failed job.
+        my $job = $trans->getCurrentJob();
+        if ( $job ) {
+            $msg .= "\n\t>>>> Job Info <<<<"
+                 ."\n\t\tJOB: ".$job->dbObject()->objectname()
+                 ."\n\t\tSEQUENCE: ".$job->dbObject()->sequence();
+        }
+
+        if (isException($@)) {
+            $err = $@->message();
+        }
+        elsif ($@) {
+            $err = $@;
+        }
+
+        if ( $trans->isSubmissionLoaded() ) {
+            # Get the submission.
+            my $sub = $trans->getLoadedSubmission();
+
+            $msg .= "\n\t>>>> Submission Info <<<<";
+            $msg .= "\n\t\tGUID: ".$sub->guid()
+                 ."\n\t\tFAMILY: ".$sub->familyname()
+                 ."\n\t\tDATE ENTERED: ".$sub->date_entered();
+
+            $trans->submissionStatusFailure();
+        }
+
+        $msg .= "\n\t\tMESSAGE: $err" if $err;
+
+        procMsg($msg."\n\n");
+    }
+    elsif ( $rv == TRANSACTION_PROCESSED ) {
+        $trans->submissionStatusSuccess();
+    }
+    else {
+        # EK - are you sure about this?
+        $CURRENT_TRANS = undef;
+        throwException("Received unknown value after processing a transaction: \"$rv\"\n");
+    }
+
+    $CURRENT_TRANS = undef;
+
+    return $rv;
+}
+
+sub processTransaction {
+    my $trans = shift;
+
+    $CURRENT_TRANS = $trans;
+    my $rv = undef;
+
+    # Load a job into the transaction object
+    # if one isn't already loaded.
+    if ( !$trans->isSubmissionLoaded() ) {
+        $rv = $trans->loadNextSubmission(familyname => $SM_FAMILYNAME);
+        return NO_TRANSACTION_FOUND if !$rv;
+    }
+
+    my $sub = $trans->getLoadedSubmission();
+    $trans->submissionStatusRunning();
+
+    try {
+        # Create jobs for the submission.
+        $rv = $trans->initializeJobs();
+    }
+    catch {
+        my $msg = isException($_) ? $_->message() : $_;
+        procMsg("Job creation failed!\n $msg\n");
+        return PROCESS_ERROR;
+    };
+
+    if ( !$rv ) {
+        procMsg("Job creation failed!\nMake sure there are steps for familyname \"".$SM_FAMILYNAME."\"\n");
+        return PROCESS_ERROR;
+    }
+
+    # Get the first job.
+    my $jobs = $trans->getAllJobs();
+    if ( !$jobs ) {
+        procMsg("Couldn't fetch initialized jobs.\n");
+        return PROCESS_ERROR;
+    }
+
+    # Set it as the current working job.
+    $trans->setCurrentJob($jobs->[0]);
+
+    my ($input,$err,$retval,$output);
+    $input = $sub->input;
+    $input = undef if $input =~ /^\s+$/;
+
+    # Initialize the retry counter.
+    # Set to undef so this will return an error if iterations aren't set.
+    my $iterationsLeft = undef;
+    my $jobExec = undef;
+    my $retry = 0;
+
+    while ( $trans->getCurrentJob() ) {
+        if ( !$retry ) {
+            $trans->updateCurrentJob( input => $input );
+            $iterationsLeft = $trans->getCurrentJob()->dbObject->iterations() - 1;
+
+            # make sure the job file exists and is executable.
+            $jobExec = $trans->getCurrentJob()->dbObject()->objectlocation;
+
+            # can only handle executable files on the same machine, at the moment.
+            die "job path \"$jobExec\" doesn't exist!" if !-e $jobExec;
+            die "job path \"$jobExec\" is not executable!" if !-x $jobExec;
+        }
+        else {
+            $iterationsLeft--;
+            procMsg("\tWARNING: The job failed.\n");
+            procMsg("\t >> output: $output\n") if defined $output;
+            procMsg("\t >> err: $err\n") if defined $err;
+            procMsg("Retrying...\n\n");
+        }
+
+        if ( $DEBUG ) {
+            procMsg("Processing job: "
+                 .$trans->getCurrentJob()->dbObject()->objectname()."\n\t"
+                 ." Sequence: ".$trans->getCurrentJob()->dbObject()->sequence()."\n\t"
+                 ." Familyname: ".$trans->getCurrentJob()->dbObject()->familyname()."\n\t"
+                 ." Executable location: ".(defined $jobExec ? $jobExec : 'empty')."\n\t"
+                 ."  >> Iterations left... $iterationsLeft\n\t"
+                 ."  >> Has input?... ".(defined $input ? 'yes' : 'no')."\n\t");
+        }
+
+        # Arguments to the job.
+        my @jobArgs;
+        push @jobArgs,' -G '.$registry->guid();
+
+        # run the job.
+        ($output, $err, $retval) = spawnUnit($jobExec, $input, \@jobArgs);
+        
+        # Make sure blank strings are set to undef.
+        $input = undef if $input =~ /^\s+$/;
+        $output = undef if $output =~ /^\s+$/;
+        $retval = undef if $retval =~ /^\s+$/;
+
+        if ( $DEBUG ) {
+            procMsg("  >> Has output?... ".(defined $output ? 'yes' : 'no')."\n\t");
+            procMsg("  >> Return value: ".(defined $retval ? $retval : 'undefined')."\n\t");
+            procMsg("\n");
+        }
+
+        if ( $TEST_MODE ) {
+            my $tInput = defined $input ? $input : 'Input is empty.';
+            my $tOutput = defined $output ? $output : 'Output is empty.';
+            my $msg = "\@JOB_BEGIN\@\n".$trans->getCurrentJob()->dbObject()->objectname()."\n"
+                      ."\@INPUT\@\n".$tInput."\n"
+                      ."\@OUPUT\@\n".$tOutput."\n"
+                      ."\@JOB_END\@\n"
+                      ."\n\n";
+            procMsg($msg);
+        }
+
+        # if the job failed...
+        if ( $retval == -1 ) {
+
+             # Retry if we can.
+             if ( $iterationsLeft > 0 ) {
+                 $retry = 1;
+                 next;
+             }
+             else {
+                 # Ran through the maximum number of iteractions... utter failure..
+	         # ROLLBACK
+                 if ( $DEBUG ) {
+                     procMsg("\tWARNING: Maximum number of iterations reached for the job... rolling back.\n\n");
+                 }
+
+                 $rv = processRollback($jobExec,$trans,\@jobArgs);
+                 if ( $rv eq 'ROLLBACK_FAILURE' ) {
+                     procMsg("Rollback failed... Stopping this transaction.\n\n");
+                     return PROCESS_ERROR;
+                 }
+
+                 # Set the next job to the failure job, if it exists.
+                 # Otherwise, quit and return an error status.
+                 my $failureJob = $trans->getFailureJob();
+                 if ( $failureJob ) {
+                     $trans->setCurrentJob($trans->getFailureJob());
+                     $retry = 0;
+                     next;
+                 }
+                 else {
+                     return PROCESS_ERROR;
+                 }
+             }
+         }
+
+         # The job ran successfully.
+         else {
+             $trans->updateCurrentJob( output => $output, status => 'SUCCESS' );
+
+             # set output to input of next job.
+             my $successJob = $trans->getSuccessJob();
+             if ( $successJob ) {
+                 $input = $output;
+                 $trans->setCurrentJob($successJob);
+                 $trans->updateCurrentJob( input => $input );
+                 next;
+             }
+             else {
+                 procMsg("Transaction successfully complete.\n\n");
+                 last;
+             }
+        }
+
+        # Reset vars defined outside of this loop.
+        $iterationsLeft = undef;
+        $jobExec = undef;
+        $retry = 0;
+    }
+
+    return TRANSACTION_PROCESSED;
+}
+
+sub processRollback {
+    my $exe = shift;
+    my $trans = shift;
+    my $exeArgs = shift || [];
+
+    my $rollbackStatus = undef;
+    push @$exeArgs,'-r ';
+    my ($output, $err, $retval) = spawnUnit($exe,$trans->getCurrentJob()->dbObject->input(),$exeArgs);
+
+    # Check if the rollback succedes.
+    if ($retval == -1) { $rollbackStatus = 'ROLLBACK_FAILURE'; }
+    else { $rollbackStatus = 'ROLLBACK_SUCCESS'; }
+
+    $trans->updateCurrentJob(
+        error              => $err,
+        status             => $rollbackStatus,
+        rollback_output    => $output,
+        rollback_error     => $err,
+        rollback_iterations => $trans->getCurrentJob()->dbObject->iterations(),
+    );
+
+    return $rollbackStatus;
+}
+
+sub spawnUnit {
+    my $app = shift;
+    my $input = shift;
+    my $args = shift;
+
+    my $app_and_args = $app;
+    map { $app_and_args .= " $_"; } @$args if $args && scalar @$args;
+
+    my $pid= open3(\*FH1, \*FH2, \*FH3, $app_and_args);
+
+    print FH1 $input;
+    close (FH1);
+
+    waitpid($pid, 0);
+
+    my $out = read_file(\*FH2);
+    my $err = read_file(\*FH3);
+
+    my $retval = ($? >> 8);
+    $retval=-1 if ( ($err=~/^open3:/) || ($retval == 255) );
+
+    return ($out, $err, $retval);
+}
+
+sub procMsg {
+    my $msg = shift;
+    if ( $DEBUG ) {
+        print STDOUT $msg;
+    }
+}
+
+sub exitWarning {
+    my $msg = shift;
+    print STDOUT "The SM exited: $msg\n";
+    exit(0);
+}
+
+sub exitError {
+    my $msg = shift;
+    print STDERR "The SM exited due to an error: $msg\n";
+    exit(0);
+}
+
+__END__

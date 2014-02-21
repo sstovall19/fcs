@@ -1,0 +1,114 @@
+use strict;
+use Test::More qw( no_plan );
+use Cwd qw( getcwd abs_path );
+use Fap::StateMachine::Unit;
+use Fap::StateMachine::Worker;
+use Fap::Model::Fcs;
+
+use_ok('Fap::StateMachine::Unit');
+
+my $bu = abs_path('../fcs_assign_dids_to_users.pl');
+my ($output, $out, $err, $retval);
+
+my $test_server_id = 7493;
+my $test_did1 = '13101234567';
+my $test_userid1 = 446472;
+my $test_userid2 = 435870;
+my $fcs_obj = Fap::Model::Fcs->new();
+my $dbh = $fcs_obj->dbh();
+# orders
+my $sth = $dbh->prepare("INSERT INTO `orders`(customer_id, contact_id, order_type, record_type) VALUES (29180,1,'NEW','ORDER')");
+$sth->execute();
+my $test_order_id1 = $dbh->last_insert_id(undef, undef, 'orders', 'order_id');
+$sth->finish();
+
+$sth = $dbh->prepare("INSERT INTO `orders`(customer_id, contact_id, order_type, record_type) VALUES (29180,1,'NEW','ORDER')");
+$sth->execute();
+my $test_order_id2 = $dbh->last_insert_id(undef, undef, 'orders', 'order_id');
+$sth->finish();
+
+# order_group
+$sth = $dbh->prepare("INSERT INTO `order_group`(order_id, server_id, shipping_address_id, billing_address_id, product_id) VALUES ($test_order_id1,$test_server_id,1,1,6)");
+$sth->execute();
+my $test_order_group1 = $dbh->last_insert_id(undef, undef, 'order_group', 'order_group_id');
+$sth->finish();
+
+$sth = $dbh->prepare("INSERT INTO `order_group`(order_id, server_id, shipping_address_id, billing_address_id, product_id) VALUES ($test_order_id2,$test_server_id,1,1,6)");
+$sth->execute();
+my $test_order_group2 = $dbh->last_insert_id(undef, undef, 'order_group', 'order_group_id');
+$sth->finish();
+
+# order_bundle
+# 54 is the bundle for did_number
+$sth = $dbh->prepare("INSERT INTO `order_bundle`(bundle_id,order_group_id,quantity) VALUES (54,$test_order_group1,2)");
+$sth->execute();
+my $test_order_bundle1 = $dbh->last_insert_id(undef, undef, 'order_bundle', 'order_bundle_id');
+$sth->finish();
+
+$sth = $dbh->prepare("INSERT INTO `order_bundle`(bundle_id,order_group_id,quantity) VALUES (54,$test_order_group2,2)");
+$sth->execute();
+my $test_order_bundle2 = $dbh->last_insert_id(undef, undef, 'order_bundle', 'order_bundle_id');
+$sth->finish();
+
+my $phone_numbers = [{'did_number' => $test_did1}];
+
+my @test_order_bundle_details;
+# order_bundle_detail
+foreach my $pn (@$phone_numbers) {
+	$sth = $dbh->prepare("INSERT INTO `order_bundle_detail` (order_bundle_id,extension_number, did_number) VALUES ($test_order_bundle1,'$pn->{extension_number}','$pn->{did_number}')");
+	$sth->execute();
+	my $test_order_bundle_detail_id = $dbh->last_insert_id(undef, undef, 'order_bundle_detail', 'order_bundle_detail_id');
+	push(@test_order_bundle_details, $test_order_bundle_detail_id);
+	$sth->finish();
+}
+# Main test
+$output = Fap::StateMachine::Worker->new( executable=>$bu, input=>"{\"order_id\": $test_order_id1}" )->run();
+$out = $output->{output};
+$retval = $output->{return_code};
+$err = $output->{error};
+ok($retval eq Fap::StateMachine::Unit::BU_CODE_SUCCESS, 'Assigning DIDs to users, returned success');
+my $count = _count_assigned_dids($dbh, $test_server_id, $test_did1 );
+ok( $count == 1, "All phones assigned");
+$output = Fap::StateMachine::Worker->new( executable=>$bu, input=>"{\"did_assigned_users\": [ $test_userid1, $test_userid2 ]}" )->run('-r');
+$out = $output->{output};
+$retval = $output->{return_code};
+$err = $output->{error};
+ok($retval eq Fap::StateMachine::Unit::BU_CODE_SUCCESS, 'Rollback of DIDs assigned to users, returned success');
+my $count = _count_assigned_dids($dbh, $test_server_id, $test_did1 );
+ok( $count == 0, "All phones unassigned");
+$sth = $dbh->prepare("delete from order_bundle_detail where order_bundle_detail_id in (" . join(",", @test_order_bundle_details) . ")");
+$sth->execute();
+$sth->finish();
+$sth = $dbh->prepare("delete from order_bundle where order_bundle_id in ($test_order_bundle1, $test_order_bundle2)");
+$sth->execute();
+$sth->finish();
+$sth = $dbh->prepare("delete from order_group where order_group_id in ($test_order_group1, $test_order_group2)");
+$sth->execute();
+$sth->finish();
+$sth = $dbh->prepare("delete from orders where order_id in ($test_order_id1, $test_order_id2)");
+$sth->execute();
+$sth->finish();
+
+sub _count_assigned_dids
+{
+	my $db = shift;
+	my $server_id = shift;
+	my $number = shift;
+
+	# use the right device name
+
+	my $sql = "select extension from pbxtra.phone_numbers where server_id = ? and number = ?";
+
+	my $chk = $db->prepare($sql);
+	$chk->execute($server_id, $number);
+
+	my $count = 0;
+	while (my $row = $chk->fetchrow_hashref()) {
+		if ($row->{'extension'} ne '' && $row->{'extension'} ne 'NULL') {
+			$count++;
+		}
+	}
+	$chk->finish();
+
+	return $count;
+}

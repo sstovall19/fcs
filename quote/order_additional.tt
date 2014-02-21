@@ -1,0 +1,148 @@
+[% TITLE = ' :: Additional Services' %]
+[% COLSPAN = 2 %]
+[% UNLESS PHONE_QTY %][% PHONE_QTY = 0 %][% END %]
+
+<style type="text/css">
+	form input,
+	form select {
+		float: none !important;
+		display: inline !important;
+	}
+</style>
+
+<input type="hidden" name='reseller' value='[% IF RESELLER_ORDER OR RESELLER_PROPOSAL %]1[% ELSE %]0[% END %]' />
+<input type="hidden" name='oid' value='[% OID %]' />
+<input type="hidden" name='qty_phones' value='[% QTY_PHONES %]' />
+<input type="hidden" name='qty_phone_ports' value='[% QTY_PHONE_PORTS %]' />
+
+<div class="order_step_heading">
+	<div class="steps">
+		[% IF ADDON OR ORDER_TYPE == 'addon' %]Add-On[% END %]
+		Order Step&nbsp;
+		<span style="color:[% GRAYED_OUT %]">1</span>&nbsp;
+		<span style="color:[% GRAYED_OUT %]">2</span>&nbsp;
+		<span style="color:[% GRAYED_OUT %]">3</span>&nbsp;
+		<span style="color:[% GRAYED_OUT %]">4</span>&nbsp;
+		<span style="color:[% COLOR1 %]">5</span>&nbsp;
+		<span style="color:[% GRAYED_OUT %]">6</span>&nbsp;
+		<span style="color:[% GRAYED_OUT %]">7</span>
+	</div>
+	<h1>Shipping and Additional Services</h1>
+	<div style="clear:both"><!-- --></div>
+</div>
+
+<div style="padding-top: 15px"></div>
+
+[% IF SHIPPING_REQUIRED %]
+	<fieldset>
+		<legend>Please select a shipping service: *</legend>
+		<select name='shipping_service_price' style="width: 250px !important;">
+			[% IF UPS_GROUND %]
+				<option value='UPS_GROUND:[% UPS_GROUND %]'
+					[% IF SELECTED_SHIPPING == 'GROUND' %]
+						selected="selected"
+					[% END %]
+				>UPS Ground [$ [% UPS_GROUND %]]</option>
+			[% END %]
+			[% IF UPS_3_DAY_SELECT %]
+				<option value='UPS_3_DAY_SELECT:[% UPS_3_DAY_SELECT %]'
+					[% IF SELECTED_SHIPPING == '3_DAY_SELECT' %]
+						selected="selected"
+					[% END %]
+				>UPS 3 Day Select [$ [% UPS_3_DAY_SELECT %]]</option>
+			[% END %]
+			[% IF UPS_2ND_DAY_AIR %]
+				<option value='UPS_2ND_DAY_AIR:[% UPS_2ND_DAY_AIR %]'
+					[% IF SELECTED_SHIPPING == '2ND_DAY_AIR' %]
+						selected="selected"
+					[% END %]
+				>UPS 2nd Day Air [$ [% UPS_2ND_DAY_AIR %]]</option>
+			[% END %]
+			[% IF UPS_NEXT_DAY_AIR %]
+				<option value='UPS_NEXT_DAY_AIR:[% UPS_NEXT_DAY_AIR %]'
+					[% IF SELECTED_SHIPPING == 'NEXT_DAY_AIR' %]
+						selected="selected"
+					[% END %]
+				>UPS Next Day Air [$ [% UPS_NEXT_DAY_AIR %]]</option>
+			[% END %]
+			[% IF UPS_NEXT_DAY_AIR_EARLY_AM %]
+				<option value='UPS_NEXT_DAY_AIR_EARLY_AM:[% UPS_NEXT_DAY_AIR_EARLY_AM %]'
+					[% IF SELECTED_SHIPPING == 'NEXT_DAY_AIR_EARLY_AM' %] selected="selected"[% END %]
+				>UPS Next Day Air Early AM [$ [% UPS_NEXT_DAY_AIR_EARLY_AM %]]</option>
+			[% END %]
+			[% IF UPS_STANDARD %]
+				<option value='UPS_STANDARD:[% UPS_STANDARD %]'
+					[% IF SELECTED_SHIPPING == 'STANDARD' %] selected="selected"[% END %]
+				>UPS Standard [$ [% UPS_STANDARD %]]</option>
+			[% END %]
+			[% IF UPS_WORLDWIDE_EXPEDITED %]
+				<option value='UPS_WORLDWIDE_EXPEDITED:[% UPS_WORLDWIDE_EXPEDITED %]'
+					[% IF SELECTED_SHIPPING == 'WORLDWIDE_EXPEDITED' %] selected="selected"[% END %]
+				>UPS Worldwide Expedited [$ [% UPS_WORLDWIDE_EXPEDITED %]]</option>
+			[% END %]
+			[% IF UPS_WORLDWIDE_EXPRESS %]
+				<option value='UPS_WORLDWIDE_EXPRESS:[% UPS_WORLDWIDE_EXPRESS %]'
+					[% IF SELECTED_SHIPPING == 'WORLDWIDE_EXPRESS' %]
+						selected="selected"
+					[% END %]
+				>UPS Worldwide Express [$ [% UPS_WORLDWIDE_EXPRESS %]]</option>
+			[% END %]
+		</select>
+		<input type="hidden" name='estimated_box_weights' value='[% ESTIMATED_BOX_WEIGHTS %]' />
+		<p><small>* Includes handling, insurance and signature confirmation</small></p>	
+	</fieldset>
+
+	<p>
+		Once your order is placed and payment is received, your order will be
+		provisioned as follows:
+	</p>
+
+	<ul class="pbxlite">
+		<li>
+			For orders placed between the 6th and the 19th of each month, and paid in full within five
+			<br>
+			business days of the date ordered, we will ship within five business days of the date you paid.
+		</li>
+		<li>
+			For orders placed before the 6th, or after the 19th, we will ship within fifteen business days
+			<br>
+			of the date you paid.
+		</li>
+	</ul>
+
+	[% IF EXPEDITE_FEE %]
+		<p>
+			To expedite your order, please click the "Expedite Provisioning" box
+			below, and we will ship twenty-four hours after receipt of payment
+			(additional fees apply).
+		</p>
+
+		<p>
+			<input class="checkbox" type="checkbox" name="expedite"
+				[%# if recalling an order, did they check expedited provisioning? #%]
+				[% FOREACH ITEM = ORDER_ITEMS %]
+					[% IF EXPEDITED_ID == ITEM.item_id %]
+						checked
+					[% END %]
+				[% END %]
+			>&nbsp;
+			Provision in twenty-four hours from receipt of payment ($[% EXPEDITE_FEE %])
+			<input type="hidden" name="expedite_fee" value="[% EXPEDITE_FEE %]" />
+		</p>	
+	[% END %]
+
+	<p>If you have questions about your order please
+		[% IF RESELLER_ORDER OR RESELLER_PROPOSAL %]
+			<a href="mailto:resellers@fonality.com?subject=Question%20from%20quote%20page">contact the Fonality Reseller team</a>.
+		[% ELSE %]
+			<a href="mailto:sales@fonality.com?subject=Question%20from%20quote%20page">contact a Fonality salesperson</a>.
+		[% END %]
+	</p>
+	
+[% ELSE %]
+	<p>
+		<b>There is nothing to ship in this order.</b>
+	</p>
+[% END %]
+
+<div><input class="button" type="submit" name="act" value="Continue to Step 6" style="width: 180px" /></div>

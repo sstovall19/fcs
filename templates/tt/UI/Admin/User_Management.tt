@@ -1,0 +1,686 @@
+[% PROCESS 'header.tt' %]
+
+<script type="text/javascript">
+
+	$(document).ready(function()
+	{
+
+		$('.user-tabs').map(function(index, element)
+		{
+			$('#'+element.id).tabs({});
+		});
+
+		$("#user_accordion").accordion({
+			active: false,
+			navigation: true,
+			collapsible: true
+		});
+
+
+		// validate input
+		$('.update-user-information').each(function()
+		{
+			$(this).validate({
+				submitHandler: function(e)
+				{
+					return false;
+				},
+				rules: {
+					first_name: {
+						required: true,
+						minlength: 1
+					},
+					last_name: {
+						required: true,
+						minlength: 1
+					},
+					email: {
+						required: true,
+						minlength: 14
+					}
+				},
+				messages: {
+					first_name: {
+						required: "First name is required",
+						rangelength: jQuery.format("Enter at least {0} characters for first name"),
+						minlength: jQuery.format("Enter at least {0} characters for first name")
+					},
+					last_name: {
+						required: "Last name is required",
+						rangelength: jQuery.format("Enter at least {0} characters for last name"),
+						minlength: jQuery.format("Enter at least {0} characters for last name")
+					},
+					email: {
+						required: "Email address is required",
+						minlength: jQuery.format("Invalid email address")
+					}
+				},
+				invalidHandler: function(form)
+				{
+					return false;
+				}
+			});
+		});
+	
+		$('#add_new_user').validate({
+			submitHandler: function(e)
+			{
+				add_user();
+				
+			},
+			rules: {
+				first_name: {
+					required: true,
+					minlength: 1
+				},
+				last_name: {
+					required: true,
+					minlength: 1
+				},
+				email: {
+					required: true,
+					minlength: 14
+				},
+				username: {
+					required: true,
+					minlength: 14,
+					maxlength: 36
+				},
+				password: {
+					required: true,
+					minlength: 8,
+					maxlength: 28
+				},
+				conf_password: {
+					required: true,
+					minlength: 8,
+					maxlength: 28,
+					equalTo: '#add_user_password'
+				}
+			},
+			messages: {
+				first_name: {
+					required: "First name is required",
+					rangelength: jQuery.format("Enter at least {0} characters for first name"),
+					minlength: jQuery.format("Enter at least {0} characters for first name")
+				},
+				last_name: {
+					required: "Last name is required",
+					rangelength: jQuery.format("Enter at least {0} characters for last name"),
+					minlength: jQuery.format("Enter at least {0} characters for last name")
+				},
+				email: {
+					required: "Email address is required",
+					minlength: jQuery.format("Invalid email address")
+				},
+				username: {
+					required: "Please enter a username ( usually email address )",
+					minlength: jQuery.format("Enter at least {0} characters for username"),
+					rangelength: jQuery.format("Enter between {0} and {0} characters for username")
+				},
+				password: {
+					required: "Please enter a new password",
+					rangelength: jQuery.format("Enter at least {0} characters for a new password"),
+					minlength: jQuery.format("Enter at least {0} characters for a new password")
+				},
+				conf_password: {
+					required: "Repeat your new password",
+					minlength: jQuery.format("Confirmation password must be at least {0} characters and match the new password"),
+					equalTo: "Enter the same password as new password"
+				}
+			}
+		});
+
+		// Add form validation for each reset user password form
+		$('.reset-user-password').each(function()
+		{
+			// Get the id of the new_password field
+			var pw_field = '#'+$(this).find('input:password').first().attr('id');
+
+			$(this).validate({
+				submitHandler: function()
+				{
+					return false;
+				},
+				rules:
+				{
+					new_password: {
+						required: true,
+						minlength: 8
+					},
+					confirm_password: {
+						required: true,
+						minlength: 8,
+						equalTo: pw_field
+					}
+				},
+				messages:
+				{
+					new_password: {
+						required: "Please enter a new password",
+						rangelength: jQuery.format("Enter at least {0} characters for a new password"),
+						minlength: jQuery.format("Enter at least {0} characters for a new password")
+					},
+					confirm_password: {
+						required: "Repeat your new password",
+						minlength: jQuery.format("Confirmation password must be at least {0} characters and match the new password"),
+						equalTo: "Enter the same password as new password"
+					}
+				}
+			});
+						
+		});
+
+	});
+
+	// Update basic user information
+	function update_user(id)
+	{
+		if(id)
+		{
+			// Validate form
+			if($('#update_user_'+id).validate().form() != true)
+			{
+				return false;
+			}
+		
+			$('#update_user_'+id+' :button').attr('disabled', 'disabled').val('Saving...');
+
+			var form_data = get_form_data('#update_user_'+id);
+
+			form_data.mode = 'Admin.User_Management';
+			form_data.action = 'update_user';
+
+			$.ajax({
+				dataType: 'json',
+				url: '/',
+				data: form_data,
+				type: 'POST',
+				success: function(data)
+				{
+					if(data && data.success)
+					{
+						info('User information udpated');
+						$('#name_'+id).text(form_data.first_name + ' ' + form_data.last_name);
+					}
+
+					$('#update_user_'+id+' :button').removeAttr('disabled').val('Save Changes');
+				}
+			});	
+
+		}
+		else
+		{
+			alert('Invalid user ID', 'Error');
+			return false;
+		}
+	}
+
+	// On submit of reset password form
+	function reset_password(id)
+	{
+		if(id)
+		{
+			// Validate form
+			if($('#reset_password_'+id).validate().form() != true)
+			{
+				return false;
+			}
+
+			$('#reset_password_'+id+' :button').attr('disabled', 'disabled').val('Updating...');
+
+			var form_data = get_form_data('#reset_password_'+id);
+
+			form_data.mode = 'Admin.User_Management';
+			form_data.action = 'reset_password';
+
+			$.ajax({
+				dataType: 'json',
+				url: '/',
+				data: form_data,
+				type: 'POST',
+				success: function(data)
+				{
+					if(data && data.success)
+					{
+						info('Password updated');
+					}
+
+					$('#reset_password_'+id+' :button').removeAttr('disabled').val('Update Password');
+				}
+			});
+		}
+		else
+		{
+			alert('Invalid user ID', 'Error');
+			return false;
+		}
+	}
+
+	// Handle enable and disable of a user
+	function disable_user(id)
+	{
+		if(id)
+		{
+			$('#updating_user_disabled_'+id).html('<img src="/images/loading.gif">');
+			var form_data = get_form_data('#disable_user_'+id);
+
+			form_data.mode = 'Admin.User_Management';
+			form_data.action = 'disable_user';
+
+			$.ajax({
+				dataType: 'json',
+				url: '/',
+				data: form_data,
+				type: 'POST',
+				success: function(data)
+				{
+					if(data && data.success)
+					{
+						info(data.success);
+					}
+
+					$('#updating_user_disabled_'+id).html('&nbsp;');
+				}
+			});
+		}
+		else
+		{
+			alert('Invalid user ID', 'Error');
+			return false;
+		}
+	}
+
+	// Completely remove a user from the system
+	function remove_user(id)
+	{
+		if(id)
+		{
+			if(!confirm("Are you sure that you want to remove this user completely from the system?  This cannot be undone!"))
+			{
+				return false;
+			}
+
+			$('#remove_user_status_'+id).html('<img src="/images/loading.gif">');
+			var form_data = get_form_data('#remove_user_'+id);
+
+			form_data.mode = 'Admin.User_Management';
+			form_data.action = 'remove_user';
+
+			$.ajax({
+				dataType: 'json',
+				url: '/',
+				data: form_data,
+				type: 'POST',
+				success: function(data)
+				{
+					if(data && data.success)
+					{
+						info(data.success);
+						$('#user_data_header_'+id).remove();
+						$('#user_data_div_'+id).remove();
+					}
+					$('#remove_user_status_'+id).html('&nbsp;');
+				}
+			});
+		}
+		else
+		{
+			alert('Invalid user ID', 'Error');
+			$('#remove_user_status_'+id).html('&nbsp;');
+			return false;
+		}
+	}
+
+	// Generate a random password
+	function generate_random_password(id)
+	{
+		$('#loading_random_pass_'+id).html('<img src="/images/loading.gif">');
+
+		$.ajax({
+			dataType: 'json',
+			url: '/',
+			data: { mode: 'Admin.User_Management', action: 'generate_pass' },
+			type: 'POST',
+			success: function(data)
+			{
+				if(data && data.password)
+				{
+					$('#reset_password_'+id+' :input[type=password]').map(function(index, element)
+					{
+						$(element).val(data.password);
+					});
+				}
+
+				$('#loading_random_pass_'+id).html('&nbsp;');
+			}
+		});
+	}
+
+	// Load user permissions when selecting the permissions tab - this is display only
+	function load_permissions(username, id)
+	{
+		if(username)
+		{
+			// Clear everything out and display a loading icon
+			$('#loading_user_permissions_'+id).html('<img src="/images/loading.gif">').fadeIn();
+			$('#user_roles_'+id).children().remove();
+			$('#user_permissions_'+id).children().remove();
+			$('#effective_permissions_'+id).children().remove();
+
+			$.ajax({
+				dataType: 'json',
+				url: '/',
+				data: { mode: 'Admin.User_Management', action: 'show_permissions', username: username },
+				type: 'POST',
+				success: function(data)
+				{
+					if(data && data.user_roles)
+					{
+						for ( role in data.user_roles )
+						{
+							if(data.user_roles[role])
+								$('#user_roles_'+id).append('<li>'+data.user_roles[role].name+'</li>');
+						}
+
+						$('#user_roles_'+id).sort_list();
+					}
+
+					if(data && data.user_permissions)
+					{
+						for ( perm in data.user_permissions )
+						{
+							if(data.user_permissions[perm])
+								$('#user_permissions_'+id).append('<li>'+data.user_permissions[perm].name.replace(/\./g, ' -> ') +' [ '+data.user_permissions[perm].level+' ]</li>');
+						}
+						$('#user_permissions_'+id).sort_list();
+					}
+
+					if(data && data.effective_permissions && data.effective_permissions.PERMISSIONS )
+					{
+						var ep = data.effective_permissions.PERMISSIONS;
+
+						for ( perm in ep )
+						{
+							var l = ep[perm].LEVEL;
+							var d = ep[perm].DESC;
+							var parent = $('<li>'+perm.replace(/\./g, ' -> ')+' [ '+l+' ]</li>');
+
+							if(ep[perm].PERMISSIONS)
+							{
+								var child_list = $('<ul id="'+perm+'_child_'+id+'"></ul>');
+								for (child in ep[perm].PERMISSIONS)
+								{
+									var cl = ep[perm].PERMISSIONS[child].LEVEL;
+									var cd = ep[perm].PERMISSIONS[child].DESC;
+
+									$(child_list).append('<li>'+child.replace(/\./g, ' -> ')+' [ '+cl+' ]</li>');
+								}
+								$(child_list).sort_list();
+								$(parent).append($(child_list));
+							}
+
+							$('#effective_permissions_'+id).append(parent);
+						}
+						$('#effective_permissions_'+id).sort_list();
+					}
+					$('#loading_user_permissions_'+id).html('&nbsp;').fadeOut();
+				}
+			});
+		}
+	}
+
+	// show or hide the add user form
+	function toggle_add_user()
+	{
+		$('#add_user_window').slideToggle('slow','swing').css('z-index', z_index());
+	}
+
+	// Handle add user submit
+	function add_user()
+	{
+		$('#add_new_user :submit').attr('disabled', 'disabled').val('Loading...');
+		$('#add_new_user_loading').html('<img src="/images/loading.gif">');
+		var form_data = get_form_data('#add_new_user');
+		form_data.mode = 'Admin.User_Management';
+		form_data.action = 'add_user';
+
+		$.ajax({
+			dataType: 'json',
+			url: '/',
+			data: form_data,
+			type: 'POST',
+			success: function(data)
+			{
+				$('#add_new_user_loading').html('&nbsp;');
+				if(data && data.success)
+				{
+					toggle_add_user();
+					info(data.success);
+					window.location='/?mode=Admin.User_Management#userid_'+data.user.intranet_user_id;
+					window.location.reload();	
+				}
+				$('#add_new_user :submit').removeAttr('disabled').val('Add User');
+			}
+		});
+
+		return false;
+	}
+
+</script>
+
+		<div id="add_user_window" style="display: none; margin-bottom: 10px; width: 100%; text-align: center;">
+			<div class="grey-round" style="margin:0 auto;width:90%; padding-top: 10px; padding-bottom: 10px;">
+			<h3>Add a new user</h3>
+	
+						<form id="add_new_user" onsubmit="return false;">
+						<table width="100%">
+							<tr>
+								<td style="text-align: right; vertical-align: middle;" width="30%">Username:</td>
+								<td width="70%" style="text-align: left;" style="text-align: left;"><input type="text" name="username" maxlength="36"></td>
+							</tr>
+							<tr>
+								<td style="text-align: right; vertical-align: middle;" width="30%">First Name:</td>
+								<td width="70%" style="text-align: left;"><input type="text" name="first_name" maxlength="36"></td>
+							</tr>
+							<tr>
+								<td style="text-align: right; vertical-align: middle;" width="30%">Last Name:</td>
+								<td width="70%" style="text-align: left;"><input type="text" name="last_name" maxlength="36"></td>
+							</tr>
+							<tr>
+								<td style="text-align: right; vertical-align: middle;" width="30%">Email Address:</td>
+								<td width="70%" style="text-align: left;"><input type="text" name="email" maxlength="36"></td>
+							</tr>
+							<tr>
+								<td style="text-align: right; vertical-align: middle;" width="30%">Password:</td>
+								<td width="70%" style="text-align: left;"><input id="add_user_password" type="password" name="password" maxlength="36"></td>
+							</tr>
+							<tr>
+								<td style="text-align: right; vertical-align: middle;" width="30%">Confirm Password:</td>
+								<td width="70%" style="text-align: left;"><input type="password" name="conf_password" maxlength="36"></td>
+							</tr>
+							<tr>
+								<td align="right" valign="bottom" width="30%" style="text-align: right; vertical-align: middle;" >Send welcome email:</td>
+								<td align="left" width="70%"><input type="checkbox" name="send_email" checked="true"></td>
+							</tr>
+							<tr>
+								<td style="text-align: right; vertical-align: middle;" width="30%">Roles (optional):</td>
+								<td width="70%" style="text-align: left;">
+									<select name="roles[]" style="width: 140px;" multiple>
+										[% FOREACH ROLE IN ROLE_LIST.sort('name') %]
+										<option value="[% ROLE.intranet_role_id %]">[% ROLE.name %]</option>
+										[% END %]
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td width="30%" style="text-align: right;" id="add_user_loading">&nbsp;</td>
+								<td width="70%" style="text-align: left;"><input class="" type="submit" value="Add User"></td>
+							</tr>
+						</table>
+						</form>
+			</div>
+	
+		</div>
+
+	<div class="ui-state-highlight ui-widget-header ui-corner-all" style="padding: 8px; height: 18px;">
+		<div style="float: left;"><span class="ui-widget-title" style="font-size: 18px;">Users</span></div>
+		<div style="float: right;"><span class="ui-state-hover" style="cursor: pointer; padding: 3px;" onclick="toggle_add_user()">Add user</span></div>
+	</div>
+
+	[% PROCESS infobox text="You can use this section to add, remove or edit users.<hr>There are various options for each user once expanded including basic user information modification, password reset and enable / disable user.<hr>Disabling a user will prevent them from using the Intranet, but will keep their user information in the framework." %]
+
+	<div id="user_accordion">
+		[% FOREACH USER IN USER_LIST.sort('first_name') %]
+			<h3 id="user_data_header_[% USER.intranet_user_id %]"><a href="#userid_[% USER.intranet_user_id %]" id="name_[% USER.intranet_user_id %]">[% USER.first_name _ ' ' _ USER.last_name %]</a></h3>
+			<div id="user_data_div_[% USER.intranet_user_id %]">
+				<input type="hidden" class="user-id" value="[% USER.intranet_user_id %]">
+
+
+				<div id="user_tabs_[% USER.intranet_user_id %]" class="user-tabs">
+
+					<ul id="user_tab_list_[% USER.intranet_user_id %]">
+						<li><a href="#name_email_tab_[% USER.intranet_user_id %]">User Basics</a></li>
+						<li><a href="#reset_password_tab_[% USER.intranet_user_id %]">Reset Password and Lockout</a></li>
+						<li><a href="#permission_tab_[% USER.intranet_user_id %]" onclick="load_permissions('[% USER.username %]', [% USER.intranet_user_id %])">Roles and Permissions</a></li>
+						<li><a href="#disable_tab_[% USER.intranet_user_id %]">Disable User</a></li>
+						<li><a href="#remove_user_tab_[% USER.intranet_user_id %]">Remove This User</a></li>
+					</ul>
+
+					<div id="name_email_tab_[% USER.intranet_user_id %]">
+
+						<div class="grey-round" style="margin:0 auto;width:90%; padding-top: 35px;">
+	
+						<form class="update-user-information" id="update_user_[% USER.intranet_user_id %]" onsubmit="update_user([% USER.intranet_user_id %])">
+						<input type="hidden" name="username" value="[% USER.username %]">
+						<table width="100%">
+							<tr>
+								<td style="text-align: right; vertical-align: middle;" width="30%">Status:</td>
+								<td width="70%" style="text-align: left;" id="user_info_status_id">[% IF USER.lockout == 1 %]Locked out[% ELSIF USER.disabled == 1 %]Disabled [ [% USER.disabled_time %] ][% ELSE %]Active[% END %]</td>
+							</tr>
+							<tr>
+								<td style="text-align: right; vertical-align: middle;" width="30%">Username:</td>
+								<td width="70%" style="text-align: left;"><input type="text" name="" disabled="true" maxlength="36" value="[% USER.username %]"></td>
+							</tr>
+							<tr>
+								<td style="text-align: right; vertical-align: middle;" width="30%">First Name:</td>
+								<td width="70%" style="text-align: left;"><input type="text" name="first_name" maxlength="36" value="[% USER.first_name %]"></td>
+							</tr>
+							<tr>
+								<td style="text-align: right; vertical-align: middle;" width="30%">Last Name:</td>
+								<td width="70%" style="text-align: left;"><input type="text" name="last_name" maxlength="36" value="[% USER.last_name %]"></td>
+							</tr>
+							<tr>
+								<td style="text-align: right; vertical-align: middle;" width="30%">Email Address:</td>
+								<td width="70%" style="text-align: left;"><input type="text" name="email" maxlength="36" value="[% USER.email %]"></td>
+							</tr>
+							<tr>
+								<td width="30%">&nbsp;</td>
+								<td width="70%" style="text-align: left;"><input class="" type="button" onclick="update_user([% USER.intranet_user_id %])" value="Save Changes"></td>
+							</tr>
+						</table>
+						</form>
+
+						</div>
+					</div>
+
+					<div id="reset_password_tab_[% USER.intranet_user_id %]">
+						<div class="grey-round" style="margin:0 auto;width:90%; padding-top: 35px;">
+							<div style="float: right; padding: 3px;"><a href="javascript:generate_random_password([% USER.intranet_user_id %])">Generate Random Pass</a></div>	
+						<form class="reset-user-password" id="reset_password_[% USER.intranet_user_id %]">
+						<input type="hidden" name="username" value="[% USER.username %]">
+						<table width="100%" cellspacing="2" cellpadding="2">
+							<tr>
+								<td align="right" valign="bottom" width="30%" style="text-align: right; vertical-align: middle;" >New password:</td>
+								<td align="left" width="70%"><input type="password" name="new_password" id="reset_pw_new_[% USER.intranet_user_id %]" value="" maxlength="36" class="ui-corner-all ui-widget"></td>
+							</tr>
+							<tr>
+								<td align="right" valign="bottom" width="30%" style="text-align: right; vertical-align: middle;" >Confirm password:</td>
+								<td align="left" width="70%"><input type="password" name="confirm_password" value="" maxlength="36" class="ui-corner-all ui-widget"></td>
+							</tr>
+							<tr>
+								<td align="right" valign="bottom" width="30%" style="text-align: right; vertical-align: middle;" >Send user email:</td>
+								<td align="left" width="70%"><input type="checkbox" name="send_email" checked="true"></td>
+							</tr>
+							<tr>
+								<td style="text-align: right;" width="30%" id="loading_random_pass_[% USER.intranet_user_id %]">&nbsp;</td>
+								<td align="left" width="70%">
+									<input type="button" onclick="reset_password([% USER.intranet_user_id %])" value="Update Password">
+								</td>
+							</tr>
+						</table>
+						</form>	
+						</div>	
+					</div>
+					<div id="permission_tab_[% USER.intranet_user_id %]">
+						<div style="display: none;" id="loading_user_permissions_[% USER.intranet_user_id %]"></div>
+						<h4>Roles</h4>
+						<ul id="user_roles_[% USER.intranet_user_id %]">
+						
+						</ul>
+
+						<h4>User Permissions</h4>
+						<ul id="user_permissions_[% USER.intranet_user_id %]">
+
+						</ul>
+
+						<h4>Effective Permissions</h4>
+						<ul id="effective_permissions_[% USER.intranet_user_id %]">
+
+						</ul>
+					</div>
+					<div id="disable_tab_[% USER.intranet_user_id %]">
+						<div class="grey-round" style="margin:0 auto;width:90%; padding-top: 35px;">
+						<form id="disable_user_[% USER.intranet_user_id %]" onsubmit="disable_user([% USER.intranet_user_id %])">
+						<input type="hidden" name="username" value="[% USER.username %]">
+						<table width="100%" cellspacing="2" cellpadding="2">
+							<tr>
+								<td align="right" valign="bottom" width="30%" style="text-align: right; vertical-align: middle;" >User is:</td>
+								<td align="left" width="70%">
+									<select name="disabled" class="ui-corner-all ui-widget" onchange="javascript:disable_user([% USER.intranet_user_id %])">
+										<option value="0">Enabled</option>
+										<option value="1" [% IF USER.disabled == 1 %]selected[% END %]>Disabled</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td align="right" width="30%">&nbsp;</td>
+								<td align="left" width="70%" id="updating_user_disabled_[% USER.intranet_user_id %]">
+									&nbsp;
+								</td>
+							</tr>
+						</table>
+						</form>	
+						</div>	
+					</div>
+					<div id="remove_user_tab_[% USER.intranet_user_id %]">
+						<div class="grey-round" style="margin:0 auto;width:90%; padding-top: 35px;">
+						<form id="remove_user_[% USER.intranet_user_id %]">
+						<input type="hidden" name="username" value="[% USER.username %]">
+						<table width="100%" cellspacing="2" cellpadding="2">
+							<tr>
+								<td align="right" valign="bottom" width="30%" style="text-align: right; vertical-align: middle;" >Delete User?:</td>
+								<td align="left" width="70%">
+									<input type="submit" value="Yes, Delete this user!" onclick="remove_user([% USER.intranet_user_id %]); return false;">
+								</td>
+							</tr>
+							<tr>
+								<td align="right" width="30%">&nbsp;</td>
+								<td align="left" width="70%" id="remove_user_status_[% USER.intranet_user_id %]">
+									&nbsp;
+								</td>
+							</tr>
+						</table>
+						</form>	
+						</div>	
+					</div>
+				</div>
+
+			</div>
+		[% END %]
+	</div>
+
+
+
+[% INCLUDE 'footer.tt' %]
+

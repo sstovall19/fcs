@@ -1,0 +1,1307 @@
+[% TITLE = 'Free Instant Quote - No Obligation!' %]
+[% metadescription = 'Free instant quote on your PBX phone system in 60 seconds. No Obligation.' %]
+[% metakeywords = '' %]
+
+[%# SET THE onsubmit VALUE - wrapper_order.tt WILL HANDLE IT %]
+[%# ORDER_FORM_SUBMIT = "onsubmit='return checkValidSubmit();'" %]
+
+[% PAGE = "order_qwiz" %]
+[% PAGE3 = 'AB-exp-sta' %]
+
+[% DISPLAY_HEIGHT = '500px' %]
+
+[% IMG_VIEW  = '<img style="margin-left: 5px" src="images/icon_view.gif" height="16" width="16" />' %]
+
+<script type="text/javascript">
+<!--
+
+[%# IF ED == PBXTRA_PROFESSIONAL_ID || ED == PBXTRA_STANDARD_ID %]
+[% IF ED == PBXTRA_PROFESSIONAL_ID %]
+	var currentStep = "pg=0";
+	var nextStep    = "pg=3";
+[% ELSIF ED == PBXTRA_STANDARD_ID %]
+	var currentStep = "pg=0";
+	var nextStep    = "pg=6";
+[% ELSIF ED == PBXTRA_CALL_CENTER_ID %]
+	var currentStep = "pg=0";
+	var nextStep    = "pg=2";
+[% ELSIF UNBOUND || NOT_UNBOUND || SHOW_FORM %]
+	var currentStep = "pg=0";
+	var nextStep    = "pg=1";
+	
+[% ELSE %]
+	var currentStep = "pg=submit";
+	var nextStep    = "pg=1";
+[% END %]
+
+var prevStep = "";
+var phoneAlert = true;
+var phoneCnt = 0;
+var auto = 0;
+
+// this variable is used to prevent 
+// gotoStep being called a second time
+// while gotoStep is in its timeout phase 
+//(switching between loading div to the next step div)
+var process = 0;
+
+var softCalc = 1;
+var hudCalc  = 1;
+
+var softMap    = new Array();
+var hudMap     = new Array();
+var itemWeight = new Array();
+[% FOREACH SOFT=EDITIONS %]
+	softMap[[% SOFT.mnemonic.length %]] = [% SOFT.item_id %];
+	itemWeight[[% SOFT.item_id %]]      = [% SOFT.mnemonic %];
+[% END %]
+
+[% FOREACH DISPLAY=HUD %]
+	hudMap[[% DISPLAY.mnemonic.length %]] = [% DISPLAY.item_id %];
+	itemWeight[[% DISPLAY.item_id %]]     = [% DISPLAY.mnemonic %];
+[% END %]
+
+
+function quoteModified()
+{
+	if (currentStep == 'pg=0' || currentStep == 'pg=1')
+		document.form.customize.value = 0;
+	
+	return true;
+}
+
+// preempt <Enter> from submitting the form early
+function checkValidSubmit()
+{
+	if (currentStep == 'pg=10')
+	{
+		return true;	// allow SUBMIT to function
+	}
+	else
+	{
+		if (checkRequired(currentStep))
+		{
+			gotoStep(currentStep, nextStep);
+		}
+		return false;
+	}
+}
+
+function selectUnbound(is_unbound)
+{
+	// Set this for later reference
+	document.form.unbound.value = is_unbound;
+	return 1;
+
+	// Turn off Canadian address selection if Unbound
+	// temporarily switched back to unbound only displaying canada - 09.23.2009
+	//if (is_unbound)
+	if (!is_unbound)
+	{
+		document.getElementById('country_div').style.visibility      = 'hidden';
+		document.getElementById('country_div').style.display         = 'none';
+		document.getElementById('unbound_padding_div').style.display = 'none';
+
+		// munge the tab indexes so things work the way the customer expects
+		document.form['state'].tabIndex = 5;
+		document.form['zip_code'].tabIndex = 6;
+	}
+}
+
+function selectCountry()
+{
+	if (document.form['country'].value == 'United States')
+	{
+		document.getElementById('province').style.visibility = 'hidden';
+		document.getElementById('province').style.display    = 'none';
+
+		document.getElementById('state').style.visibility = 'visible';
+		document.getElementById('state').style.display    = '';
+
+		document.getElementById('state_prov_label').innerHTML = 'State *';
+	}
+	else if (document.form['country'].value == 'Canada')
+	{
+		document.getElementById('state').style.visibility = 'hidden';
+		document.getElementById('state').style.display    = 'none';
+
+		document.getElementById('province').style.visibility = 'visible';
+		document.getElementById('province').style.display    = '';
+		document.getElementById('province').style.height     = "20px";
+
+		document.getElementById('state_prov_label').innerHTML = 'Province *';
+	}
+}
+
+// Go to the next step, hiding the current one
+function gotoStep(current, next)
+{
+	// if the previous call of gotoStep is in its settimeout phase, do not continue
+	if(process)
+		return true;
+
+	// this really should be in a tree format
+	// cce question
+	if(next == 'pg=1')
+	{
+		// if we are going back to question one, reset all values
+		// at the moment, there is no back button, so no need to reset values
+		//preCalcPBX(1);
+		document.getElementById('next_b').style.display    = 'block';
+		document.getElementById('next_b').style.visibility = 'visible';
+
+		// document.getElementById('prev_text').innerHTML = '<input class="button" type="button" id="prev_b" onclick="gotoStep(currentStep, prevStep)" value="&laquo; Back" />';
+		document.getElementById('step_text').innerHTML = parseInt(2/10*100) + '%';	
+		//document.getElementById('step_text').innerHTML = '0%';
+		nextStep = 'pg=2';
+		prevStep = '';
+	}
+	// saleforce question
+	else if (next == 'pg=2')
+	{
+		preCalcPBX();
+
+		if (document.form['[% EDITIONS.first.group_name %]'].value == [% PBXTRA_CALL_CENTER_ID %])
+		{
+			// CCE selected
+			if (document.form.unbound.value == "1")
+			{
+				next = 'pg=6';	// UNBOUND customers should not be asked about HUD
+				return gotoStep(current,next);
+			}
+			else
+			{
+				nextStep = 'pg=3'; //agent
+				prevStep = 'pg=1'; //cce
+				document.getElementById('next_b').style.display    = 'block';
+				document.getElementById('next_b').style.visibility = 'visible';
+			}
+		}
+		else
+		{
+			// CCE not selected, next question is pe question, not salesforce
+			next = 'pg=5'; //goto pe
+			return gotoStep(current,next);
+		}
+		
+		document.getElementById('step_text').innerHTML = parseInt(3/10*100) + '%';	
+	}
+	// agent question
+	else if (next == 'pg=3')
+	{
+		preCalcPBX();
+		
+		if(document.form.unbound.value == "1")
+		{
+			next = 'pg=6';
+			return gotoStep(current,next);
+		}
+
+		document.getElementById('step_text').innerHTML = parseInt(4/10*100) + '%';	
+		
+		// make sure next_b button is visible, since we can now jump straight to this question
+		// if we already know the edition prior to loading the quote
+		document.getElementById('next_b').style.display    = 'block';
+		document.getElementById('next_b').style.visibility = 'visible';
+		
+		nextStep = 'pg=6';
+		prevStep = 'pg=2';
+	}
+	// team question
+	else if (next == 'pg=4')
+	{
+		preCalcPBX();
+		nextStep = 'pg=6'; // num calls
+
+		if (document.form['[% EDITIONS.first.group_name %]'].value == [% PBXTRA_CALL_CENTER_ID %])
+			prevStep = 'pg=3'; // agent
+		else
+			prevStep = 'pg=5';
+			
+		document.getElementById('step_text').innerHTML = parseInt(5/10*100) + '%';	
+	}
+	// pe question
+	else if (next == 'pg=5')
+	{
+		preCalcPBX();
+		nextStep = 'pg=6';
+		prevStep = 'pg=1';
+
+		document.getElementById('step_text').innerHTML = parseInt(3/10*100) + '%';
+	}
+	// num calls question
+	else if (next == 'pg=6')
+	{
+		document.getElementById('next_b').style.display    = 'block';
+		document.getElementById('next_b').style.visibility = 'visible';
+		preCalcPBX();
+		[% IF UNBOUND %]
+			[%# hide country/canada stuff %]	
+			selectUnbound(1);
+		[% END %]
+		
+		if (document.form.unbound.value == "1")
+		{
+			nextStep = 'pg=7';	// UNBOUND customers should not be asked about HUD
+			document.getElementById('step_text').innerHTML = parseInt(6/10*100) + '%';
+		}
+		// if Profession selected, next question is Team Question
+		else if (document.form['[% EDITIONS.first.group_name %]'].value == [% PBXTRA_PROFESSIONAL_ID %] &&
+				 current != 'pg=4'	) 
+		{
+			next = 'pg=4';
+			return gotoStep(current,next);
+		}
+		// if Call Center selected, but not Agent, go to Team question
+		else if (document.form['[% EDITIONS.first.group_name %]'].value == [% PBXTRA_CALL_CENTER_ID %] && 
+				 document.form['[% HUD.first.group_name %]'].value      != [% HUD_AGENT_ID %]		   &&
+				 current != 'pg=4'	)
+		{
+			next = 'pg=4';
+			return gotoStep(current,next);
+		}
+		else
+		{
+			// if SE selected, previous step is PE question
+			if (document.form['[% EDITIONS.first.group_name %]'].value == [% PBXTRA_STANDARD_ID %])
+			{
+				prevStep = 'pg=5';
+			}
+			else if (document.form['[% HUD.first.group_name %]'].value == [% HUD_AGENT_ID %])
+			{
+				// if Agent selected, previous step is Agent question
+				prevStep = 'pg=3';
+			}
+			else
+			{
+				// otherwise previous question is Team question
+				prevStep = 'pg=4';
+			}
+			nextStep = 'pg=7';
+			document.getElementById('step_text').innerHTML = parseInt(6/10*100) + '%';
+		}
+	}
+	// phones question
+	else if (next == 'pg=7')
+	{
+		if (document.form.unbound.value == "1") {
+			nextStep = 'pg=10';
+		} else {
+			nextStep = 'pg=8';
+		}
+		if (document.form.unbound.value == "1")
+		{
+			nextStep = 'pg=10';	// skip the VoIP question for UNBOUND
+		}
+		prevStep = 'pg=6';
+		document.getElementById('step_text').innerHTML = parseInt(7/10*100) + '%';
+	}
+	// voip question
+	else if (next == 'pg=8')
+	{
+		nextStep = 'pg=9';
+		prevStep = 'pg=7';
+		document.getElementById('step_text').innerHTML = parseInt(8/10*100) + '%';
+	}
+	
+	// reseller question
+	else if (next == 'pg=9')
+	{
+		// if phone count < 11, skip this question
+		if(phoneCnt < 11) {
+			next = 'pg=10';
+			return gotoStep(current, next);
+		}
+		
+		nextStep = 'pg=10';
+		prevStep = 'pg=8';
+		document.getElementById('step_text').innerHTML = parseInt(9/10*100) + '%';
+	}
+	// contact info
+	else if (next == 'pg=10')
+	{
+		document.getElementById('step_text').innerHTML = '&nbsp;';
+		nextStep = '';
+		prevStep = 'pg=9';
+		document.getElementById('next_b').style.display = 'none';
+		document.getElementById('next_b').style.visibility = 'hidden';
+		document.getElementById('qwizsubmit').style.display = 'block';
+		document.getElementById('qwizsubmit').style.visibility = 'visible';
+	}
+
+
+	if(current == "pg=10" && next == 'pg=8')
+	{
+		document.getElementById('next_b').style.display = 'block';
+		document.getElementById('next_b').style.Visibility = 'visible';
+		document.getElementById('qwizsubmit').style.display = 'none';
+		document.getElementById('qwizsubmit').style.visibility = 'hidden';
+	}
+		
+	// var prev_button = document.getElementById('prev_b');
+
+	var next_button = document.getElementById('next_b');
+	document.getElementById(current).style.display = 'none';
+	document.getElementById(current).style.visibility = 'hidden';
+
+
+	document.getElementById('status').style.display = 'block';
+	document.getElementById('status').style.visibility = 'visible';
+	document.getElementById('status').style.width = '500px';
+	document.getElementById('status').style.textAlign = 'center';
+	
+	process = 1;
+	/* make the back button work...kind of */
+	// document.location.hash = next;
+	
+	newhash = next;
+	newhash = newhash.replace(/=/,"");
+	document.location.hash = newhash;
+	currentStep = next;
+	setTimeout("hideStatusAndGo('"+next+"')", 500);
+	notifyGoogle(currentStep);
+	notifySwitch(currentStep);
+}
+
+// Hide the status bar and go to the next step
+function hideStatusAndGo(next)
+{
+
+	if (next != 'pg=1')
+	{
+		// var prev_button = document.getElementById('prev_b');
+		// prev_button.style.display = 'block';
+		// prev_button.style.visibility = 'visible';
+	}
+
+	var next_button = document.getElementById('next_b');
+
+	document.getElementById('status').style.display = 'none';
+	document.getElementById('status').style.visibility = 'hidden';
+
+	document.getElementById(next).style.display = 'block';
+	document.getElementById(next).style.visibility = 'visible';
+
+
+	if (next == 'pg=6')
+	{
+		document.getElementById('two').focus();
+	}
+
+	if (next == 'pg=7')
+	{
+		document.getElementById('phone[% FIRST_PHONE.mnemonic %]').focus();
+	}
+
+	if (next == 'pg=10')
+	{
+		document.getElementById('cust_name').focus();
+
+		document.getElementById('next_b').style.display = 'none';
+		document.getElementById('next_b').style.visibility = 'hidden';
+		document.getElementById('qwizsubmit').style.display = 'block';
+		document.getElementById('step_text').style.display = 'none';
+		document.getElementById('step_text').style.visibility = 'hidden';
+		document.getElementById('expert-quote').style.display = 'none';
+		document.getElementById('expert-quote').style.visibility = 'hidden';
+	}
+
+	// done processing timeout step
+	process = 0;
+
+	return true;
+}
+
+function checkPhones()
+{
+	var inputs = document.getElementsByTagName("input");
+	var total = 0;
+	for (var i = 0; i < inputs.length; i++)
+	{
+		if (inputs[i].type == "text" && inputs[i].name.search(/ Phones$/) != -1)
+		{
+			if (inputs[i].value.search(/^\d+$/) == -1)
+			{
+				alert("Please enter a number.");
+				inputs[i].select();
+				return false;
+			}
+			
+			total += parseInt(inputs[i].value);
+		}
+	}
+
+	minPhoneLimit = 1;
+	if (document.form.unbound.value == "1")
+	{
+		// UNBOUND quotes must have 3 or more phones
+		minPhoneLimit = 1;
+	}
+
+	phoneCnt = total;
+	if (phoneCnt < minPhoneLimit) 
+	{ 
+		if (document.form.unbound.value == "1")
+		{
+			alert("UNBOUND requires at least one phone.");
+			return false;
+		}
+		else if (phoneAlert)
+		{
+			var answer = confirm("Are you sure you want to continue without adding phones?");
+			if (answer)
+			{
+				phoneAlert = false;
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		
+		document.form.annual_support.value = 0;
+	}
+	[% FOREACH TIER=SUPPORT_TIERS %]
+	else if(phoneCnt <= [% TIER.num_users %])
+	{
+		document.form.annual_support.value = [% TIER.item_id %];
+	}
+	[% END %]
+
+	return true;
+}
+
+function checkRequired(current)
+{
+	document.form.rickscaptcha.value = 'rick';
+	if(current.match(/pg\=[1-5]/) && current != 'pg=10')
+	{
+		//no check for now
+		var yes = document.getElementById(current + "_yes");
+		var no  = document.getElementById(current + "_no");
+		if(!yes.checked && !no.checked)
+		{
+			alert("Please make a selection to the question.");
+			return false;
+		}
+	}	
+	else if (current == 'pg=6' && document.form.num_calls.value == '')
+	{
+		alert("Please enter the maximum number of calls you handle at one time.");
+		document.form.num_calls.select();
+		return false;
+	}
+	else if(current == 'pg=6' && document.form.num_calls.value.search(/^\d+$/) == -1)
+	{
+		alert("Please enter a number.");
+		document.form.num_calls.select();
+		return false;
+	}
+
+	else if(current == 'pg=7')
+	{
+		return checkPhones();	
+	}
+	else if(current == 'pg=8')
+	{
+
+		var length = document.form.use_voip.length;
+		for(var i = 0; i < length; i++)
+		{
+			if(document.form.use_voip[i].checked)
+			{
+				return true;
+			}
+		}
+		alert("Please choose whether you will use PBXtra with VoIP Phone Service");
+		return false;
+	}
+	else if (current != 'pg=10')
+	{
+		return true;
+	}
+
+	if (document.form.name.value == '')
+	{
+		alert("Please fill out the Name field.");
+		document.form.name.select();
+		return false;
+	}
+	else if (document.form.name.value.search(/\w+/) == -1)
+	{
+		alert("Please enter a name.");
+		document.form.name.select();
+		return false;
+	}
+	else if (document.form.cust_phone.value == '')
+	{
+		alert("Please fill out the Phone field.");
+		document.form.cust_phone.select();
+		return false;
+	}
+	else if (document.form.cust_phone.value.search(/.*1?.*\d{3}.*\d{3}.*\d{4}/) == -1)
+	{
+		alert("Please enter a valid phone number.");
+		document.form.cust_phone.select();
+		return false;
+	}
+	else if (document.form.email.value == '')
+	{
+		alert("Please fill out the Email field.");
+		document.form.email.select();
+		return false;
+	}
+	else if (document.form.email.value.search(/^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/))
+	{
+		alert("Please enter a valid email address.");
+		document.form.email.select();
+		return false;
+	}
+	else if (document.form.confirm_email.value == '')
+	{
+		alert("Please fill out the Confirm Email field.");
+		document.form.confirm_email.select();
+		return false;
+	}
+	else if (document.form.confirm_email.value != document.form.email.value)
+	{
+		alert("The email addresses are not the same.");
+		document.form.confirm_email.select();
+		return false;
+	}
+	else if (document.form.country.value == 'United States' && document.form.state.selectedIndex == 0)
+	{
+		alert("Please select a state.");
+		document.form.state.focus();
+		return false;
+	}
+	else if (document.form.country.value == 'Canada' && document.form.province.value == '')
+	{
+		alert("Please select a province.");
+		document.form.province.focus();
+		return false;
+	}
+	else if (document.form.zip_code.value == '')
+	{
+		alert("Please fill out the Zip Code field.");
+		document.form.zip_code.select();
+		return false;
+	}
+	else if (document.form.country.value == 'United States' && document.form.zip_code.value.search(/^\s*\d{5}(\-\d{4})?\s*$/))
+	{
+		alert("Please enter a valid zip code.");
+		document.form.zip_code.select();
+		return false;
+	}
+	else if (document.form.industry.value == '')
+	{
+		alert("Please select an industry.");
+		document.form.industry.focus();
+		return false;
+	}
+	else if (document.form.title_role.value == '')
+	{
+		alert("Please select an title/role.");
+		document.form.title_role.focus();
+		return false;
+	}
+
+	return true;
+}	
+
+// not sure if this page tracker is actually notifying google, but I like
+// the Big Brother connotations
+function notifyGoogle(current)
+{
+	var pageTracker = _gat._getTracker("UA-604622-35");
+	pageTracker._setDomainName("fonality.com");
+	pageTracker._initData();
+	var page = '/qwiz.cgi?src=sta' + current;
+	pageTracker._trackPageview(page);
+}
+
+function notifySwitch(current)
+{
+	var page_num = parseInt(current.match(/\d+/),10) - 1;
+	if(page_num > 0)
+	{
+		document.getElementById('switch_tracking').innerHTML = '<iframe src="http://switch.atdmt.com/jaction/hbrpbx_QuotePage' 
+		+ page_num + '_1" width=1 height=1 frameborder=0 scrolling="No" marginheight=0 marginwidth=0 topmargin=0 leftmargin=0></iframe>';
+	}
+	else
+	{
+		document.getElementById('switch_tracking').innerHTML = '<iframe src="" width=1 height=1 frameborder=0 scrolling="No" ' + 
+		'marginheight=0 marginwidth=0 topmargin=0 leftmargin=0></iframe>';
+	}
+}
+
+function preNotifyGoogle()
+{
+	notifyGoogle(currentStep);
+}
+
+
+function preCalcPBX(reset)
+{
+	softCalc = 1;
+	hudCalc  = 1;
+
+	// travel thru each HUD and PBXtra edition
+	for(var i in itemWeight)
+	{
+		var radioObj, pbx, hud;
+
+		// turn i (an item_id) into the radioObj that matches the item_id
+		if(typeof(document.form['pbx_'+ i]) != "undefined" && document.form['pbx_' + i].length)
+		{
+			pbx = 1;
+			radioObj = document.form['pbx_' + i];
+		}
+		else if(typeof(document.form['hud_' + i]) != "undefined" && document.form['hud_' + i].length)
+		{
+			hud = 1;
+			radioObj = document.form['hud_' + i];
+			// PBXtra UNBOUND is NOT compatible with HUD
+		}
+		else
+		{
+			radioObj = undefined; pbx = 0; hud = 0;
+		}
+
+		if(typeof(radioObj) != "undefined")
+		{
+			// travel thru each radio button that matches the item_id
+			for(var j=0; j<radioObj.length;j++)
+			{
+				if (radioObj[j].value == "")
+				{
+					radioObj[j].value = itemWeight[i];
+				}
+
+				// if we are reseting what has been selected, set checked to false
+				if(reset)
+					radioObj[j].checked = false;
+				
+				softCalc += pbx && radioObj[j].checked ? parseFloat(radioObj[j].value) : 0;
+				hudCalc += hud && radioObj[j].checked ? parseFloat(radioObj[j].value) : 0;
+			}
+		}
+	}
+
+	calcPBX();
+}
+	
+function calcPBX()
+{
+	document.form['[% EDITIONS.first.group_name %]'].value = softMap[ softCalc.toString().length ];
+	document.form['[% HUD.first.group_name %]'].value      = hudMap[ hudCalc.toString().length ];
+}
+
+if(window.addEventListener) window.addEventListener("load", preNotifyGoogle, true);
+else if(window.attachEvent) window.attachEvent("onload", preNotifyGoogle);
+
+[% IF UNBOUND || ED || NOT_UNBOUND %]
+	if(window.addEventListener) window.addEventListener("load", function() { gotoStep(currentStep, nextStep);}, true);
+	else if(window.attachEvent) window.attachEvent("onload", function() { gotoStep(currentStep, nextStep);});
+[% ELSIF SHOW_FORM %]
+	if(window.addEventListener) window.addEventListener("load", preCalcPBX, true);
+	else if(window.attachEvent) window.attachEvent("onload", preCalcPBX);
+[% END %]
+
+
+
+
+//-->
+</script>
+
+
+[% IF SHOW_FORM %]
+[%#	==============================
+		SWITCH TRACKING
+	============================#%]
+<div id="switch_tracking">
+<iframe src="" width=1 height=1 frameborder=0 scrolling="No" marginheight=0 marginwidth=0 topmargin=0 leftmargin=0></iframe>
+</div>
+<div id="wizard">
+	
+<form name="form" action="[% SERVER_NAME %]/qwiz.cgi" onsubmit='return checkValidSubmit();' method="post" id="wizard2">
+  <div style="min-height:130px;_height:130px;border:1px solid #fff">
+	<input type="hidden" name="customize" value="1" />
+	<input type="hidden" name="src" value="[% TT_DIR %]" />
+	<input type="hidden" name="[% EDITIONS.first.group_name %]" value="" />
+	<input type="hidden" name="[% HUD.first.group_name %]" value="" />
+	<input type="hidden" name="unbound" value="[% IF UNBOUND %]1[% ELSE %]0[% END %]" />
+	
+	<div id="step-container">		
+		<div id="step_text">
+			0%
+		</div>
+		<div id="expert-quote">Know your stuff?<br /><a href="javascript:void(0);" onclick="quoteModified(); document.form.submit(); return false">Switch to<br />Expert Quote</a></div>
+	</div>
+
+[%# ==============================
+		PAGE 0 (zero)
+		PBXtra or UNBOUND
+    ============================#%]
+	<div id="pg=0" [% IF UNBOUND || ED %]style="display: none; visibility: hidden;"[% END %]>
+		<fieldset id="solution-chooser">
+			<legend><span>Which solution do you prefer?</span></legend>
+				<div class="twocol clear">
+					<div class="colleft col">
+						<h5>On-Premise Business Communications</h5>
+						<ul class="pbxlite">
+							<li>Own your system</li>
+							<li>Unified Communications (HUD)</li>
+							<li>Use any phone service provider</li>
+							<li>Works with or without Internet</li>
+							<li>Use your existing infrastructure</li>
+						</ul>
+						<a id="choose-pbxtra-btn" type="button" onclick="quoteModified(0); document.form.submit(); return false">Choose PBXtra</a>
+					</div>
+					<div class="colright col">
+						<h5>Fully Hosted Business Communications</h5>
+						<ul class="pbxlite">
+							<li>No capital expenditure; fixed monthly cost</li>
+							<li>No server - plug in phones and go!</li>
+							<li>Solutions for all company sizes</li>
+							<li>Enterprise grade feature set</li>
+							<li>Unified Communications (HUD)</li>
+						</ul>
+						<a id="choose-unbound-btn" type="button" href="http://www.fonality.com/build-your-solution">Choose [% PBXTRA_UNBOUND %]</a>
+					</div>
+				</div>
+		</fieldset>
+	</div>
+
+[%#	==============================
+		PAGE 1 (Choose CCE)
+	============================#%]
+	<div id="pg=1" style="display: none; visibility: hidden;">
+	<fieldset>
+		<legend><span>Do you have a sales or support call center?</span></legend>
+			<div class="check-div">
+				<input onclick="gotoStep(currentStep,nextStep);" id="pg=1_yes" class="radio" type="radio" name="pbx_[% PBXTRA_CALL_CENTER_ID %]" 
+						value="" [% IF SOFT_SELECTED == PBXTRA_CALL_CENTER_ID %]checked="checked"[% END %] />&nbsp;
+				<label for="pg=1_yes">Yes</label>
+			</div>
+			<div class="check-div">
+				<input onclick="gotoStep(currentStep,nextStep);" id="pg=1_no" class="radio" type="radio" name="pbx_[% PBXTRA_CALL_CENTER_ID %]" 
+						value=0	[% IF SOFT_SELECTED AND SOFT_SELECTED != PBXTRA_CALL_CENTER_ID %]checked="checked"[% END %] />&nbsp;
+				<label for="pg=1_no">No</label>
+			</div>
+	</fieldset>
+	</div>
+[%#	==============================
+		PAGE 2 (Salesforce)
+	============================#%]
+	<div id="pg=2">
+	<fieldset>
+		<legend><span>Do you use Salesforce.com?</span></legend>
+			<div class="check-div">
+				<input onclick="gotoStep(currentStep,nextStep);return false;" id="pg=2_yes" class="radio" type="radio" name="up_uae" 
+						value="yes" [% IF UPSELL_UAE == "yes" %]checked="checked"[% END %] />&nbsp;
+				<label for="pg=2_yes">Yes</label>
+			</div>
+			<div class="check-div">
+				<input onclick="gotoStep(currentStep,nextStep);" id="pg=2_no" class="radio" type="radio" name="up_uae" 
+						value="no" [% IF UPSELL_UAE == "no" %]checked="checked"[% END %] />&nbsp;
+				<label for="pg=2_no">No</label>
+			</div>
+	</fieldset>
+	</div>
+
+
+[%#	==============================
+		PAGE 3 (Choose Agent)
+	============================#%]
+	<div id="pg=3">
+	<fieldset>
+		<legend><span>Do you need to monitor or record calls?</span></legend>
+			<div class="check-div">
+				<input onclick="gotoStep(currentStep,nextStep);" id="pg=3_yes" class="radio" type="radio" name="hud_[% HUD_AGENT_ID %]" 
+						value="" [% IF HUD_SELECTED == HUD_AGENT_ID %]checked="checked"[% END %] />&nbsp;
+				<label for="pg=3_yes">Yes</label>
+			</div>
+			<div class="check-div">
+				<input onclick="gotoStep(currentStep,nextStep);" id="pg=3_no" class="radio" type="radio" name="hud_[% HUD_AGENT_ID %]" 
+						value=0 [% IF HUD_SELECTED AND HUD_SELECTED != HUD_AGENT_ID %]checked="checked"[% END %] />&nbsp;
+				<label for="pg=3_no">No</label>
+			</div>
+	</fieldset>
+	</div>
+
+
+[%#	==============================
+		PAGE 4 (Choose Team)
+	============================#%]
+	<div id="pg=4">
+	<fieldset>
+		<legend><span>Do you have a receptionist?</span></legend>
+			<div class="check-div">
+				<input onclick="gotoStep(currentStep,nextStep);" id="pg=4_yes" class="radio" type="radio" name="hud_[% HUD_TEAM_ID %]" 
+						value="" [% IF HUD_SELECTED == HUD_TEAM_ID %]checked="checked"[% END %] />&nbsp;
+				<label for="pg=4_yes">Yes</label>
+			</div>
+			<div class="check-div">
+				<input onclick="gotoStep(currentStep,nextStep);" id="pg=4_no" class="radio" type="radio" name="hud_[% HUD_TEAM_ID %]" 
+						value=0 [% IF HUD_SELECTED AND HUD_SELECTED != HUD_TEAM_ID %]checked="checked"[% END %] />&nbsp;
+				<label for="pg=4_no">No</label>
+			</div>
+	</fieldset>
+	</div>
+
+
+[%#	==============================
+		PAGE 5 (Choose PE)
+	============================#%]
+	<div id="pg=5">
+	<fieldset>
+		<legend><span>Do you use conference bridges or intercom?</span></legend>
+			<div class="check-div">
+				<input onclick="gotoStep(currentStep,nextStep);" id="pg=5_yes" class="radio" type="radio" name="pbx_[% PBXTRA_PROFESSIONAL_ID %]" 
+						value="" [% IF SOFT_SELECTED == PBXTRA_PROFESSIONAL_ID %]checked="checked"[% END %] />&nbsp;
+				<label for="pg=5_yes">Yes</label>
+			</div>
+			<div class="check-div">
+				<input onclick="gotoStep(currentStep,nextStep);" id="pg=5_no" class="radio" type="radio" name="pbx_[% PBXTRA_PROFESSIONAL_ID %]" 
+						value=0 [% IF SOFT_SELECTED AND SOFT_SELECTED != PBXTRA_PROFESSIONAL_ID %]checked="checked"[% END %] />&nbsp;
+				<label for="pg=5_no">No</label>
+			</div>
+	</fieldset>
+	</div>
+
+[%#	==============================
+		PAGE 6 (num of phone calls)
+	============================#%]
+	<div id="pg=6">
+		<fieldset>
+			<legend><span>How many total (external and internal) calls<br />must your company handle at one time?<span></legend>
+				<label for="num_calls">Max. Number of Calls:</label>&nbsp;
+				<input id="two" type="text" class="order" name="num_calls" value="[% NUM_CALLS %]" size="4" maxlength="3" style="[% RADIO_OFFSET %]" />
+		</fieldset>
+	</div>
+[%#	==============================
+		PAGE 7 (Phones)
+	============================#%]
+	<div id="pg=7">
+		<fieldset id="phones">
+			<legend>
+				<span>Number of IP phone(s) you'd like to order</span>
+				<small>(Don't worry, you can customize this more later.)</small>
+			</legend>
+			<img src="[% HOST %]images/phones/phones-Polycom-501-small.jpg" alt="Phone image" id="phone_img_sta" />
+			
+					[% FIRST_PHONE_IMG = PHONES.first.img_small %]
+					[% FOREACH PHONE=PHONES %]
+					
+						[% UNLESS CATEGORY == PHONE.mnemonic || PHONE.mnemonic == NULL %]
+							[% CATEGORY = PHONE.mnemonic %]
+						[% END %]
+
+						[% IF CATEGORY.match('Entry') %]
+							[% description = "(Good for light use, limited speakerphone)" %]
+						[% ELSIF CATEGORY.match('Mid') %]
+							[% description = "(Good for daily use, occasional speakerphone)" %]
+						[% ELSIF CATEGORY.match('High') %]
+							[% description = "(Good for daily use, frequent speakerphone)" %]
+						[% END %]
+						<div class="twocol phone-category">
+							<div class="colleft">
+								<input id="phone[% PHONE.mnemonic %]" type="text" name="[% PHONE.mnemonic %]" value="[% PHONE.quantity || 0 %]" size="2" maxlength="3" />
+							</div>						
+							<div class="colright">
+								<h5>[% CATEGORY %]</h5>
+								<label class="text">
+										<em>[% description %]</em>
+								</label>
+							</div>
+						</div>
+					[% END %]				
+				
+		</fieldset>
+	</div>
+
+[%#	==============================
+		PAGE 8 (VoIP and Support)
+	============================#%]
+	<div id="pg=8">
+		<fieldset> 
+			<legend><span>Do you use VoIP?</span></legend>
+			<div class="check-div">
+				<input onclick="gotoStep(currentStep,nextStep);" id="voip_yes" class="radio" type="radio" name="use_voip" value="yes" [% IF USE_VOIP == 'yes' %]checked="checked"[% END %] />&nbsp;
+				<label for="voip_yes">Yes</label>
+			</div>
+			<div class="check-div">
+				<input onclick="gotoStep(currentStep,nextStep);" id="voip_no" class="radio" type="radio" name="use_voip" value="no" [% IF USE_VOIP == 'no' %]checked="checked"[% END %] />&nbsp;
+				<label for="voip_no">No</label>
+			</div>
+			<div class="check-div">
+				<input onclick="gotoStep(currentStep,nextStep);" id="voip_eh" class="radio" type="radio" name="use_voip" value="not sure" [% IF USE_VOIP == 'not sure' %]checked="checked"[% END %] />&nbsp;
+				<label for="voip_eh">Not Sure</label>
+			</div>
+		</fieldset>
+
+		<input type="hidden" name="annual_support" value="[% AUTO_SUPPORT %]" />
+	</div>
+
+[%#	==============================
+		PAGE 9 (onsite management)
+	============================#%]
+	<div id="pg=9">
+		<fieldset>
+			<legend><span>Are you interested in a local reseller for on-site<br />design, installation and support?</span></legend>
+			<div class="check-div">
+				<input onclick="gotoStep(currentStep,nextStep);" id="onsite_yes" class="radio" type="radio" name="onsite_support" value="yes" [% IF ONSITE_MANAGE == 'yes' %]checked="checked"[% END %] />&nbsp;
+				<label for="voip_yes">Yes</label>
+			</div>
+			<div class="check-div">
+				<input onclick="gotoStep(currentStep,nextStep);" id="onsite_no" class="radio" type="radio" name="onsite_support" value="no" [% IF ONSITE_MANAGE == 'no' %]checked="checked"[% END %] />&nbsp;
+				<label for="voip_no">No</label>
+			</div>
+		</fieldset>
+	</div>
+	
+[%#	==============================
+		PAGE 10 (Contact)
+	============================#%]
+
+	[% wrapper = "$TT_CONSTANTS_DIR" _ "usa_state_list.tt" %]
+	[% PROCESS $wrapper %]
+
+	<div id="pg=10">
+		<fieldset id="contact">
+			<legend><span>Complete to receive your instant quote:</span></legend>
+			<div class="twocol partial clear">
+				<div class="colleft frmStack">
+					<div>
+						<label for="first_name">Name</label>
+						<input id="cust_name" class="order" type="text" name="name" value="[% NAME %]"  maxlength="50" tabindex="1" />
+					</div>
+					<div> 
+						<label for="title">[% IF RESELLER_EMAIL != '' && (RESELLER_STATUS == 'WTG-Agent' || RESELLER_STATUS == 'BD-Agent' || RESELLER_STATUS == 'Fonality-Affiliate') %]Customer's [% END %]Email</label>
+						<input id="cust_email" class="order" type="text" name="email" value="[% EMAIL %]" maxlength="50" tabindex="3" />
+					</div>
+					<div id="country_div">
+						<label for="Country">Country *</label>
+						<select name="country" id="country" class="order" tabindex="5" onChange="selectCountry()">
+							<option value="United States" [% IF !COUNTRY || COUNTRY == 'United States' %]selected=selected[% END %]>United States</option>
+							<option value="Canada" [% IF COUNTRY && COUNTRY == 'Canada' %]selected=selected[% END %]>Canada</option>
+						</select>
+					</div>
+					<div id="zip_code_div">
+						<label for="zip_code">Zip Code *</label>
+						<input id="zip_code" class="order" type="text" name="zip_code" value="[% ZIP_CODE %]" maxlength="50" tabindex="7" style="height:20px" />
+					</div>
+					
+					<div>
+						<label for="title_role">Title/Role *</label>	
+						<select id="title_role" name="title_role" tabindex="9">
+							<option value="">-- Please select your title/role --</option>
+							<option value="Owner/CEO">Owner/CEO</option>
+							<option value="Executive/VP">Executive/VP</option>
+							<option value="IT/Network Manager">IT/Network Manager</option>
+							<option value="Sales Manager">Sales Manager</option>
+							<option value="Customer Support/Service Manager">Customer Support/Service Manager</option>
+							<option value="Call Center Manager">Call Center Manager</option>
+							<option value="Office/Operations">Office/Operations</option>
+							<option value="HR/Administrative">HR/Administrative</option> 
+							<option value="Other">Other</option>
+						</select>
+					</div>
+					
+					<div class="note" style="padding-top:3px"><em style="font-size:12px">* Used to estimate tax and shipping costs.</em></div>
+				</div> <!-- // colleft -->
+				<div class="colright frmStack">
+					<div>
+						<label for="first_name">Phone</label>
+						<input id="cust_phone" class="order" type="text" name="cust_phone" value="[% CUST_PHONE %]" maxlength="25" tabindex="2" />
+					</div>
+					<div>
+						<label for="title">Confirm Email</label>
+						<input id="confirm" class="order" type="text" name="confirm_email" value="[% CONFIRM_EMAIL %]" maxlength="50" tabindex="4" />      	
+					</div>
+					<!--
+<div id="unbound_padding_div">
+						<label style="visibility: hidden">&nbsp;</label>
+						<select class="order" name=ignore_me style="visibility: hidden" /><option value="">&nbsp;</option></select>
+					</div>
+-->
+					<div>
+						<label for="state" id="state_prov_label">State *</label>
+						<select name="state" id=state class="order" tabindex="6">
+							<option  value="">-- select a state --</option>
+							[% FOREACH STATE = USA_STATE_LIST %]
+							<option value="[% STATE.1 %]"
+								[% IF STATE.1 == SHIPPING_STATE %] selected="selected"[% END %]
+							>[% STATE.0 %]</option>
+							[% END %]
+						</select>
+						<input id="province" type="text" class="order" name="province" value="[% SHIPPING_STATE %]" maxlength="50" tabindex="6" style="visibility: hidden; display: none"/>
+					</div>
+					
+				<div>
+						<label for="industry">Industry *</label>
+						<select id="industry" name="industry" tabindex="8">
+							<option value="">-- Please select your industry --</option>
+							<option value="Aerospace and Defense">Aerospace & Defense</option>
+							<option value="Agriculture">Agriculture</option>
+							<option value="Automotive and Transport">Automotive & Transport</option>
+							<option value="Banking">Banking</option>
+							<option value="Beverages">Beverages</option>
+							<option value="Business Services">Business Services</option>
+							<option value="Charitable Organizations">Charitable Organizations</option>
+							<option value="Chemicals">Chemicals</option>
+							<option value="Computer Hardware">Computer Hardware</option>
+							<option value="Computer Services">Computer Services</option>
+							<option value="Computer Software">Computer Software</option>
+							<option value="Construction">Construction</option>
+							<option value="Consumer Products Manufacturers">Consumer Products Manufacturers</option>
+							<option value="Consumer Services">Consumer Services</option>
+							<option value="Cultural Institutions">Cultural Institutions</option>
+							<option value="Education">Education</option>
+							<option value="Electronics">Electronics</option>
+							<option value="Energy and Utilities">Energy & Utilities</option>
+							<option value="Entertainment">Entertainment</option>
+							<option value="Environmental Services and Equipment">Environmental Services & Equipment</option>
+							<option value="Financial Services">Financial Services</option>
+							<option value="Food">Food</option>
+							<option value="Foundations">Foundations</option>
+							<option value="Government">Government</option>
+							<option value="Health Care">Health Care</option>
+							<option value="Industrial Manufacturing">Industrial Manufacturing</option>
+							<option value="Insurance">Insurance</option>
+							<option value="Leisure">Leisure</option>
+							<option value="Media">Media</option>
+							<option value="Membership Organizations">Membership Organizations</option>
+							<option value="Metals and Mining">Metals & Mining</option>
+							<option value="Pharmaceuticals">Pharmaceuticals</option>
+							<option value="Real Estate">Real Estate</option>
+							<option value="Retail">Retail</option>
+							<option value="Security Products & Services">Security Products & Services</option>
+							<option value="Telecommunications Equipment">Telecommunications Equipment</option>
+							<option value="Telecommunications Services">Telecommunications Services</option>
+							<option value="Transportation Services">Transportation Services</option>
+							<option value="Technology">Technology</option>
+							<option value="Other">Other</option>
+							</select>
+					
+					</div>
+				</div>
+				<div class="clear"></div>
+			</div> <!-- // twocol -->
+			[% IF RESELLER_EMAIL != ''  && (RESELLER_STATUS == 'WTG-Agent' || RESELLER_STATUS == 'BD-Agent' || RESELLER_STATUS == 'Fonality-Affiliate') %]
+			<div>
+				<label for="email_to_reseller">Send this proposal to</label>&nbsp;
+				<select name="email_to_reseller" style="width:205px">
+					<option value="off" selected>Customer's Email Address</option>
+					<option value="on">Reseller([% RESELLER_EMAIL %])</option>
+				</select>
+			</div>
+			<div>
+				&nbsp;
+			</div>
+			[% END %]
+		</fieldset>
+	</div>
+
+[%#	==============================
+		LOADING...
+	============================#%]
+	<div id="status">
+		<p class="loading" >Loading...</p>
+		<p><img src="/images/loading.gif" alt="loading" /></p>
+	</div>
+
+[%#	==============================
+		NAVIGATION
+	============================#%]
+</div>
+
+<input class="" type="button" id="next_b" onclick="if(checkRequired(currentStep)) gotoStep(currentStep, nextStep)" value="Next" [% UNLESS UNBOUND %]style="display:none;"[% END %] />
+<input type="submit" id="qwizsubmit" onclick="return checkRequired(currentStep)" 
+	name="order_review" value="Next: Done!" style="display:none" />
+<div id="rickscaptcha" style="display: none; visibility: hidden;">
+Please type 'Rick': <input type="text" name="rickscaptcha" value="">
+</div>
+
+</form>
+</div> <!-- // wizard -->
+[% ELSE %]
+
+[%#	==============================
+		QUOTE ESTIMATE
+	============================#%]
+[%# used on wrapper to display tracking code - pgoddard  %]
+[% PAGE2 = 'qwiz-estimate' %]
+[% PAGE3 = 'AB-exp-conversion' %]
+
+<h1>Quote Estimate: Proposal #[% PROPOSAL_ID %]</h1>		
+<div id="quote">
+	<div id="results">
+		<table id="estimate">
+			<thead>
+				<tr valign="bottom">
+					<th style="text-align: left" width="350">Description</th>
+					<th width="81">Price</th>
+					<th width="81">Qty</th>
+					<th width="81">Subtotal</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td style="height:10px" colspan="4"></td>
+				</tr>
+
+		[% FOREACH ITEM=ORDER_ITEMS %]
+			[% IF ITEM.group_name == 'PBXtra Software' || ITEM.group_name == 'PBXtra HUD' %]
+				<tr valign="bottom">
+					<td nowrap="nowrap">[% ITEM.name %]</td>
+					<td align="right">$[% ITEM.price %]</td>
+					<td align="right">[% ITEM.quantity %]</td>
+					<td align="right">$[% ITEM.subtotal %]</td> 
+				</tr>
+			[% END %]
+		[% END %]
+
+		[% FOREACH ITEM=ORDER_ITEMS %]
+			[% IF ITEM.group_name == 'servers' %]
+			<tr valign="bottom">
+				<td nowrap="nowrap"><br /><strong>[% ITEM.name %]</strong></td>
+				<td align="right">$[% ITEM.price %]</td>
+				<td align="right">[% ITEM.quantity %]</td>
+				<td align="right">$[% ITEM.subtotal %]</td> 
+			</tr>
+			[% ELSIF ITEM.group_name == 'cpu' || ITEM.group_name == 'ram' || ITEM.group_name == 'raid' || ITEM.group_name == 'power' || ITEM.group_name == 'warranty' %]
+				[% IF ITEM.price == 0 %]
+					<tr valign="bottom">
+						<td nowrap="nowrap"><ul><li>[% ITEM.name %]</li></ul></td>
+						<td align="right">&nbsp;</td>
+						<td align="right">&nbsp;</td>
+						<td align="right">&nbsp;</td>
+					</tr>
+				[% END %]
+			[% END %]
+		[% END %]
+	
+		[% COUNTER = 0 %]			
+		[% FOREACH ITEM=ORDER_ITEMS %]
+			[% IF ITEM.group_name == 'cpu' || ITEM.group_name == 'ram' || ITEM.group_name == 'raid' || ITEM.group_name == 'power' || ITEM.group_name == 'warranty' %]
+				[% IF ITEM.price > 0 %]
+					[% IF COUNTER == 0 %]
+						<tr valign="bottom">
+							<td><br /><strong>Hardware Upgrades</strong></td>
+						</tr>
+						[% COUNTER = 1 %]
+					[% END %]
+					<tr valign="bottom">
+						<td nowrap="nowrap"><ul><li>[% ITEM.name %]</li></ul</td>
+						<td align="right">$[% ITEM.price %]</td>
+						<td align="right">[% ITEM.quantity %]</td>
+						<td align="right">$[% ITEM.subtotal %]</td>
+					</tr>
+				[% END %]
+			[% END %]
+		[% END %]
+		
+		[% COUNTER = 0 %]
+		[% FOREACH ITEM=ORDER_ITEMS %]
+			[% IF ITEM.group_name == 'Cards - Digital' ||
+				  ITEM.group_name == 'analog_base_pci' ||
+				  ITEM.group_name == 'analog_base_pcie' ||
+				  ITEM.group_name == 'analog_exp1' ||
+				  ITEM.group_name == 'analog_exp2' ||
+				  ITEM.group_name == 'Cards - Other' %]
+				[% IF COUNTER == 0 %]
+					<tr valign="bottom">
+						<td><br /><strong>Expansion Cards</strong></td>
+					</tr>
+					[% COUNTER = 1 %]
+				[% END %]
+				<tr valign="bottom">
+					<td nowrap="nowrap"><ul><li>[% ITEM.name %]</li></ul></td>
+					<td align="right">$[% ITEM.price %]</td>
+					<td align="right">[% ITEM.quantity %]</td>
+					<td align="right">$[% ITEM.subtotal %]</td>
+				</tr>
+			[% END %]
+		[% END %]
+		
+		[% COUNTER = 0 %]
+		[% TOTAL_PHONES = 0 %]
+		[% FOREACH ITEM=ORDER_ITEMS %]
+			[% IF ITEM.group_name == 'IP Phones' %]
+				[% IF COUNTER == 0 %]
+					<tr valign="bottom">
+						<td><br /><strong>Phones</strong></td>
+					</tr>
+					[% COUNTER = 1 %]
+				[% END %]
+				[% TOTAL_PHONES = TOTAL_PHONES + ITEM.quantity %]
+					<tr valign="bottom">
+						<td nowrap="nowrap"><ul><li>[% ITEM.name %]</li></ul></td>
+						<td align="right">$[% ITEM.price %]</td>
+						<td align="right">[% ITEM.quantity %]</td>
+						<td align="right">$[% ITEM.subtotal %]</td>
+					</tr>
+			[% END %]
+		[% END %]
+
+		[% COUNTER = 0 %]
+		[% FOREACH ITEM=ORDER_ITEMS %]
+			[% IF ITEM.group_name == 'Configuration Fees Group' && ITEM.subtotal > 0 %]
+				<tr valign="bottom">
+					<td nowrap="nowrap">[% IF COUNTER == 0 %]<br />[% COUNTER = 1 %][% END %][% ITEM.name %]</td>
+					<td align="right">$[% ITEM.price %]</td>
+					<td align="right">[% ITEM.quantity %]</td>
+					<td align="right">$[% ITEM.subtotal %]</td>
+				</tr>
+			[% ELSIF ITEM.group_name == 'Annual Support Group' && ITEM.subtotal > 0 %]
+				<tr valign="bottom">
+					<td nowrap="nowrap">[% IF COUNTER == 0 %]<br />[% COUNTER = 1 %][% END %][% ITEM.name %]</td>
+					<td align="right">$[% ITEM.price %]</td>
+					<td align="right">[% ITEM.quantity %]</td>
+					<td align="right">$[% ITEM.subtotal %]</td>
+				</tr>
+			[% END %]
+		[% END %]
+
+		[% IF SMALL_SERVER_DISCOUNT %]
+			<tr valign="bottom">
+				<td>Limited Time Promotion for 10 Seats or Less</td>
+				<td colspan="3" align="right">$(<font color=red>[% SMALL_SERVER_DISCOUNT %]</font>)</td>
+			</tr>
+		[% END %]
+
+		<tr valign="bottom">
+				<td><br /><strong>Subtotal</strong></td>
+				<td colspan="3" align="right"><strong>$[% SUBTOTAL %]</strong></td>
+		</tr>
+
+	
+		[% IF SALES_TAX > 0 %]
+			<tr valign="top">
+				<td>Estimated [% SHIPPING_STATE %] Sales Tax ([% SALES_TAX_ENGLISH %]%)</td>
+				<td colspan="3" align="right">$[% SALES_TAX %]</td>
+			</tr>
+		[% END %]
+
+		[% IF SHIPPING_COST > 0 %]
+			<tr valign="top">
+				<td>Shipping and Handling ([% SHIPPING_SERVICE %])</td>
+				<td colspan="3" align="right">$[% SHIPPING_COST %]</td>
+			</tr>
+		[% END %]
+		
+		<tr valign='bottom'>
+			<td><br /><strong>Total</strong>*</td>
+			<td colspan="3" align="right"><strong>$[% QUOTE_TOTAL %]</strong></td>
+		</tr>
+		
+		<tr valign="bottom">
+			<td colspan="4"><br />* This is a simple quote estimate based on preliminary information provided by you. A dedicated PBXtra expert will contact you shortly to provide a more detailed and accurate price quote.</td>
+		</tr>
+	</table>
+	</div> <!-- // results -->
+</div> <!-- // quote -->
+[% END %]

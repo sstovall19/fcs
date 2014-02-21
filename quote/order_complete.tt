@@ -1,0 +1,67 @@
+[% TITLE = ' :: New Order' %]
+[% COLSPAN = 2 %]
+[% UNLESS PHONE_QTY %][% PHONE_QTY = 0 %][% END %]
+<input type='hidden' name='reseller' value='[% IF RESELLER_ID OR RESELLER_PROPOSAL %]1[% ELSE %]0[% END %]'>
+<input type='hidden' name='oid' value='[% OID %]'>
+
+<h1 style="margin-bottom: 15px !important;">Order Complete!</h1>
+
+<p>
+	Thank you. Your order has been received. Your order number is: <b>[% TICKET_ID %]</b>.
+</p>
+<p>
+	[% IF ORDER_APPROVED %]
+		An invoice has been emailed to <b>[% EMAIL %]</b>.
+	[% ELSE %]
+		For quality assurance purposes your order will not be processed until an associate has validated the server configuration.
+		A final invoice will be emailed to <b>[% EMAIL %]</b> when your order has been approved, generally within the next business day.
+	[% END %]
+</p>
+
+<!--
+<p>
+	[% IF PRICE_TOTAL_INT < 15000 %]
+		<b>Paying by Credit Card?</b>
+		<br>
+		Call 1-877-FONALITY (366-2548) and press "4" for the billing department to pay for this order by credit card.
+		Be sure to have your order number (#[% ORDER_ID %]) handy.
+	</p>
+	<p>
+		<b>Paying by Check?</b>
+		<br>
+		Please make your check payable to Fonality, Inc.
+	[% ELSE %]
+		Please pay for your order by check, payable to Fonality, Inc.
+	[% END %]
+	Note your order number (#[% TICKET_ID %]) on the check and mail to:
+	<blockquote>
+		Fonality, Inc.<br>
+		Attn: Accounts Receivable<br>
+		200 Corporate Pointe<br>
+		Suite 350<br>
+		Los Angeles, CA 90230
+	</blockquote>
+</p>
+-->
+
+<!--
+<p>Order Total: <b>$[% PRICE_TOTAL %]</b></p>
+-->
+
+<p>
+	<b>Questions about your Order?</b>
+	<br>
+	If you have any questions about your order, please
+	[% IF RESELLER_ORDER OR RESELLER_PROPOSAL %]
+		<a href='mailto:resellers@fonality.com?subject=Question%20from%20order%20pay%20options%20page'>contact the Fonality Reseller team</a>
+	[% ELSE %]
+		<a href='mailto:sales@fonality.com?subject=Question%20from%20order%20pay%20options%20page'>contact a Fonality salesperson</a>
+	[% END %]
+	or the<br>
+	<a href='mailto:billing@fonality.com?subject=Question%20from%20order%20pay%20options%20page'>Fonality billing department</a>.
+</p>
+<!--- start of TRACK_Fonality/Trackit_Thankyoupage_Nonsecure pixel tag --->
+<IMG SRC="http://network.realmedia.com/RealMedia/ads/adstream_nx.ads/TRACK_Fonality/Trackit_Thankyoupage_Nonsecure@Bottom3">
+<!--- end of TRACK_Fonality/Trackit_Thankyoupage_Nonsecure pixel tag --->
+
+

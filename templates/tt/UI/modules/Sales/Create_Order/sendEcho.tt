@@ -1,0 +1,28 @@
+<div id="Sign" class="form_category_div ui-tabs-hide" category_title="Send an Echo Sign" nextTab="Payment" prevTab="Repro" tab="4">
+    <div class="wrapperDiv">
+        <div class="floatLeft">
+            <h3 style="">Complete your order</h3>
+        </div>
+    </div> 
+           
+    <div class="display_right_preview_form">
+     <form id="form_Sign"> 
+      <div id="verifyEmail">
+        <div class="form_label no_image" category_id="sendEcho" description="Verify Email">Verify Email</div>
+        <div class="form_element"><input class="ui-widget ui-corner-all no_sync" type="text" name="verifyE" id="verifyE"/></div>
+        <div class="form_clear"></div>
+      </div>
+      <input class="quote_nav_button" category_id="sendEcho" type="button" name="SendEchoSign" id="sendEchoSign" value="Send EchoSign"/>
+   
+     <div id="signature">
+       <div id="hourglass"></div>
+       <input class="quote_nav_button" category_id="sendEcho" type="button" name="CheckSignature" id="checkSignature" value="Check for Signature"/>
+     </div>
+     <div class="nav_buttons">
+       <input class="nav_prev_button quote_nav_button" category_id="sendEcho" type="button" name="previous" id="previous" value="Previous">
+       <input class="nav_next_button quote_nav_button" category_id="sendEcho" type="button" name="continue" id="continue" value="Continue"/>
+     </div> 
+    </form> 
+   </div>
+   
+ </div>  

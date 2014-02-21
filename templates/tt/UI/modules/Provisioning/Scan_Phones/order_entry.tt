@@ -1,0 +1,10 @@
+<div id="order_entry" class="ui-state-highlight">
+   Please enter the order number for the phones you need to scan.
+   <form name="order_entry_form" id="order_entry_form" action="[% form_fields.order_entry.uri %]" method="POST">
+     <input type="hidden" name="mode" value="[% form_fields.order_entry.mode %]"/>
+     <input type="hidden" name="action" value="[% form_fields.order_entry.action %]"/>
+     <label for="order_id">Order Number: </label> 
+     <input type="text" name="order_id" value="" maxlength="10"/>
+     <input type="submit" name="submit" id="get_order" value="Scan Phones" class="ui-state-active"/>
+   </form>
+</div>

@@ -1,0 +1,14 @@
+[% IF !GUID && SESSION.server_quote %]
+    <div class="quote_top_nav quote_top_nav_right"><div class="chat_icon"></div><span class="quote_top_nav_text">Chat with sales</span></div>
+    <div class="quote_top_nav"><div class="call_icon"></div><span class="quote_top_nav_text">Call us: 1-877-366-2548</span></div>
+    <div class="quote_top_nav"><div class="convert_quote_icon"></div><span class="quote_top_nav_text">Convert a quote to an order</span></div>
+    <div id="retrieve_quote" class="quote_top_nav"><div class="edit_quote_icon"></div><span class="quote_top_nav_text">Edit existing quote</span></div>
+    [% IF !pre_form_categories %]<div id="tabs_destroy" class="quote_top_nav"><div class="toggle_list_icon"></div><span class="quote_top_nav_text">View as list</span></div>[% END %]
+    <div id="restart" class="quote_top_nav quote_top_nav_left"><div class="new_quote_icon"></div><span class="quote_top_nav_text">Start a new quote</span></div>
+[% ELSE %]
+    <div class="quote_top_nav quote_top_nav_right"><div class="chat_icon"></div><span class="quote_top_nav_text">Chat with sales</span></div>
+    <div class="quote_top_nav"><div class="call_icon"></div><span class="quote_top_nav_text">Call us: 1-877-366-2548</span></div>
+    <div class="quote_top_nav"><div class="convert_quote_icon"></div><span class="quote_top_nav_text">Convert a quote to an order</span></div>
+    <div id="retrieve_quote" class="quote_top_nav"><div class="edit_quote_icon"></div><span class="quote_top_nav_text">Edit existing quote</span></div>
+    <div id="restart" class="quote_top_nav quote_top_nav_left"><div class="new_quote_icon"></div><span class="quote_top_nav_text">Start a new quote</span></div>
+[% END %]

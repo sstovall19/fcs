@@ -1,0 +1,164 @@
+[% PROCESS 'header.tt' %]
+
+<script type="text/javascript">
+
+	function update_setting(setting, value)
+	{
+		if(!setting)
+			return false;
+
+		var setting_id = setting.replace(/\./g, '_');
+
+		if(!value)
+			value = $('#'+setting_id).val();
+
+		$('#setting_row_'+setting_id).addClass('ui-state-disabled');
+
+		var form_data = { mode: 'Admin.Settings_Manager', action: 'update_setting', setting: setting, value: value };
+
+		$.ajax({
+			type: 'POST',
+			dataType: 'JSON',
+			data: form_data,
+			url: '/',
+			success: function(data)
+			{
+				if(data && data.success)
+				{
+					$('#setting_row_'+setting_id).removeClass('ui-state-disabled');
+				}
+				else
+				{
+					$('#setting_row_'+setting_id).removeClass('ui-state-error').addClass('ui-state-error');
+					alert(data.error);
+				}
+			}
+		});
+	}
+
+	function remove_setting(setting)
+	{
+		if(!setting)
+			return false;
+
+		if(!confirm('Are you sure that you want to remove setting: '+setting+'?'))
+			return false;
+
+		var setting_id = setting.replace(/\./g, '_');
+
+		$('#setting_row_'+setting_id).addClass('ui-state-disabled');
+
+		var form_data = { mode: 'Admin.Settings_Manager', action: 'remove_setting', setting: setting };
+
+		$.ajax({
+			type: 'POST',
+			dataType: 'JSON',
+			data: form_data,
+			url: '/',
+			success: function(data)
+			{
+				if(data && data.success)
+				{
+					$('#setting_row_'+setting_id).fadeOut().remove();
+				}
+				else
+				{
+					$('#setting_row_'+setting_id).removeClass('ui-state-disabled').addClass('ui-state-error');
+					alert(data.error);
+				}
+			}			
+		});
+	}
+
+	function add_setting()
+	{
+		var setting = $('#new_setting').val();
+		var value = $('#new_value').val();
+
+		if(!setting)
+		{
+			alert('Please enter a setting');
+			return false;
+		}
+
+		if(!value)
+		{
+			alert('Please enter a setting value');
+			return false;
+		}
+
+		$('#new_setting_row').addClass('ui-state-disabled');
+
+		var form_data = { mode: 'Admin.Settings_Manager', action: 'update_setting', setting: setting, value: value };
+
+		$.ajax({
+			type: 'POST',
+			dataType: 'JSON',
+			data: form_data,
+			url: '/',
+			success: function(data)
+			{
+				if(data && data.success)
+				{
+					var new_row = $('#new_setting_row').clone().attr('id', 'setting_row_'+setting);
+
+					new_row.children().eq(0).html(setting);
+					new_row.children().eq(1).html('<input type="text" id="'+setting.replace(/\./g, '_')+'" value="'+setting+'" maxlength="36">');
+					new_row.children().eq(2).html('<span class="ui-state-active" style="padding: 2px; cursor: pointer;" onclick="update_setting(\''+setting+'\');">Update</span><span class="ui-state-error" style="padding: 2px; cursor: pointer;" onclick="remove_setting(\''+setting+'\');">Delete</span>');
+
+					new_row.appendTo('#settings_table').removeClass('ui-state-disabled');
+
+				}
+				else
+				{
+					alert(data.error);
+				}
+
+				$('#new_setting').val('');
+				$('#new_value').val('');
+
+				$('#new_setting_row').removeClass('ui-state-disabled');
+			}
+		});
+	}
+	
+</script>
+
+	[% PROCESS infobox text="Add a new setting using the form below." %]
+
+	<table width="100%" cellspacing="3" cellpadding="2" style="text-align: left;" class="logs">
+		<tr>
+			<td style="padding: 2px;" class="ui-state-active ui-widget-header">Setting</td>
+			<td style="padding: 2px;" class="ui-state-active">Value</td>
+			<td style="padding: 2px;" class="ui-state-active">&nbsp;</td>
+		</tr>
+		<tr id="new_setting_row">
+			<td style="padding: 2px;" class="ui-state-highlight"><input type="text" id="new_setting" maxlength="128" value=""></td>
+			<td style="padding: 2px;" class="ui-state-highlight"><input type="text" id="new_value" maxlength="128" value=""></td>
+			<td style="padding: 2px;" class="ui-state-highlight">
+				<span class="ui-state-active" style="padding: 2px; cursor: pointer;" onclick="add_setting();">Add Setting</span>
+			</td>
+		</tr>
+	</table>	
+
+	[% PROCESS infobox text="Here are all of the framework's configuration settings." %]
+
+	<table width="100%" cellspacing="3" cellpadding="2" style="text-align: left;" id="settings_table" class="logs">
+		<tr>
+			<td style="padding: 2px;" class="ui-state-active">Setting</td>
+			<td style="padding: 2px;" class="ui-state-active">Value</td>
+			<td style="padding: 2px;" class="ui-state-active">Action</td>
+		</tr>
+		[% FOREACH S IN SETTINGS.sort('setting') %]
+		<tr id="setting_row_[% S.setting.replace('\.', '_') %]">
+			<td style="padding: 2px;" class="ui-state-highlight">[% S.setting %]</td>
+			<td style="padding: 2px;" class="ui-state-highlight"><input type="text" id="[% S.setting.replace('\.', '_') %]" maxlength="128" value="[% S.value %]"></td>
+			<td style="padding: 2px;" class="ui-state-highlight">
+				<span class="ui-state-active" style="padding: 2px; cursor: pointer;" onclick="update_setting('[% S.setting %]');">Update</span>
+				<span class="ui-state-error" style="padding: 2px; cursor: pointer;" onclick="remove_setting('[% S.setting %]');">Delete</span>
+			</td>
+		</tr>
+		[% END %]
+	</table>		
+
+[% PROCESS 'footer.tt' %]

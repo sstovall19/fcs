@@ -1,0 +1,14 @@
+Greetings.<br/><br/>
+An order ([% order.order_id %]) requires a credit check!<br/>
+<br/>
+Company: [% order.company_name %]<br/>
+First Name: [% order.contact.first_name %]<br/>
+Last Name: [% order.contact.last_name %]<br/>
+Email: [% order.contact.email %]<br/>
+<br/>
+<br/>
+<br/>There would be a link to review and accept/reject the order here<br/>
+<br/>
+Info:  This file is credit_check.tt, which contains an HTML template to display<br/>
+when an order needs a credit check.  The "order" data structure is passed along, and<br/>
+is available for display or manipulation.<br/>

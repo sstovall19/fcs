@@ -1,0 +1,293 @@
+[% IF !FORM.remote %]
+	[% PROCESS 'header.tt' %]
+
+	[% PROCESS infobox text="Enter a server ID below to view the customer's support contracts" %]
+
+
+	<div style="margin-bottom: 10px; width: 100%;">
+		<div class="grey-round" style="margin:0 auto;width:95%; padding-top: 10px; padding-bottom: 1px; margin-bottom: 10px;">
+		<h4>Search for support contracts</h4>
+
+		<table width="100%">
+			<tr>
+				<td style="text-align: right; vertical-align: bottom; font-weight: bold;" width="15%">Server ID:</td>
+				<td width="15%" style="text-align: left;" style="text-align: left;"><input type="text" id="search_server_id" maxlength="6" class="ui-widget ui-state-highlight"></td>
+				<td width="70%" style="text-align: left;"><span class="ui-state-highlight" id="support_search_button" style="margin-left: 2px; padding: 2px; cursor: pointer;">Display</span></td>
+			</tr>
+		</table>
+	</div>
+
+	<script type="text/javascript">
+
+		$('#support_search_button').click(function()
+		{
+			var server_id = $('#search_server_id').val();
+
+			if(!server_id)
+				return false;
+
+			show_support(server_id, '#support_contracts');
+		});
+
+	</script>
+
+[% END %]
+
+<script type="text/javascript">
+/*
+	$('#target_div').load('/', { 'mode':'Billing.Support_Contracts', 'server_id':5555, 'action':'display_support_contracts', 'remote':1, 'holder':'target_div_id' });
+*/
+	$(document).ready(function()
+	{
+		[% IF FORM.server_id %]
+			// Display support contracts
+			show_support([% FORM.server_id %], '#[% FORM.holder %]');
+		[% END %]
+
+		$('#creation_date').datepicker({ dateFormat: 'mm-dd-yy', changeMonth: true, changeYear: true });
+		$('#expire_date').datepicker({ dateFormat: 'mm-dd-yy', changeMonth: true, changeYear: true });
+
+		$('#save_contract_changes').click(function()
+		{
+			var form_data = get_form_data('#support_contract_edit_form');
+
+			if(!form_data.support_contract_id)
+				return false;
+
+			$('#edit_support_contract').addClass('ui-state-disabled');
+
+			form_data.action = 'update_support_contract';
+			form_data.mode = 'Billing.Support_Contracts';
+			form_data.to_json = 1;
+
+			$.ajax({
+				url: '/',
+				type: 'POST',
+				dataType: 'JSON',
+				data: form_data,
+				success: function(data)
+				{
+					if(data && data.success)
+					{
+						var i;
+						var cols = ['server_id', 'creation_date', 'expire_date', 'support_level', 'paid_status', 'payment_method'];
+
+						for(i in cols)
+						{
+							$('#support_contract_'+form_data.support_contract_id+'_'+cols[i]).text($('#'+cols[i]).val());
+						}
+
+						$('#edit_support_contract').fadeOut().removeClass('ui-state-disabled');
+					}
+					else
+					{
+						alert('Support contract could not be updated');
+						$('#edit_support_contract').removeClass('ui-state-disabled');
+					}
+				}
+			});
+		});
+
+		$('#delete_contract').click(function()
+		{
+			var form_data = get_form_data('#support_contract_edit_form');
+	
+			if(!form_data.support_contract_id)
+				return false;
+
+			if(!confirm('Are you sure you want to remove this support contract for server ID ' + form_data.server_id + '??'))
+				return false;
+
+			$('#edit_support_contract').addClass('ui-state-disabled');
+
+			form_data.action = 'delete_support_contract';
+			form_data.mode = 'Billing.Support_Contracts';
+			
+			$.ajax({
+				url: '/',
+				type: 'POST',
+				dataType: 'JSON',
+				data: form_data,
+				success: function(data)
+				{
+					if(data && data.success)
+					{
+						$('#support_contract_'+form_data.support_contract_id).fadeOut().remove();
+						$('#edit_support_contract').fadeOut().removeClass('ui-state-disabled');
+						info("The support contract for server ID "+form_data.server_id+" has been removed.");				
+					}
+					else
+					{
+						alert('Unable to remove support contract');
+						$('#edit_support_contract').removeClass('ui-state-disabled');
+					}
+				}
+			});
+			
+		});
+
+	});
+
+	function show_support(server_id, holder)
+	{
+		if(!server_id)
+			return undef;
+
+		if(!holder)
+			holder = '#customer_support_holder';
+
+		// Don't load the contracts again if they are already displayed
+		if($('#support_contracts tr').eq(2).length)
+		{
+			return false;
+		}
+
+		$(holder).addClass('ui-state-disabled');
+
+		var form_data = {};
+		form_data.mode = 'Billing.Support_Contracts';
+		form_data.action = 'display_support_contracts';
+		form_data.server_id = server_id;
+		form_data.to_json = 1;
+
+		$.ajax({
+			url: '/',
+			data: form_data,
+			dataType: 'JSON',
+			type: 'POST',
+			success: function(data)
+			{
+				if(data && data.SUPPORT_CONTRACTS)
+				{
+					var i;
+					var cols = ['server_id', 'creation_date', 'expire_date', 'support_level', 'paid_status', 'payment_method' ];
+
+					for(i in data.SUPPORT_CONTRACTS)
+					{
+						var id = data.SUPPORT_CONTRACTS[i]['support_contract_id'];
+
+						var $c = $('#support_contracts tr').eq(1).clone().show().attr('id', 'support_contract_'+id);
+
+						if(data.SUPPORT_CONTRACTS[i]['paid_status'] != 'Paid')
+						{
+							$c.children('td').addClass('ui-state-error');
+						}
+
+						for(x in cols)	
+						{
+							$c.children().eq(x).html(data.SUPPORT_CONTRACTS[i][cols[x]]).attr('id', 'support_contract_'+id+'_'+cols[x]);
+						}
+
+						[% IF PERMISSION.can('edit_support_contracts', 'w', 'Billing.Support_Contracts') %]
+							$c.children().eq(6).html('Edit').attr('onclick', 'edit_support_contract('+id+')').css('cursor', 'pointer');
+						[% END %]
+
+						$('#support_contracts').append($c);
+					}
+					
+				}
+
+				$(holder).removeClass('ui-state-disabled');
+			}
+		});
+	}
+
+	function edit_support_contract(id)
+	{
+		var cols = ['server_id', 'creation_date', 'expire_date', 'support_level', 'paid_status', 'payment_method'];
+
+		for(i in cols)
+		{
+			var v = $('#support_contract_'+id+'_'+cols[i]).text();
+			$('#'+cols[i]).val(v);
+		}
+
+		$('#support_contract_id').val(id);
+
+		$('#edit_support_contract').fadeIn();
+	}
+
+	</script>
+
+	<table width="100%" cellspacing="3" style="text-align: center; position: static;" id="support_contracts">
+		<tr>
+			<td class="ui-state-active">Server ID</td>
+			<td class="ui-state-active">Last Paid</td>
+			<td class="ui-state-active">Expires</td>
+			<td class="ui-state-active">Support Level</td>
+			<td class="ui-state-active">Status</td>
+			<td class="ui-state-active">Payment Method</td>
+			<td class="ui-state-active">&nbsp;</td>
+		</tr>
+		<tr style="display: none;">
+			<td class="ui-state-hover"></td>	
+			<td class="ui-state-hover"></td>	
+			<td class="ui-state-hover"></td>	
+			<td class="ui-state-hover"></td>	
+			<td class="ui-state-hover"></td>	
+			<td class="ui-state-hover"></td>	
+			<td class="ui-state-hover"></td>	
+		</tr>
+	</table>
+
+	<form id="support_contract_edit_form">
+	<input type="hidden" name="support_contract_id" id="support_contract_id">
+	<table width="100%" cellspacing="3" style="text-align: center; display: none;" id="edit_support_contract">
+		<tr>
+			<td colspan="8" style="text-align: left; padding: 3px;" class="ui-state-highlight ui-widget-header">Edit Support Contract</td>
+		</tr>
+		<tr>
+			<td class="ui-state-active">Server ID</td>
+			<td class="ui-state-active">Last Paid</td>
+			<td class="ui-state-active">Expires</td>
+			<td class="ui-state-active">Support Level</td>
+			<td class="ui-state-active">Status</td>
+			<td class="ui-state-active">Payment Method</td>
+			<td class="ui-state-active">&nbsp;</td>
+		</tr>
+		<tr>
+			<td class="ui-state-hover"><input id="server_id" name="server_id" type="text" disabled="true" maxlength="6" size="6"></td>	
+			<td class="ui-state-hover">
+				<!-- Date picker for last paid date -->
+				<input id="creation_date" name="creation_date" type="text" maxlength="10"/>
+			</td>	
+			<td class="ui-state-hover">
+				<!-- Date picker for expire date -->
+				<input id="expire_date" name="expire_date" type="text" maxlength="10"/>
+			</td>	
+			<td class="ui-state-hover">
+				<!-- This select box is used to change the support level -->
+				<select id="support_level" name="support_level">
+					<option value="Standard">Standard</option>
+					<option value="Priority">Priority</option>
+					<option value="Reseller">Reseller</option>
+					<option value="Install">Install</option>
+					<option value="Evaluation">Evaluation</option>
+					<option value="Platinum">Platinum Standard</option>
+					<option value="PlatinumReseller">Platinum Reseller</option>
+				</select>
+			</td>	
+			<td class="ui-state-hover">
+				<!-- Status selection -->
+				<select id="paid_status" name="paid_status">
+					<option value="Not Paid">Not Paid</option>
+					<option value="Paid">Paid</option>
+					<option value="No Support">No Support</option>
+				</select>
+			</td>	
+			<td class="ui-state-hover">
+				<input type="text" id="payment_method" name="payment_method" disabled="true" size="10"/>
+			</td>	
+			<td class="ui-state-hover">
+				<span id="save_contract_changes" class="ui-state-active ui-corner-all" style="padding: 2px; cursor: pointer;">Save</span>
+				<span id="delete_contract" class="ui-state-error ui-corner-all" style="padding: 2px; cursor: pointer;">Delete</span>
+			</td>	
+		</tr>
+	</table>
+
+	</form>
+
+[% IF !FORM.remote %]
+	[% PROCESS 'footer.tt' %]
+[% END %]
+

@@ -1,0 +1,332 @@
+=head1 NAME
+
+Fap::User
+
+=head1 SYNOPSIS
+
+ use Fap::User;
+
+=head1 DESCRIPTION
+
+Wrappers for library functions in F::User (accessing and maintaining user table).
+
+=head1 FUNCTIONS
+
+API functions available in this library
+
+=cut
+
+package Fap::User;
+
+use strict;
+use F::Globals;
+use F::User;
+use Fap::Devices;
+use Fap::Extensions;
+use Fap::Util;
+use Fap::Model::Fcs;
+
+=head2 create_user
+
+=over 4
+
+Creates a user and a primary extension attached to them.
+If exten is defined finds the user to whom it belongs and creates an additional extension for that user.
+
+   Args: server_id, license, [exten]
+Returns: { user_id => $user_id, extension => $extension } on success, undef on error
+
+=back
+
+=cut
+sub create_user {
+	my $server_id = shift;
+	my $lic = shift;
+	my $exten = shift;
+	
+	if (!Fap::Util::is_valid_server_id($server_id)) {
+		Fap->trace_error('Invalid server id');
+		return undef;
+	}
+	
+	if (!defined($lic) || $lic eq '') {
+		Fap->trace_error('Invalid license');
+		return undef;
+	}
+	
+	my $db = Fap::Model::Fcs->new();
+
+	my $null_dev = Fap::Devices::get_nophone_for_server($db, $server_id);
+	if (!defined($null_dev)) {
+		Fap->trace_error('Failed to get null device for the server');
+		return undef;
+	}
+
+	my $new_exten = Fap::Extensions::get_next_available_extension($F::Globals::dbh, $server_id);
+	if (!defined($new_exten)) {
+		Fap->trace_error('Failed to get next available extension');
+		return undef;
+	}
+	
+	my $user_id = undef;
+	if (Fap::Util::is_valid_extension($server_id, $exten)) {
+		my $u_info = F::User::get_user_info_by_ext_and_server($F::Globals::dbh, $exten, $server_id);
+		if (!defined($u_info)) {
+			Fap->trace_error('Failed to get user info');
+			return undef;
+		}
+		$user_id = $u_info->{'user_id'};
+	}
+
+	my $options_hashref = {
+		'extension' => $new_exten,
+		'device_id' => $null_dev->{'device_id'},
+		'server_id' => $server_id,
+		'username' => $server_id . '_' . $new_exten,
+		'password' => Fap::Util::return_random_password(),
+		'vm_pass' => Fap::Util::return_random_number(4)
+	};
+
+	my $ret;
+	if (defined($user_id)) {
+		$ret = Fap::Extensions::add_extension($F::Globals::dbh, $options_hashref, $user_id);
+	} else {
+		$ret = Fap::Extensions::add_extension($F::Globals::dbh, $options_hashref);
+	}
+	
+	if (!defined($ret)) {
+		Fap->trace_error('Failed to add extension');
+		return undef;
+	}
+	
+	if (!defined($user_id)) {
+		my $u_info = F::User::get_user_info_by_ext_and_server($F::Globals::dbh, $new_exten, $server_id);
+		if (!defined($u_info)) {
+			Fap->trace_error('Failed to get user info');
+			return undef;
+		}
+		$user_id = $u_info->{'user_id'};
+	}
+	
+	my $user = F::User->new({'dbh' => $F::Globals::dbh, 'server_id' => $server_id, 'user_id' => $user_id});
+	$ret = $user->add_license($lic);
+	if (!defined($ret)) {
+		Fap->trace_error('Failed to add license');
+		return undef;
+	}
+	
+	return { user_id => $user_id, extension => $new_exten };
+}
+
+=head2 delete_user
+
+=over 4
+
+Removes a user and all extensions associated with them.
+
+   Args: user_id
+Returns: 1 on success, undef on error
+
+=back
+
+=cut
+sub delete_user {
+	my $user_id = shift;
+	
+	if (!defined($user_id)) {
+		Fap->trace_error('Invalid user_id param');
+		return undef;
+	}
+	
+	my $del_user_info = F::User::get_user_info_by_id($F::Globals::dbh, $user_id);
+	my $all_exts = F::User::get_extensions_from_user_id($F::Globals::dbh, $user_id);
+
+	# for error msg
+	my $user_fullname = $del_user_info->{'first_name'} . " " . $del_user_info->{'last_name'};
+	
+	my @err_msg; # array to store error messages encountered
+	my @ext_nums; # save ext_nums to be deleted
+
+	unless (defined $del_user_info && defined $all_exts)
+	{
+		Fap->trace_error("Info for user $user_id is incomplete.");
+		return undef;
+	}
+	
+	# do a dry run first to remove all extensions
+	foreach my $ext (@{$all_exts})
+	{
+		undef $@;
+		my $ext_num = $ext->{extension};
+		
+		push (@ext_nums, $ext_num);
+
+		F::Extensions::remove_extension($F::Globals::dbh, $del_user_info->{'default_server_id'}, $ext_num, 1);
+		
+		# error when trying to remove this extension
+		if ($@)
+		{
+			push(@err_msg, "Cannot remove extension ".$ext_num.":\n".$@);
+		}
+	}
+
+	if (scalar(@err_msg) != 0)
+	{
+		# there were errors in dry-run
+		Fap->trace_error("Cannot remove user \"$user_fullname\":\n" . join("\n", @err_msg));
+		return undef;
+	}
+	
+	# delete extensions
+	foreach my $ext_num (@ext_nums)
+	{
+		undef $@;
+		
+		F::Extensions::remove_extension($F::Globals::dbh, $del_user_info->{'default_server_id'}, $ext_num);
+		if ($@)
+		{
+			push(@err_msg, "Cannot remove extension ".$ext_num.":\n".$@);
+
+			# moving on...
+			next;
+		}
+	}
+
+	if (scalar(@err_msg) != 0)
+	{
+		Fap->trace_error("There were errors while deleting extensions for user \"$user_fullname\":\n" . join("\n", @err_msg));
+		return undef;
+	}
+	
+	# delete user
+	my $ret = F::User::remove_user_by_id($F::Globals::dbh, $user_id, $del_user_info->{'default_server_id'});
+	if (!defined($ret)) {
+		Fap->trace_error("Cannot remove user \"$user_fullname\"");
+		return undef;
+	}
+	
+	return 1;
+}
+
+=head2 create_admin
+
+=over 4
+
+Creates an admin for a server.
+A server can only have one server admin account. If admin account already exist this function returns 1.
+
+   Args: server_id
+Returns: 1 on success, undef on error
+
+=back
+
+=cut
+sub create_admin {
+    my $server_id = shift;
+    my $db = Fap::Model::Fcs->new();
+    my $rs = $db->table('Server')->find( { server_id => $server_id, } );
+    
+    if (!$rs->get_column('server_id')) {
+        Fap->trace_error('Err: Invalid server id');
+        return undef;
+    }
+    
+    my $customer_id = $rs->get_column('customer_id');
+    my $rv = F::User::get_admin_list_for_server($server_id);
+    return 1 if $rv;
+    
+    my $username = "admin$server_id";
+    my $password = Fap::Util::return_random_password(8);
+
+    $rv = F::User::add_user(
+        {
+            'extension'         => 0,
+            'username'          => $username,
+            'password'          => $password,
+            'type'              => 'cpa',
+            'server_ids'        => [$server_id],
+            'default_server_id' => $server_id,
+            'customer_id'       => $customer_id
+        }
+    );
+    if (not $rv)
+    {
+        Fap->trace_error("Err: Unable to create an Admin Account for Server $server_id");
+        return undef;
+    }
+    
+    return 1;
+}
+
+=head2 get_user_list_for_server
+
+=over 4
+
+Get the normal user information for a given server
+
+Args: server_id, [no_feature]  set to 1 to not pull any user features/user licenses info
+Returns: hashref of user info
+
+=back
+
+=cut
+sub get_user_list_for_server
+{
+	my $server_id = shift;
+	my $no_feature = shift || 0;
+
+	return F::User::get_user_list_for_server($F::Globals::dbh, $server_id, $no_feature);
+}
+
+=head2 get_user_info_by_id
+
+=over 4
+
+Get the normal user information for a given user_id
+
+Args: user_id
+Returns: hashref of user info
+
+=back
+
+=cut
+sub get_user_info_by_id {
+    my $user_id = shift;
+
+	my $ret = F::User::get_user_info_by_id($F::Globals::dbh, $user_id);
+    if (not $ret)
+    {
+        Fap->trace_error("Err: Unable to get user info by $user_id");
+        return undef;
+    }
+    
+    return $ret;
+}
+
+=head2 get_user_info_by_ext_and_server
+
+=over 4
+
+Get the normal user information for a given user_id
+
+Args: extension, server_id
+Returns: hashref of user info
+
+=back
+
+=cut
+sub get_user_info_by_ext_and_server {
+	my $exten = shift;
+	my $server_id = shift;
+
+    my $u_info = undef;
+    if (Fap::Util::is_valid_extension($server_id, $exten)) {
+        my $u_info = F::User::get_user_info_by_ext_and_server($F::Globals::dbh, $exten, $server_id);
+        if (!defined($u_info)) {
+            Fap->trace_error('Failed to get user info');
+            return undef;
+        }
+    }
+	return $u_info;
+}
+1;

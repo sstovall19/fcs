@@ -1,0 +1,88 @@
+[% TITLE = ' :: New Order' %]
+[%# PAGE = 'order_get_customer' %]
+[% COLSPAN = 2 %]
+[% UNLESS PHONE_QTY %][% PHONE_QTY = 0 %][% END %]
+[% SET FIRST_ROW = '<tr><td width=185></td><td width=265></td></tr>' %]
+
+<input type="hidden"  name="reseller" value="[% IF RESELLER_ID %]1[% ELSE %]0[% END %]" />
+[% IF OID %]<input type="hidden" name="oid" value="[% OID %]" />[% END %]
+
+
+[% IF DISPLAY_TYPE == 'customer_login' %]
+	<script type="text/javascript">
+		window.onload = myInit;
+		function myInit()
+		{
+			document.getElementById('order_username').focus();
+		}
+	</script>
+	<h5>Please enter Admin Control Panel login:</h5>
+	<div>
+		<label for="">Username:</label>
+		<input type='text' class='order' style="float: none; margin-left: 15px !important;" id='order_username' name='username' value='[% USERNAME %]' maxlength="255" tabindex="1" />
+	</div>
+	<div>
+		<label for="">Password:</label>
+		<input type='password' class='order' style="float: none; margin-left: 15px !important;" name='password' value='[% PASSWORD %]' maxlength="16" tabindex="2" />
+	</div>
+	<div>
+		<label for=""></label>
+		<input class="button" style="float: none; margin-left: 15px !important;" type='submit' name="act" value="Continue to Step 2" style="width: 120px" tabindex="3" />
+	</div>
+
+[% ELSE %]
+
+	<div class="order_step_heading">
+		<div class="steps">
+			Order Step&nbsp;
+			<span style="color:[% COLOR1 %]">1</span>&nbsp;
+			<span style="color:[% GRAYED_OUT %]">2</span>&nbsp;
+			<span style="color:[% GRAYED_OUT %]">3</span>&nbsp;
+			<span style="color:[% GRAYED_OUT %]">4</span>&nbsp;
+			<span style="color:[% GRAYED_OUT %]">5</span>&nbsp;
+			<span style="color:[% GRAYED_OUT %]">6</span>&nbsp;
+			<span style="color:[% GRAYED_OUT %]">7</span>
+		</div>
+		[% IF GET_SERVER %]
+			<h1>Please select the server to add to:</h1>
+		[% ELSE %]
+			<h1>Please Choose Customer Type:</h1>
+		[% END %]
+		<div style="clear:both"><!-- --></div>
+	</div>
+
+	[% # IF THIS IS AN ADDON ORDER, SELECT A SERVER %]
+	[% IF GET_SERVER %]
+		<input type="hidden" name="get_pbxtra_server" value="1" />
+		<input type="hidden" name="username" value="[% USERNAME %]" />
+		<input type="hidden" name="password" value="[% PASSWORD %]" />
+		<input type="hidden" name="addon" value="1" />
+		<div>
+			<label for="">PBXtra Server:</label>
+			<select name="pbxtra_server_id" style="float: none; margin-left: 15px !important;">
+				<option value="">-- select a server --</option>
+				[% FOR SERVER_ID = SERVER_IDS %]
+					<option value="[% SERVER_ID %]">[% SERVER_ID %]</option>
+				[% END %]
+			</select>
+		</div>
+		<div>
+			<label for=""></label>
+			<input type="submit" style="float: none; margin-left: 15px !important;" name="act" value="Continue to Step 2" style="width: 120px" tabindex="3" />
+		</div>
+	[% ELSE %]
+		<input type="hidden"  name="act" value="new" />
+		<input type="hidden"  name="oid" value="[% OID %]" />
+		<input type="hidden"  name="reseller" value="[% IF RESELLER_ID %]1[% ELSE %]0[% END %]" />
+		<div style="clear:both;height:20px"><!-- --></div>
+		<input class="button" name="submit" type="submit" class="order_go_button" value="I am a New Customer or a Reseller" style="width: 225px;float:none" />
+		</form>
+
+		<form style="clear:both;margin-top: 20px" method="POST" action="[% SCRIPT_URL %]">
+			<input type="hidden"  name='act' value='get' />
+			<input type="hidden"  name='oid' value='[% OID %]' />
+			<input type="hidden"  name='reseller' value='[% IF RESELLER_ID %]1[% ELSE %]0[% END %]'>			
+			<input class="button" type="submit" class="order_go_button" value="I am an Existing Customer" style="width: 225px;padding:0"  />
+	[% END %]
+[% END %]
+

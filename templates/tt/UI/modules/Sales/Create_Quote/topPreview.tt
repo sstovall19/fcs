@@ -1,0 +1,65 @@
+[% item = CATEGORY.name.replace(' ', '_') %]
+<div id="category_[% item %]" category_title="[% CATEGORY.name %]" category_id="[% CATEGORY.category_id %]" class="form_category_div[% IF HIDDEN %] displayNone[% END %]">
+   
+    [% PROCESS 'modules/Sales/Create_Quote/nav_buttons.tt' %]
+  
+    [% FIELD = CATEGORY.label %]
+
+    [% IF FIELD.keys %]
+       [% USE String(FIELD.display) %]
+       
+       [% IF String.upper == 'DROPDOWN' %]
+
+        <div class="top_preview_image_panel" id="top_preview_image_panel_[% CATEGORY.category_id %]">
+            Select an option below.
+        </div>
+        <div class="top_preview_form">
+            [% OPT_NUM = 0 %]
+            [% FOREACH ITEM IN FIELD.bundles %]
+                
+                <div class="top_preview_form_element category_id_[% CATEGORY.category_id %] ui-widget ui-corner-all ui-state-disabled" item_id="[% ITEM.bundle_id %]" category_id="[% CATEGORY.category_id %]" style="background-image: url('/iconify?&w=100&h=100&icon=[% ITEM.display_name %]'); background-size: cover;"><span class="displayNone">[% ITEM.display_name %]</span>
+                [% OPT_NUM = 1 %]
+                </div>
+            [% END %]
+
+        </div>
+        <form id="form_category_[% CATEGORY.name.replace(' ', '_') %]">
+        <select id="top_preview_form_select_[% CATEGORY.category_id %]" name="[% FIELD.label_id %]_" class="top_preview_form_select_element displayNone">
+
+            [% IF FIELD.dropdown_has_null == 1 %]
+                <option value="">[% FIELD.dropdown_null_text %]<option>
+            [% END %]
+            
+            [% selectCount = 0 %]
+            [% FOREACH ITEM IN FIELD.bundles %]
+                <option value="[% ITEM.bundle_id %]" [% IF selectCount == 0 %]selected[% END %]>[% ITEM.display_name %]</option>
+                [% selectCount = selectCount + 1 %]
+            [% END %]
+
+        </select>
+        </form>
+        [% ELSE %]
+            NO DISPLAY METHOD FOR [% FIELD.name %] - label_display=[% FIELD.display %]
+        [% END %]
+
+    [% ELSE %]
+
+        [% PROCESS right_preview CATEGORY = CATEGORY %]
+
+    [% END %]
+
+    [% IF FIELD.dropdown_has_null != 1 %]
+
+    <script type="text/javascript">
+        $('.top_preview_form_element.category_id_[% CATEGORY.category_id %]').first().each(function()
+        {
+            $(this).removeClass('ui-state-disabled').addClass('ui-state-highlight');
+            top_preview_form_element_hover($(this));
+        });
+
+        if(!is_single_pane)
+            $('.next_button').fadeIn();
+    </script>
+
+    [% END %]
+</div>

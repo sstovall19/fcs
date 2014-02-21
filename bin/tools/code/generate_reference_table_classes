@@ -1,0 +1,57 @@
+#!/usr/bin/perl
+use Fap;
+use Fap::Model::Fcs;
+use Fap::Model::ResConf;
+use File::Slurp;
+
+my $db = Fap::Model::Fcs->new();
+my $conf = Fap::Model::ResConf->load("tools/reference_tables");
+my @tables;
+foreach my $table_name (keys %{$conf->{tables}}) {
+	my @lines;
+	my @java_lines;
+	my $accessor = $conf->{tables}->{$table_name};
+
+	my $table_name = ucfirst($table_name);
+	$table_name=~s/_([a-z])/uc($1)/eg;
+	push(@tables,$table_name);
+	push(@lines,"package Fap::Model::Fcs::Ref::$table_name;","use strict;","","");
+	push(@lines,"sub options {","return {");
+	foreach my $row ($db->table($table_name)->all) {
+		my $label;
+		if ($row->$accessor) {
+			$label = lcfirst($row->$accessor);
+		}
+		$label=~s/\s+([A-Z])/"_".lc($1)/eg;
+		$label=~s/\s+/_/g;
+		$label=~s/-/_/g;
+		$label=~s/[()\[\]\/\\]/_/g;
+		$label=~s/\&/and/g;
+		$label=~s/[_]{2,}/_/g;
+		push (@lines,sprintf("\t%s=>%s,",lc($label),$row->id));
+	}
+	push(@lines,"};","}","","","1;","");
+	File::Slurp::write_file(Fap->path_to("lib/Fap/Model/Fcs/Ref/$table_name.pm"), { binmode => ':raw' },join("\n",@lines));
+	print STDERR "Wrote Fap::Model::Fcs::Ref::$table_name\n";
+}
+my @lines;
+open(FI,Fap->path_to("lib/Fap/Model/Fcs.pm"));
+my $skip=0;
+foreach my $line (<FI>) {
+	if ($line=~/#BEGIN REFLIST/) {
+		$skip=1;
+		push(@lines,$line);
+		foreach my $t (@tables ) {
+			push (@lines,"use Fap::Model::Fcs::Ref::$t;\n");
+		}
+	}
+	if ($line=~/#END REFLIST/) {
+		$skip = 0;
+	}
+	next if ($skip);
+	push(@lines,$line);
+}
+close(FI);
+File::Slurp::write_file(Fap->path_to("lib/Fap/Model/Fcs.pm"),{ binmode => ':raw' },join("",@lines));
+		
+	

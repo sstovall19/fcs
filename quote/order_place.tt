@@ -1,0 +1,343 @@
+[% wrapper = "$TT_CONSTANTS_DIR" _ "country_list.tt" %]
+[% PROCESS $wrapper %]
+
+[% wrapper = "$TT_CONSTANTS_DIR" _ "usa_state_list.tt" %]
+[% PROCESS $wrapper %]
+[% PAGE = 'order_place' %]
+[% TITLE = ' :: New Order' %]
+[% FIRST_ROW = '<td width=185><td width=265>' %]
+[% FIELD_WIDTH = '295px' %]
+
+<style type="text/css">
+	#quote input,
+	#quote select {
+	width: 300px;
+	}
+</style>
+
+<script language='javascript'>
+<!--
+function disable_shipping_address()
+{
+	if (document.form.ship_to_billing.checked)
+	{
+		document.form.ship_company_name.disabled = true;
+		document.form.ship_add1.disabled     = true;
+		document.form.ship_add2.disabled     = true;
+		document.form.ship_city.disabled     = true;
+		document.form.ship_state.disabled    = true;
+		document.form.ship_province.disabled = true;
+		document.form.ship_country.disabled  = true;
+		document.form.ship_zip.disabled      = true;
+	}
+	else
+	{
+		document.form.ship_company_name.disabled = false;
+		document.form.ship_add1.disabled     = false;
+		document.form.ship_add2.disabled     = false;
+		document.form.ship_city.disabled     = false;
+		document.form.ship_state.disabled    = false;
+		document.form.ship_province.disabled = false;
+		document.form.ship_country.disabled  = false;
+		document.form.ship_zip.disabled      = false;
+	}
+}
+
+function setState(dropdown_name)
+{
+	var selected_country = document.form[dropdown_name].value;
+	if (selected_country == "United States")
+	{
+		if (dropdown_name == "bill_country")
+		{
+			document.getElementById("bill_state_type").innerHTML = "* State:";
+			document.getElementById("bill_state_dropdown").style.display = "";
+			document.getElementById("bill_state_dropdown").style.visibility = "visible";
+			document.getElementById("bill_province_dropdown").style.display = "none";
+			document.getElementById("bill_province_dropdown").style.visibility = "hidden";
+		}
+		else if (dropdown_name == "ship_country")
+		{
+			document.getElementById("ship_state_type").innerHTML = "* State:";
+			document.getElementById("ship_state_dropdown").style.display = "";
+			document.getElementById("ship_state_dropdown").style.visibility = "visible";
+			document.getElementById("ship_province_dropdown").style.display = "none";
+			document.getElementById("ship_province_dropdown").style.visibility = "hidden";
+		}
+	}
+	else
+	{
+		if (dropdown_name == "bill_country")
+		{
+			document.getElementById("bill_state_type").innerHTML = "* Province:";
+			document.getElementById("bill_province_dropdown").style.display = "";
+			document.getElementById("bill_province_dropdown").style.visibility = "visible";
+			document.getElementById("bill_state_dropdown").style.display = "none";
+			document.getElementById("bill_state_dropdown").style.visibility = "hidden";
+		}
+		else if (dropdown_name == "ship_country")
+		{
+			document.getElementById("ship_state_type").innerHTML = "* Province:";
+			document.getElementById("ship_province_dropdown").style.display = "";
+			document.getElementById("ship_province_dropdown").style.visibility = "visible";
+			document.getElementById("ship_state_dropdown").style.display = "none";
+			document.getElementById("ship_state_dropdown").style.visibility = "hidden";
+		}
+	}
+}
+
+window.onload = init;
+
+function init()
+{
+	disable_shipping_address();
+	[% IF ADDITIONAL_ORDER %]
+		document.form.bill_add1.focus();
+	[% ELSE %]
+		document.form.company_name.focus();
+	[% END %]
+	setState("bill_country");
+	setState("ship_country");
+}
+-->
+</script>
+<div id="quote" style="width:auto">
+<input type="hidden" name="sid"   value="[% SID %]" />
+<input type="hidden" name="addon" value="[% ADDON || 0 %]" />
+<input type="hidden" name="oid"   value="[% OID %]" />
+
+[% IF ADDITIONAL_ORDER %]
+	<input type="hidden" name="customer_id" value="[% CUSTOMER_ID %]" />
+[% ELSE %]
+	<input type="hidden" name="customer_id" value="" />
+[% END %]
+
+[% IF RESELLER_ID OR RESELLER_PROPOSAL %]
+	<input type="hidden" name="reseller" value="1" />
+[% ELSE %]
+	<input type="hidden" name="reseller" value="0" />
+[% END %]
+
+	<div class="order_step_heading">
+		<div class="steps">
+			[% IF ADDON OR ORDER_TYPE == 'addon' %]Add-On[% END %]
+			Order Step&nbsp;
+			<span style="color:[% GRAYED_OUT %]">1</span>&nbsp;
+			<span style="color:[% COLOR1 %]">2</span>&nbsp;
+			<span style="color:[% GRAYED_OUT %]">3</span>&nbsp;
+			<span style="color:[% GRAYED_OUT %]">4</span>&nbsp;
+			<span style="color:[% GRAYED_OUT %]">5</span>&nbsp;
+			<span style="color:[% GRAYED_OUT %]">6</span>&nbsp;
+			<span style="color:[% GRAYED_OUT %]">7</span>
+		</div>
+		<h1>Buyer Information</h1>
+		<div style="clear:both"><!-- --></div>
+	</div>
+
+<fieldset>
+	<legend>Billing Address</legend>
+	<div>
+		[% IF ADDITIONAL_ORDER %]
+			<label for="">Company Name:</label>
+			<div style="width: 300px; margin: 5px 10px; float: left; clear: none;">[% COMPANY_NAME %]</div>
+			<input type="hidden" name="company_name" value="[% COMPANY_NAME %]" />
+		[% ELSE %]
+			<label for="">* Company Name:</label>
+			<input type="text" name="company_name" value="[% COMPANY_NAME %]" style="width: [% FIELD_WIDTH %];" maxlength="255" />
+		[% END %]
+	</div>
+	<div>
+		<label for="">* Address:</label>
+		<input type="text" name="bill_add1" value="[% BILL_ADD1 %]" style="width: [% FIELD_WIDTH %];" maxlength="255" />
+		<input type="hidden" name="old_add1" value="[% OLD_ADD1 %]" />
+	</div>
+	<div>
+		<label for="">Address line 2:</label>
+		<input type="text" name="bill_add2" value="[% BILL_ADD2 %]" style="width: [% FIELD_WIDTH %];" maxlength="255" />
+		<input type="hidden" name="old_add2" value="[% OLD_ADD2 %]" />
+	</div>
+	<div>
+		<label for="">* City:</label>
+		<input type="text" name="bill_city" value="[% BILL_CITY %]" style="width: [% FIELD_WIDTH %];" maxlength="255" />
+		<input type="hidden" name="old_city" value="[% OLD_CITY %]" />
+	</div>
+	<div>		
+		<label for="">* Country:</label>
+		<select name="bill_country" onChange="setState('bill_country');">
+			<option value="">-- select a country --</option>
+			[% FOREACH COUNTRY = COUNTRY_LIST %]
+				[% NEXT IF COUNTRY == "" %]
+				<option value='[% COUNTRY %]'
+					[% IF COUNTRY == BILL_COUNTRY %] selected[% END %]
+				>[% COUNTRY %]</option>
+			[% END %]
+		</select>
+	</div>
+	<div>
+		<label id="bill_state_type" for="">* Etat:</label>
+		<select name="bill_state" id="bill_state_dropdown">
+			<option value="">-- select state --</option>
+			[% FOREACH STATE = USA_STATE_LIST %]
+				<option value="[% STATE.1 %]"
+					[% IF STATE.1 == BILL_STATE %] selected="selected" [% END %]
+				>[% STATE.0 %]</option>
+			[% END %]
+		</select>
+		<input id        = "bill_province_dropdown"
+			   style     = "display: none; visibility: hidden; width: [% FIELD_WIDTH %];"
+			   type      = "text"
+			   name      = "bill_province"
+			   value     = "[% BILL_PROVINCE %]"
+			   maxlength = "255" />
+	</div>
+	<div>
+		<label for="">* Zip or Postal Code:</label>
+		<input type="text" name="bill_zip" value="[% BILL_ZIP %]" style="width: [% FIELD_WIDTH %];" maxlength="10" />
+		<input type="hidden" name="old_zip" value="[% OLD_ZIP %]" />		
+	</div>
+</fieldset>
+
+<fieldset>
+	<legend>Shipping Address</legend>
+	<div>
+		<label for="">Ship to Billing Address:</label>
+		<div style="width: 300px; margin: 5px; margin-top: 0px; float: left; clear: none;">
+		<input class="checkbox" type="checkbox" name="ship_to_billing" onClick="disable_shipping_address()" [% IF SHIP_TO_BILLING %]checked="checked"[% END %] />
+		</div>
+	</div>
+	<div>
+		<label for="">* Company Name:</label>
+		<input type="text" name="ship_company_name" value="[% SHIP_COMPANY_NAME %]" style="width: [% FIELD_WIDTH %];" maxlength="255" />
+		<input type="hidden" name="old_ship_company_name" value="[% OLD_SHIP_COMPANY_NAME %]" />
+	</div>
+	<div>
+		<label for="">* Address:</label>
+		<input type="text" name="ship_add1" value="[% SHIP_ADD1 %]" style="width: [% FIELD_WIDTH %];" maxlength="255" />
+		<input type="hidden" name="old_ship_add1" value="[% OLD_SHIP_ADD1 %]" />
+	</div>
+	<div>
+		<label for="">Address line 2:</label>
+		<input type="text" name="ship_add2" value="[% SHIP_ADD2 %]" style="width: [% FIELD_WIDTH %];" maxlength="255" />
+		<input type="hidden" name="old_ship_add2" value="[% OLD_SHIP_ADD2 %]" />
+	</div>
+	<div>
+		<label for="">* City:</label>
+		<input type="text" name="ship_city" value="[% SHIP_CITY %]" style="width: [% FIELD_WIDTH %];" maxlength="255" />
+		<input type="hidden" name="old_ship_city" value="[% OLD_SHIP_CITY %]" />
+	</div>
+	<div>
+		<label for="ship_country">* Country:</label>	
+		<select name="ship_country" onChange="setState('ship_country');">
+			<option value="">-- select a country --</option>
+			[% FOREACH COUNTRY = COUNTRY_LIST %]
+				[% NEXT IF COUNTRY == "" %]
+				<option value="[% COUNTRY %]"
+					[% IF COUNTRY == SHIP_COUNTRY %] selected[% END %]
+				>[% COUNTRY %]</option>
+			[% END %]
+		</select>
+	</div>		
+	<div>
+		<label for="" id="ship_state_type">* State:</label>
+		<select name="ship_state" id="ship_state_dropdown">
+			<option value="">-- select state --</option>
+			[% FOREACH STATE = USA_STATE_LIST %]
+				<option value='[% STATE.1 %]'
+					[% IF STATE.1 == SHIP_STATE %] selected[% END %]
+				>[% STATE.0 %]</option>
+			[% END %]
+		</select>
+		<input type      = "text"
+			   id        = "ship_province_dropdown"
+			   style     = "display: none; visibility: hidden; width: [% FIELD_WIDTH %];"
+			   name      = "ship_province"
+			   value     = "[% SHIP_PROVINCE %]"
+			   size      = "35"
+			   maxlength = "255" />
+	</div>
+	<div>		
+		<label for="ship_zip">* Zip or Postal Code:</label>
+		<input type="text" name="ship_zip" value="[% SHIP_ZIP %]" style="width: [% FIELD_WIDTH %];" maxlength="10" />
+		<input type="hidden" name="old_ship_zip" value="[% OLD_SHIP_ZIP %]" />
+	</div>
+</fieldset>
+
+<fieldset>
+	<legend>
+	[% IF RESELLER_ORDER %]
+		Primary Reseller Contact
+	[% ELSE %]
+		Contact Information
+	[% END %]
+	</legend>
+	<div>
+		<label for="">* First Name:</label>
+		<input type="text" name="admin_first_name" value="[% ADMIN_FIRST_NAME %]" style="width: [% FIELD_WIDTH %];" maxlength="255" />
+		<input type="hidden" name="old_admin_first_name" value="[% OLD_ADMIN_FIRST_NAME %]" />
+	</div>
+	<div>	
+		<label for="">* Last Name:</label>
+		<input type="text" name="admin_last_name" value="[% ADMIN_LAST_NAME %]" style="width: [% FIELD_WIDTH %];" maxlength="255" />
+		<input type="hidden" name="old_admin_last_name" value="[% OLD_ADMIN_LAST_NAME %]" />
+	</div>
+	<div>			
+		<label for="">* Email:</label>
+		<input type="text" name="admin_email" value="[% ADMIN_EMAIL %]" style="width: [% FIELD_WIDTH %];" maxlength="255" />
+		<input type="hidden" name="old_admin_email" value="[% OLD_ADMIN_EMAIL %]" />
+	</div>
+	<div>	
+		<label for="">* Phone:</label>
+		<input type="text" name="admin_phone" value="[% ADMIN_PHONE %]" style="width: [% FIELD_WIDTH %];" maxlength="255" />
+		<input type="hidden" name="old_admin_phone" value="[% OLD_ADMIN_PHONE %]" />
+	</div>
+</fieldset>
+<fieldset>	
+	<legend>Company Information</legend>
+	<div>
+		<label for="">Website:</label>
+		<input type="text" name="website" value="[% WEBSITE %]" style="width: [% FIELD_WIDTH %];" maxlength="255" />
+	</div>
+	<div>
+		<label for="">Industry:</label>
+		<select name="industry">
+			<option value="">-- select an industry --</option>
+			[% wrapper = "$TT_CONSTANTS_DIR" _ "industry_list.tt" %]
+			[% PROCESS $wrapper %]
+			[% FOR NEXT_INDUSTRY = INDUSTRIES %]
+				<option value='[% NEXT_INDUSTRY %]'
+					[% IF NEXT_INDUSTRY == INDUSTRY %]
+						selected="selected"
+					[% END %]
+				>[% NEXT_INDUSTRY %]</option>
+			[% END %]
+		</select>
+	</div>
+	<div>			
+		<label for="telecommuters">Have Telecommuters?</label>
+		<select name="telecommuters">
+			<option [% IF TELECOMMUTERS == "yes" %]selected="selected"[% END %] value="yes">Yes</option>
+			<option [% IF TELECOMMUTERS == "no" %]selected="selected"[% END %] value="no">No</option>
+		</select>
+	</div>
+	<div>		
+		<label for="branch_offices">Have Branch Offices?</label>
+		<select name="branch_offices">
+			<option [% UNLESS BRANCH_OFFICES == "None" || BRANCH_OFFICES == "none" || BRANCH_OFFICES == "NONE" || BRANCH_OFFICES == "" %]selected="selected"[% END %] value="yes">Yes</option>
+			<option [% IF BRANCH_OFFICES == "None" || BRANCH_OFFICES == "none" || BRANCH_OFFICES == "NONE" %]selected="selected"[% END %] value="no">No</option>
+		</select>
+	</div>
+</fieldset>
+
+[% IF ORDER_CONFIRMATION %]
+	<div>
+		<input class="button" type="submit" value="Save Changes" />
+		<input type="hidden" name="act" value="Save Buyer Info Changes" />
+	</div>	
+[% ELSE %]
+	<div>
+		<input class="button" style="width:150px" type="submit" name="act" value="Continue to Step 3" />
+	</div>
+[% END %]
+
+	<div style="clear:both"><!-- --></div>
+</div>

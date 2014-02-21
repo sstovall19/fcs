@@ -1,0 +1,620 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use SM::Client::Registry;
+use SM::Config qw(
+    SM_DSN
+    SM_USER
+    SM_PASS
+);
+use SM::Model::Registry::Register;
+use SM::SMClient;
+use SM::DB;
+use Data::Dumper;
+use JSON::XS;
+
+$|=1;
+
+use constant OK		=> 1;
+use constant ERROR	=> -1;
+use constant FAILED	=> -2;
+use constant INVALID_CMD => -3;
+
+# GIT = Guid, ID or Target SM.
+my $descGIT = qq&Optionally, you can call this command with a <guid> or <ID>. If none are provided, pings the target SM.&;
+my $descIG = qq&(<ID> or <guid>)&;
+
+my %CMDLIST = (
+    quit => [\&cmdQuit,"Exits this program."],
+    '\q' => [\&cmdQuit,"Exits this program. Same as \"quit\"."],
+    '\c' => [\&cmdListCommands,"Lists all commands. Same as \"commands\"."],
+    help => [\&cmdListCommands,"Lists all commands. Same as \"commands\"."],
+    list => [\&cmdList,undef],
+        all  => [\&cmdListAll,"Usage: \"list all\". Calls \"refresh\" then lists all currently registered state machines."],
+        commands => [\&cmdListCommands,"Lists all commands."],
+    run => [\&cmdRun,undef],
+        trans => [\&cmdRunTrans,"Usage: \"run trans <guid>\". Runs a transaction as if it were new."],
+    refresh => [\&cmdRefresh,"Re-reads from the registry and refreshes the state machine list."],
+    use => [\&cmdUse,"Usage: use $descIG Sets the Target State Machine. This causes commands with no specified <guid> or <ID> to be run against this Target SM."],
+        guid => [\&cmdUseGuid,"Usage: \"use guid <guid>\". Sets the Target State Machine(aka \"Target SM\") to the State Machine with the corresponding guid found in sm_registry."],
+    ping => [\&cmdPing,"Attempts to communication with a state machine. $descGIT "], # pings an SM.
+    unregister => [\&cmdUnregister,"Usage: \"unregister $descIG\". Removes an SM from the registry."],
+    status => [\&cmdStatus,"Returns the current status from an SM. $descGIT "],
+);
+
+my $REGISTRY = undef;
+my $REG_OBJS;
+my %REG_OBJ_MAP;
+my $TARGET_SM_OBJ = undef;
+my $TARGET_SM_MAP_IDX = undef;
+my $DB = SM::DB->new(dsn => SM_DSN, user => SM_USER, pass => SM_PASS);
+
+&main;
+
+sub main {
+    if ( scalar @ARGV ) {
+        # command-line mode.
+        cmdHandler(shift @ARGV,\@ARGV);
+    }
+    else {
+        # psuedo shell mode.
+        startPrompt();
+    }
+}
+
+sub startPrompt {
+    display("Type \"quit\" to exit.\n");
+    while(1) {
+        my $sm = getTargetSM();
+        if ( $sm && $sm->dbo && defined $sm->dbo->sm_host() && defined $TARGET_SM_MAP_IDX ) {
+            print 'sm('.$TARGET_SM_MAP_IDX.'@'.$sm->dbo->sm_host().')>';
+        }
+        else {
+            print 'sm> ';
+        }
+
+        my $input = <STDIN>;
+        chomp $input;
+
+        my @args = split /\s/,$input;
+        my $cmd = shift @args;
+ 
+        next if !defined $cmd;
+
+        my $rv = cmdHandler($cmd,\@args);
+
+    }
+}
+
+sub cmdHandler {
+    my $cmd = shift;
+    my $args = shift;
+    
+    if ( !defined $cmd ) {
+        display("Didn't get a command.\n");
+        return FAILED;
+    }
+
+    my $rv;
+    eval {
+        $rv = dispatchCmd($cmd,$args);
+    };
+    if ($@) {
+        displayErr($@);
+        return ERROR;
+    }    
+
+    if ( $rv == FAILED ) {
+        displayErr("The command failed.");
+        return FAILED;
+    }
+    elsif ( $rv == OK ) {
+        #display("\nThe command was successful.\n\n");
+        cmdHandler(shift @$args,$args) if defined($args) && scalar($args) > 0 && $args->[0];
+        return OK;
+    }
+    else {
+        displayErr("An unknown status was returned for the command.");
+        return ERROR;
+    }
+}
+
+sub dispatchCmd {
+    my $cmd = shift;
+    my $args = shift; 
+
+    $args = [$args] if ref $args ne 'ARRAY';
+
+    my $proc = getCommandProc($cmd);
+
+    if ( !defined $proc ) {
+        display("\"$cmd\" is not a valid command.\n");
+        return FAILED;
+    }
+
+    return &$proc($args);
+}
+
+sub getSMObjByIdGuidOrTarget {
+    my $param = shift;
+
+    my $smGuid = undef;
+    my $smObj = undef;
+
+    $smObj = getSMObjByParam($param) if defined $param;
+    if ( !$smObj ) {
+        $smObj = getTargetSM();
+        if ( !$smObj ) {
+            displayErr("Can't . First select an SM.");
+            return FAILED;
+        }
+        else {
+            display("Preparing to use the SM in use.\n");
+        }
+    }
+
+    $smGuid = $smObj->dbo->guid if $smObj && $smObj->dbo;
+
+    return ($smGuid,$smObj);
+}
+
+sub cmdStatus {
+    my $args = shift;
+    my $param = shift @$args;
+
+    my ($smGuid,$smObj) = getSMObjByIdGuidOrTarget($param);
+
+    if ( !$smGuid ) {
+        displayErr("You must first select a target SM. Try \"list all\" then select a target SM using \"use <ID>\"");
+        return FAILED;
+    }
+
+    my $client = new SM::SMClient;
+    my $response = $client->connect(guid => $smGuid);
+
+    if ( !$response ) {
+        displayErr("Couldn't connect to the SM. Run the \"refresh\" command to refresh the SM list.\n"
+                  ."If the SM is down, you can use the \"unregister <ID>\" command to remove it from the registry.\n");
+        return FAILED;
+    }
+
+    $response = $client->sendRequest(
+        command => 'status',
+        parameters => {}
+    );
+
+    if ( !$response ) {
+        displayErr("Couldn't get the SM's status.\n"
+                  ."If the SM is down, you can use the \"unregister <ID>\" command to remove it from the registry.\n"
+                  ."Run the \"refresh\" command to refresh the SM list.");
+        return FAILED;
+    }
+    else {
+        displayResponse($response);
+    }
+
+    return OK;
+}
+
+sub cmdRefresh {
+    my $args = shift;
+    $REG_OBJS = reloadRegObjects();
+    display("\nState machine list refreshed.\n");
+    return OK;
+}
+
+sub cmdUseGuid {
+    my $args = shift;
+    my $guid = shift @$args;
+
+    if ( !defined $guid || !isGuid($guid) ) {
+        $guid ||= '';
+        display("\n\"$guid\" is not a valid guid.\n");
+        return FAILED;
+    }
+
+    my $regObjs = getRegObjects();
+
+    if ( scalar @$regObjs < 1 ) {
+        display("\nThere are no running SMs listed. Use \"list all\" to view running SMs and their IDs.");
+        return FAILED;
+    }
+
+    my $targetObj = undef;
+    foreach my $obj ( @$regObjs ) {
+        if ( $obj->dbo->guid() eq $guid ) {
+            $targetObj = $obj;
+            last;
+        }
+    }
+
+    setTargetSM($targetObj);
+
+    display("\nUsing the SM of guid \"".$targetObj->dbo->guid()."\"\n\n");
+
+    return OK;
+}
+
+sub cmdUse {
+    my $args = shift;
+    my $param = shift @$args;
+
+    if ( !$param ) {
+        displayErr("You must enter an ID or GUID to use. Use \"list all\" to view running SMs and their IDs.");
+        return FAILED;
+    }
+
+    if ( isGuid($param) ) {
+        unshift @$args,$param;
+        return dispatchCmd('guid',$args);
+    }
+    else {
+        my $obj = defined $REG_OBJ_MAP{$param} ? $REG_OBJ_MAP{$param} : undef;
+        if ( !$obj ) {
+            displayErr("Couldn't find an SM with the ID \"$param\". Use \"list all\" to view running SMs and their IDs.");
+            return FAILED;
+        }
+
+        setTargetSM($obj,$param);
+
+        display("\nUsing the SM of guid \"".$obj->dbo->guid()."\"\n\n");
+    }
+
+    return OK;
+}
+
+sub cmdRun {
+    my $args = shift;
+    my $cmd = shift @$args;
+
+    if ( !$cmd ) {
+        display("I need something to run.\n");
+        return FAILED;
+    }
+
+    return dispatchCmd($cmd,$args);
+}
+
+sub cmdUnregister {
+    my $args = shift;
+    my $param = shift @$args;
+
+    if ( !defined $param ) {
+        displayErr("Can't unregister, didn't get a parameter.");
+        return FAILED;
+    }
+
+    my $smGuid = undef;
+    my $smObj = undef;
+
+    $smObj = getSMObjByParam($param);
+
+    if ( $smObj ) {
+        my $rv;
+        eval { $rv = $smObj->unregister(); };
+        if ( !$rv || $@ ) {
+            displayWarn("unregister failed for some reason: $@");
+        }
+    }
+
+    cmdRefresh();    
+
+    return OK;
+}
+
+sub cmdPing {
+    my $args = shift;
+    my $param = shift @$args;
+
+    my ($smGuid,$smObj) = getSMObjByIdGuidOrTarget($param);
+
+    if ( !$smGuid ) {
+        displayErr("You must first select a target SM. Try \"list all\" then select a target SM using \"use <ID>\"");
+        return FAILED;
+    }
+
+    my $client = new SM::SMClient;
+    my $response = $client->connect(guid => $smGuid);
+
+    if ( !$response ) {
+        displayErr("The ping failed. Couldn't connect to the SM.\n"
+                  ."If the SM is down, you can use the \"unregister <ID>\" command to remove it from the registry.\n"
+                  ."Run the \"refresh\" command to refresh the SM list.");
+        return FAILED;
+    }
+
+    else {
+        displayResponse($response);
+    }
+
+    return OK;
+}
+
+sub cmdRunTrans {
+    my $args = shift;
+    my $transGuid = shift @$args;
+
+    my $sm = getTargetSM();
+    my $smGuid = undef;
+    $smGuid = $sm->dbo->guid if $sm && $sm->dbo;
+    if ( !$smGuid ) {
+        displayErr("You must first select a target SM. Try \"list all\" then select a target SM using \"use <ID>\"");
+        return FAILED;
+    }
+
+    if ( !$transGuid ) {
+        displayErr("Can't run a transaction without a guid.");
+        return FAILED;
+    }
+
+    my $client = new SM::SMClient;
+
+    my $response = $client->connect(guid => $smGuid);
+
+    if ( !$response ) {
+        displayErr("Couldn't connect to the SM. Run the \"refresh\" command to refresh the SM list.");
+        return FAILED;
+    }
+
+    $response = $client->sendRequest(
+        command => 'restart_transaction',
+        parameters =>
+        {
+            guid => $transGuid,
+            debug => 1,
+        }
+    );
+
+    if ( !$response ) {
+        displayErr("Didn't get a response from the SM. Sorry. Run the \"refresh\" command to refresh the SM list.");
+        return FAILED;
+    }
+    else {
+        displayResponse($response);
+    }
+
+    return OK;
+}
+
+sub cmdListAll {
+    display("\nListing all running state machines.\n\n");
+
+    cmdRefresh();
+
+    my $regObjs = getRegObjects();
+
+    if ( !$regObjs || scalar @$regObjs == 0 ) {
+        display("There are no registered state machines.\n");
+        return OK;
+    }
+
+    my $rv = displayRegistry();
+
+    return OK;
+}
+
+sub cmdList {
+    my $args = shift;
+    my $cmd = shift @$args;
+
+    if ( !$cmd ) {
+        display("I need something to list.\n");
+        return FAILED;
+    }
+
+    return dispatchCmd($cmd,$args);
+}
+
+sub cmdListCommands {
+    my $div = "--------------------------------------------------------------------------";
+    display("\nCommand List\n$div\nName\t\tDescription\n$div\n");
+
+    my (@lines,$tabs);
+    foreach my $cmdName ( sort keys %CMDLIST ) {
+        my $desc = getCommandDesc($cmdName);
+        next if !$desc || $desc =~ /^\s+$/;
+        $tabs = (length($cmdName) < 8) ? "\t\t" : "\t";
+        push @lines,"$cmdName$tabs$desc";
+    }
+   
+    display(join("\n",@lines)."\n\n");
+
+    return OK;
+}
+
+sub cmdQuit {
+    display("\nQutting.\n");
+    exitOK();
+}
+
+# getSMObjByParam()
+# Returns an SM object corresponding to the given param.
+# The param can be an ID or a guid.
+# Returns undef if it can't find the obj.
+sub getSMObjByParam {
+    my $param = shift;
+
+    if ( !defined $param ) {
+        return undef;
+    }
+
+    my $smObj = undef;
+
+    if ( isGuid($param) ) {
+        $smObj = getRegObjectBy( guid => $param );
+    }
+    else {
+        # Treat $param as an id.
+        $smObj = defined $REG_OBJ_MAP{$param} ? $REG_OBJ_MAP{$param} : undef;
+    }
+
+    if ( !$smObj ) {
+        displayWarn("Can't find the registry object for \"$param\".");
+    }
+
+    return $smObj;
+}
+
+sub isGuid {
+    return 1 if $_[0] =~ /^\d+-\d+-\d+-\d+-\d+$/;
+    return 0;
+}
+
+sub displayRegistry {
+    my $regObjs = getRegObjects();
+
+    return 0 if scalar @$regObjs == 0;
+  
+    my $div = "------------------------------------------------------------------------------------------------------------------------------------\n";
+ 
+    display($div);
+    display("ID\tFAMILYNAME\tGUID\t\t\t\t\tHOST\t\tOBJECTNAME\t\tOBJECTMSG\n");
+    display($div);
+
+    foreach my $id (keys %REG_OBJ_MAP) {
+        my $reg = $REG_OBJ_MAP{$id};
+        my $line = "$id\t"
+                  .$reg->dbo->familyname()."\t\t"
+                  .$reg->dbo->guid()."\t"
+                  .$reg->dbo->sm_host()."\t"
+                  .$reg->dbo->objectname()."\t\t"
+                  .$reg->dbo->object_message()
+                  ."\n";
+        display($line);
+    }
+
+    return 1;
+}
+
+sub getRegObjects {
+    return $REG_OBJS || [];
+}
+
+sub getSMMapIndex {
+    my $obj = shift;
+
+    return undef if !$obj;
+
+    my $index = undef;
+
+    foreach my $idx (keys %REG_OBJ_MAP) {
+        my $regObj =  $REG_OBJ_MAP{$idx};
+        if ( $obj->dbo->reg_id() == $regObj->dbo->reg_id() ) {
+            $index = $idx;
+            last;
+        }
+    }
+
+    return $index;
+}
+
+# getRegObjBy()
+# Returns a sm registry object by:
+# 	guid
+# Returns undef if the param can't be matched.
+sub getRegObjectBy {
+    my %args = @_;
+
+    my $obj = undef;
+    my $regObjs = getRegObjects(); 
+
+    if ( defined $args{guid} ) {
+        foreach my $ro (@$regObjs) {
+            if ( $ro->dbo->guid() eq $args{guid} ) {
+                $obj = $ro;
+                last;
+            }
+        }
+    }
+
+    return $obj;
+}
+
+sub setTargetSM {
+    my ($obj,$index) = @_;
+
+    if ( defined $index ) {
+        $TARGET_SM_MAP_IDX = $index;
+    }
+    else {
+        $TARGET_SM_MAP_IDX = getSMMapIndex($obj);
+    }
+
+    $TARGET_SM_OBJ = $obj;
+
+    return 1;
+}
+
+sub getTargetSM {
+    return $TARGET_SM_OBJ || undef;
+}
+
+sub reloadRegObjects {
+    my $registry = registry();
+    $REG_OBJS = $registry->readRegistry();
+    %REG_OBJ_MAP = ();
+    my $i=1;
+    map { $REG_OBJ_MAP{$i} = $_; $i++; } @$REG_OBJS;
+    return getRegObjects();
+}
+
+sub registry {
+    return $REGISTRY if $REGISTRY;
+    $REGISTRY = new SM::Model::Registry::Register( force_db => $DB );
+    return $REGISTRY;
+}
+
+sub checkCmdArgs {
+    return 0 if ( !$_[0] || ref($_[0]) ne 'ARRAY' );
+    return 1;
+}
+
+sub getCommandProc {
+    my $cmd = shift;
+    return undef if !$cmd;
+    return (defined $CMDLIST{$cmd} ? $CMDLIST{$cmd}->[0] : undef);
+}
+
+sub getCommandDesc {
+    my $cmd = shift;
+    return undef if !$cmd;
+    return (defined $CMDLIST{$cmd} ? $CMDLIST{$cmd}->[1] : undef);
+}
+
+sub display {
+    my $msg = $_[0];
+    print $msg;
+}
+
+sub displayErr {
+    my $msg = $_[0];
+    print "\nError: $msg\n\n";
+}
+
+sub displayWarn {
+    my $msg = $_[0];
+    print "\nWarning: $msg\n\n";
+}
+
+sub displayResponse {
+    my $response = shift;
+    $response = json()->decode($response);
+    my $msg = $response->{data}{message} || 'null';
+    my $date = $response->{sm}{datetime} || 'null';
+    display("Response from SM:\n\t>>>Date: $date\n\t>>>Message: $msg\n\n");
+}
+
+sub exitOK {
+    exit(0);
+}
+
+sub json {
+    my $self = shift;
+    my $arg = shift;
+    $self->{_json} = $arg ? $arg : JSON::XS->new->ascii->pretty->allow_nonref;
+    return $self->{_json};
+}
+
+__END__

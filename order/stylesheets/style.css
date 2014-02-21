@@ -1,0 +1,251 @@
+body, span, div, p, li, dd, dt, input, textarea, fieldset, label, select, b, strong {color: #636569; font-family: "Trebuchet MS", Arial, Helvetica}
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td {margin: 0; padding: 0}
+body {background: #333 url(http://cdnso.pbxtra.fonality.com/images/bg-fade.gif) repeat-x top left; font-size: 12px}
+fieldset, img {border: 0}
+fieldset#phones legend small {color: #636569;font-size: 14px}
+fieldset {border: 1px solid #ccc; margin: 0px; padding: 10px; padding-bottom: 0px; width: 100%; width: 500px}
+fieldset > div {margin: 1em .5em}
+em, strong, th {font-style: normal; font-weight: normal}
+em {font-style: italic}
+ol, ul {list-style: none}
+ul.pbx {display: block; margin: 1em 40px 1em 1em; padding-right: 1em}
+ul.pbx li {display: list-item; -moz-float-edge: margin-box; margin: 1em 40px 1em 0}
+li {font-size: 12px; line-height: 20px}
+dl,dd {margin: 0 0 1em 0}
+dt {font-weight: bold}
+caption, th { text-align: left}
+h1, h2, h3, h4, h5, h6 {font-size: 100%; font-weight: normal}
+q:before, q:after {content: ''}
+abbr,acronym {border: 0}
+h1, h2, h3, h4, h5, h6 {font-family: "Trebuchet MS", Arial, Helvetica; font-weight: bold}
+h1 {color: #f1b229; font-size: 18px; margin-bottom: 8px}
+h2, h5 {color: #636569; font-size: 14px; margin-bottom: 7px}
+h3, h6 {color: #636569; font-size: 11px; margin-bottom: 2px}
+p {font-size: 13px; line-height: 16px; margin-bottom: 20px}
+a:link {color: #4182c4; text-decoration: none}
+a:visited {color: #4182c4; text-decoration: none}
+a:hover {text-decoration: underline}
+a:active {border: none}
+a:active, a:focus {outline: 0}
+b, strong {font-weight: bold !important}
+strong {font-weight: bold}
+table {width: 100%; border-collapse: collapse; border-spacing: 0}
+table#wizard thead, table#wizard td {border: 0 !important}
+tr.alt {background: #eee}
+thead { border-bottom: 2px solid #333}
+th {font-weight: bold}
+td, th {padding: .5em}
+td {border: 1px solid #ccc}
+
+/* wrapper tags */
+#container {background: #fff;margin: 0 auto;width: 900px}
+#header {height: 390px; overflow: visible; position: relative; width: 100%; z-index: 8000}
+#header-title a {display: block; height: 100%; width: 100%}
+#headerphone {position: absolute; right: 12px; top: 30px; z-index: 1000}
+#headerphone,#headerphone a {color: #7F9B1E; font-family: "Trebuchet MS", Arial; font-size: 22px; font-weight: normal}
+/* main Fonality logo */
+#header-title {
+	background: url(http://cdnso.pbxtra.fonality.com/images/fonality_logo_header3.png) no-repeat top left;
+	height: 75px;
+	left: 20px;
+	overflow: hidden;
+	position: absolute;
+	text-indent: -5000px;
+	top: 5px;
+	width: 229px;
+	z-index: 8000
+}
+#content {float: right; padding-bottom: 13px; padding-right: 10px; width: 660px; margin-bottom: 45px; margin-top: 10px; min-height: 325px}
+.pbxlite li ul {padding-left: 15px}
+.pbxlite {margin-bottom: 20px}
+/*http://www.positioniseverything.net/easyclearing.html*/
+.clear:after {clear: both; content: "."; display: block; visibility: hidden}
+.clear {display: inline-block; line-height: 0}
+/* Hides from IE-mac \*/
+* html .clear {height: 1%}
+.clear {display: block}
+/* custom or simple quote tabs */
+ul#quotetabs li {
+	background: url(http://cdnso.pbxtra.fonality.com/images/quote/tab-off-left.gif) no-repeat top left;
+	border-bottom: 1px solid #ccc;
+	float: left;
+	font-size: 14px;
+	padding: 0;
+	margin: 1em 2px -1px 0;
+	text-align: center;
+	width: 175px
+}
+ul#quotetabs li.active {
+	background: url(http://cdnso.pbxtra.fonality.com/images/quote/tab-on-left.gif) no-repeat top left;
+	border-bottom: 1px solid #fff;
+	margin-bottom: -1px
+}
+ul#quotetabs li a,
+ul#quotetabs li span {
+	background: url(http://cdnso.pbxtra.fonality.com/images/quote/tab-off-right.gif) no-repeat top right;
+	display: block;
+	margin: 0;
+	padding: .25em
+}
+ul#quotetabs li.active span {
+	background: url(http://cdnso.pbxtra.fonality.com/images/quote/tab-on-right.gif) no-repeat top right;
+	display: block;
+	margin: 0;
+	padding: .25em
+}
+/* custom quote classes and IDs */
+#quote {margin: 0 !important}
+#quote input,#quote select,#quote div.serverinfo {float: left;margin: 10px}
+#quote input,#quote select,#quote label,#quote div.serverinfo {margin-top: 5px !important;margin-bottom: 5px !important}
+.checkbox {margin: 10px; width: auto !important}
+#quote .note {clear: both}
+.note {font-style: italic}
+#quote #ipphones div {white-space: nowrap; margin: 0px}
+#quote #ipphones input {width: auto; display: inline; float: right}
+#quote #ipphones label {width: 185px; font-size: 12px; text-align: right; float: left; display: inline}
+#quote #ipphones table td {border: none !important}
+#quote div.serverinfo {clear: none !important; width: 300px}
+#quote #annual-soft-maint label, 
+#quote #annual-soft-maint input,
+#order-welcome-message {clear: none}
+#order-intranet-name {margin-bottom: 20px}
+#order-review {width: 500px; margin: 0}
+#order-review label {width: 250px}
+#quote .input-wide {width: 300px}
+/* image button */
+#quote #nextbutton {
+	background: url(http://cdnso.pbxtra.fonality.com/images/quote/button-next.gif) no-repeat top left;
+	border: none;
+	display: block;
+	float: none !important;
+	height: 26px;
+	text-indent: -5555px;
+	width: 90px	
+}
+input.button {min-width: 75px; padding: 2px 10px}
+.button:visited {color: #fff}
+.button:hover {background-position: bottom left; text-decoration: none}
+form.inline {width: 400px}
+form.inline input,form.inline label,form.inline select,form.inline textarea {float: right; margin: 10px 0; padding: 0; width: 200px}
+form.inline label {float: left; text-align: right; width: 150px}
+form.inline div {clear: both; margin: 0 0 0 2em}
+form.inline .btn {height: auto; margin-right: 120px; width: 80px}
+form.inline input {display: inline}
+.hidden {display: none}
+legend {color: #369; font-size: 14px; font-weight: bold; margin: .5em}
+.error {border: 0px solid #eee; background: #ffc; margin: 20px 40px; width: 150 !important; padding: 1em}
+.order_step_heading {border-bottom: 1px solid #ccc; margin: 20px 0 0 0 !important; padding-bottom: 10px; margin-bottom: 10px}
+.order_step_heading h1 {float: left; width: 60%; margin: 0; padding: 0}
+.order_step_heading .steps {float: right; text-align: right; width: 35%}
+table.noborder td {border: none}
+#displayTheOrderForm {border-right: 1px solid #eee; margin: 0 !important; width: 624px !important}
+.slide.displayTheLoadingPrompt {margin: 0; padding-top: 160px !important; width: 100%; text-align: center}
+.slide ol li {list-style-type: decimal; margin: 5px 20px}
+form.modifyconvert {text-align: center; width: 100%}
+#footer {border-top: 1px solid #d5d5d5; clear: both; margin: 0 auto; padding: 11px 0; position: relative; width: 864px; overflow: hidden}
+.footer-navigation {width: 720px; margin-bottom: 5px}
+.footer-navigation li {border-left: 1px solid #d5d5d5; display: inline; padding: 0 7px 0 9px}
+.footer-navigation li.phonenumber {color: #4182C4}
+.footer-navigation li.first {border: none; padding-left: 0}
+.footer-navigation li.last {text-align: right; padding-right: 0}
+.footer-navigation li a {font-size: 11px; line-height: 100%; color: #666}
+.footer-navigation.seo li {border: none; padding: 5px}
+.footer-navigation.seo li a {font-size: 9px}
+#footer-copyright {font-size: 9px; line-height: 14px; width: 590px; color: #999}
+table.noborder, table.noborder td, table.noborder th {border: none !important}
+
+
+/*******************************
+* Simple quote
+*******************************/
+form#wizard2 * {line-height: 100%}
+form#wizard2 div.text em {line-height: 125%}
+form#wizard2 fieldset,form#wizard2 th, form#wizard2 td,form#wizard2 div,form#wizard2 legend  {margin:0; padding:0}
+form#wizard2 fieldset {border: none}
+form#wizard2 legend {padding-bottom:20px}
+form#wizard2 .phone-category {margin-bottom: 10px; height: 50px}
+form#wizard2 .phone-category .colleft{width: 190px; margin-bottom: 10px}
+form#wizard2 .phone-category .colright{width: 50px; text-align: right}
+form#wizard2 #phone_img_td {text-align: center}
+form#wizard2 h5 {margin-bottom: 3px}
+form#wizard2 div.check-div {margin: 0 0 10px 0; position:relative; height: 20px}
+form#wizard2 .twocol.partial {width: auto}
+*+html/*/*/ form#wizard2 legend {margin-left: -7px} /* IE 7 */
+form#wizard2 .checkbox {margin:-4px 0 0 0 !important; vertical-align: middle}
+form#wizard2 div#salesforce-checkbox input#up_uae {vertical-align: -2px}
+form#wizard2 div#salesforce-checkbox img {vertical-align: -11px; height: 25px}
+form#wizard2 fieldset,#quote fieldset {clear: both !important}
+#wizard,#quote {border: 1px solid #ccc; margin-top: 0; padding: 1em}
+#wizard #status {text-align: center; margin-left: 25px}
+#wizard #status .loading {padding-top: 75px}
+#wizard #status {width: 550px}
+#wizard dl dt{width: 325px}
+#wizard dl dt .info {float: right}
+#wizard .expandable dd {display: none}
+#wizard ul#tabs li#customizequote {background: #eee}
+#wizard table td {border: 0}
+#wizard table td#prev_text {text-align: right; width: 200px}
+#wizard table td#prev_text #prev_b {display: none; float: right}
+#wizard table td#step_text {text-align: center}
+#wizard table td#next_text {text-align: left; width: 200px}
+.radio {border: none; margin: 0 !important; padding: 0 !important}
+/* Hide every page of the wizard by default */
+#pg\=1 {visibility: visible}
+#pg\=2, #pg\=3, #pg\=4, #pg\=5, #pg\=6, #pg\=7, #pg\=8, #pg\=9,#pg\=10, #status{display: none; visibility: hidden}
+#pg\=3 h5 {margin-bottom: 0}
+#wizard .frmStack input {width: 92%}
+#estimate td {border: none; padding: 0 0 5px 0 !important}
+#estimate th {text-align: right; padding-bottom: 5px}
+#estimate td ul li {
+	background: url(http://cdnso.pbxtra.fonality.com/images/bullet_square.gif) no-repeat left 4px;
+	line-height: 100%;
+	margin: 0;
+	padding: 0 0 0 10px
+}
+#solution-chooser {margin-left: -20px !important}
+#solution-chooser .twocol {width: 540px}
+#solution-chooser .col {background: #eee; padding-bottom: 10px; -moz-border-radius: 7px; -webkit-border-radius: 7px; width: 265px}
+#solution-chooser .col h5 {
+	background: #666;
+	color: #fff;
+	margin: 0;
+	padding: 10px 5px;
+	-moz-border-radius: 7px 7px 0 0;
+	-webkit-border-top-left-radius: 7px;
+	-webkit-border-top-right-radius: 7px;
+	text-align: center
+}
+#solution-chooser .col .button {margin-left: 30px; height: 30px}
+#solution-chooser .col.colleft {margin-right: 0}
+#order_qwiz #wizard2 #solution-chooser .col ul.pbxlite {margin: 10px 5px 10px 10px; min-height: 110px; padding-top: 10px}
+#order_qwiz #wizard2 #solution-chooser .col ul.pbxlite li {font-size: 12px; line-height: 150%; padding-left: 10px}
+/* simple quote buttons on the first step  */
+#choose-pbxtra-btn, #choose-unbound-btn {
+	background: url(http://cdnso.pbxtra.fonality.com/images/quote/button-quote-choose-pbxtra.png) no-repeat 0 0;
+	cursor: pointer;
+	display:block;
+	height: 29px;
+	line-height: 5;
+	margin-left: 22px;
+	text-indent: -5555px;
+	width: 221px
+}
+#choose-unbound-btn {background: url(http://cdnso.pbxtra.fonality.com/images/button-quote-choose-unbound.png) no-repeat 0 0}
+#choose-pbxtra-btn:hover, #choose-unbound-btn:hover {background-position: 0 -29px}
+select, textarea {border: 1px solid #7e9eb7; font-size: 12px}
+div.frmStack input {height: 16px; margin-bottom: 14px; padding: 3px}
+div.frmStack select {height: 22px; padding: 3px 1px;margin-bottom: 14px}
+div.frmStack option {height: 16px; padding-top: 1px}
+div.frmStack label {display: block; margin-bottom: 3px}
+div.frmStack input.med {width: 190px}
+div.frmStack select.med {width: 198px}
+div.frmStack input.state {width: 33px}
+div.frmStack input.country {width: 140px}
+div.frmStack textarea.full {height: 155px; width: 404px}
+.colright {float: right; width: 180px; margin: 0 10px}
+.twocol.partial {width: 415px}
+.twocol .colleft {display: block; float: left; width: 49%}
+.twocol .colright {display: block; float: right; width: 49%;}
+.colleft {border-right: 1px solid #ccc; float: left; margin: 0 10px; width: 180px}
+label.error { float: none; color: red; padding-left: .5em; vertical-align: top; }
+/* END quote wizard */

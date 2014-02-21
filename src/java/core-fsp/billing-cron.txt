@@ -1,0 +1,5 @@
+FON_DIR=/home/sboddu/fcs_trunk
+CONF_TARGET=/home/sboddu/fcs_trunk/res/conf
+0 1 * * * /home/sboddu/fcs_trunk/src/java/core-fsp/billing.sh
+* * * * * echo "Cron Worked $(date)" >> /home/sboddu/logs/billing.log
+

@@ -1,0 +1,325 @@
+[% PROCESS 'header.tt' %]
+
+<script type="text/javascript">
+	$(document).ready(function()
+	{
+		$("#server_list").accordion({
+			active: false,
+			navigation: true,
+			collapsible: true
+		});
+
+		$('#server_search').server_search();
+	});
+
+	function change_nfr_status(server_id)
+	{
+		if(!server_id)
+			return false;
+
+		if($('#nfr_status_input_'+server_id).length != 0)
+			return false;
+
+		var e = $('#nfr_status_'+server_id);
+
+		var nfr_status = $(e).text();
+
+		if(nfr_status == 'Yes')
+		{
+			nfr_status = 1;
+		}
+		else
+		{
+			nfr_status = 0;
+		}
+
+		$(e).text('');
+
+		var i = $('<select name="nfr_status_input_'+server_id+'"><option value="0">No</option><option value="1">Yes</option></select>').appendTo($(e)).val(nfr_status).focus();
+		$('<input type="button" id="nfr_status_submit_'+server_id+'" onclick="submit_nfr_status('+server_id+')" value="Save    "/>').appendTo($(e));
+	}
+
+	function submit_nfr_status(server_id)
+	{
+
+	}
+
+	function change_customer_id(server_id)
+	{
+		if(!server_id)
+			return false;
+
+		if($('#customer_id_input_'+server_id).length != 0)
+			return false;
+
+		var e = $('#customer_id_'+server_id);
+		
+		var customer_id = $(e).text();
+		$(e).text('');
+		
+
+		if(!customer_id)
+			return false;
+
+		var i = $('<input type="text" maxlength="8" size="6" class="change_customer_id_field" id="customer_id_input_'+server_id+'"/>').appendTo($(e)).val(customer_id).focus();
+		$('<input type="button" id="customer_id_submit_'+server_id+'" onclick="submit_change_customer_id('+server_id+', '+customer_id+')" value="    Move    "/>').appendTo($(e));
+	}
+
+	function submit_change_customer_id(server_id, customer_id)
+	{
+		if(!server_id || !customer_id)
+			return false;
+
+		var new_customer_id = $('#customer_id_input_'+server_id).val();
+
+		if(!new_customer_id)
+		{
+			alert('Please enter a new customer ID');
+			return false;
+		}
+
+		if(customer_id == new_customer_id)
+		{
+			$('#customer_id_input_'+server_id).remove();
+			$('#customer_id_submit_'+server_id).remove();
+			$('#customer_id_'+server_id).text(new_customer_id);
+			return false;
+		}
+
+		$('#customer_id_submit_'+server_id).attr('disabled', 'disabled').css('background', 'url("images/loading.gif")').css('background-repeat', 'no-repeat').css('background-position', 'right center');
+
+		var form_data = {
+			mode: 'Core.Server_Details',
+			action: 'change_customer_id',
+			server_id: server_id,
+			customer_id: customer_id,
+			new_customer_id: new_customer_id
+		};
+
+		$.ajax({
+			url: '/',
+			dataType: 'JSON',
+			data: form_data,
+			type: 'POST',
+			success: function(data)
+			{
+				if(data && data.success)
+				{
+					info(data.success);
+					$('#customer_id_input_'+server_id).remove();
+					$('#customer_id_submit_'+server_id).remove();
+					$('#customer_id_'+server_id).text(new_customer_id);
+					$('#server_search').val(server_id);
+					$('#server_search_form').submit();
+				}
+				else
+				{
+					if(data.error_msg)
+					{
+						alert(data.error_msg);
+					}
+					else
+					{
+						alert("Unknown error");
+					}
+
+					$('#customer_id_submit_'+server_id).removeAttr('disabled').css('background', '');
+				}
+			}	
+		});
+
+	}
+
+</script>
+
+[% IF !FORM.remote %]
+	[% PROCESS infobox text="Enter a server ID below to view the customer's server details" %]
+
+
+	<div style="margin-bottom: 10px; width: 100%;">
+		<div class="grey-round" style="margin:0 auto;width:95%; padding-top: 10px; padding-bottom: 1px; margin-bottom: 10px;">
+		<h4>Search for a server ID</h4>
+		<form method="POST" action="/" autocomplete="off" id="server_search_form">
+		<input type="hidden" name="mode" value="Core.Server_Details">
+		<table width="100%">
+			<tr>
+				<td style="text-align: right; vertical-align: bottom; font-weight: bold;" width="15%">Server ID:</td>
+				<td width="15%" style="text-align: left;" style="text-align: left;"><input type="text" id="server_search" name="server_id" maxlength="6" class="ui-widget ui-state-highlight" value="[% FORM.server_id %]"></td>
+				<td width="70%" style="text-align: left;"><input type="submit" class="ui-state-highlight" id="server_search_button" style="margin-left: 2px; padding: 2px; cursor: pointer;" value="Display"></td>
+			</tr>
+		</table>
+	</div>
+[% END %]
+
+[% IF SERVER_LIST %]
+
+	<table width="100%" cellspacing="3" style="text-align: center; position: static;" id="server_list_table">
+		<tr>
+			<td class="ui-state-active">Server ID</td>
+			[% IF PERMISSION.can('Core.Server_Search', 'login') %]<td class="ui-state-active">Login</td>[% END %]
+			<td class="ui-state-active">Host Server</td>
+			<td class="ui-state-active">LBS Status</td>
+			<td class="ui-state-active">Customer ID</td>
+			<td class="ui-state-active">Rapsheet</td>
+			<td class="ui-state-active">CP Version</td>
+			<td class="ui-state-active">NFR</td>
+			<td class="ui-state-active">Demo</td>
+		</tr>
+		[% FOREACH SERVER IN SERVER_LIST.sort %]
+		<tr>
+			<td class="ui-state-hover"><a href="#server_id_[% SERVER.server_id %]">[% SERVER.server_id %]</a></td>	
+			[% IF PERMISSION.can('Core.Server_Search', 'login') %]
+			<td class="ui-state-hover">
+				<a href="/?mode=Core.Server_Search&action=login&server_id=[% SERVER.server.id %]">Login</a>
+			</td>	
+			[% END %]
+			<td class="ui-state-hover">
+				[% IF SERVER.mosted %]
+					Host: [% SERVER.mosted %]
+				[% ELSE %]
+					None
+				[% END %]
+			</td>	
+			<td class="ui-state-hover">
+				[% IF SERVER.lbs_status %]
+					[% SERVER.lbs_status %]
+				[% ELSE %]
+					None
+				[% END %]
+			</td>
+			<td class="ui-state-hover">
+				<span id="customer_id_[% SERVER.server_id %]">[% SERVER.customer_id %]</span>
+				[% IF PERMISSION.can('change_customer_id', 'w') %]
+					<span class="ui-icon ui-icon-wrench" style="float: right; cursor: pointer;" onclick="change_customer_id([% SERVER.server_id %])"></span>
+				[% END %]
+			</td>	
+			<td class="ui-state-hover">
+				<a href="/?mode=Support.Support_Rapsheet_Tool&server_id=[% SERVER.server_id %]">Rapsheet</a>
+			</td>
+			<td class="ui-state-hover">
+				<span id="cp_version_[% SERVER.server_id %]">[% SERVER.cp_version %]</span>
+				[% IF PERMISSION.can('change_cp_version', 'w') %]
+					<span class="ui-icon ui-icon-wrench" style="float: right; cursor: pointer;" onclick="change_cp_version([% SERVER.server_id %])"></span>
+				[% END %]
+			</td>
+			<td class="ui-state-hover">
+				<span id="nfr_status_[% SERVER.server_id %]">[% IF SERVER.nfr_status %][% SERVER.nfr_status %][% ELSE %]No[% END %]</span>
+				[% IF PERMISSION.can('change_nfr_status', 'w') %]
+					<span class="ui-icon ui-icon-wrench" style="float: right; cursor: pointer;" onclick="change_nfr_status([% SERVER.server_id %])"></span>
+				[% END %]
+					
+			</td>	
+			<td class="ui-state-hover">
+				<span id="demo_[% SERVER.server_id %]">[% IF SERVER.is_demo %]Yes[% ELSE %]No[% END %]</span>
+				[% IF PERMISSION.can('change_demo_status', 'w') %]
+					<span class="ui-icon ui-icon-wrench" style="float: right; cursor: pointer;" onclick="change_demo_status([% SERVER.server_id %])"></span>
+				[% END %]
+			</td>
+		</tr>
+		[% END %]
+	</table>
+
+
+	<div id="server_list">
+	[% FOREACH SERVER IN SERVER_LIST %]
+		<h3 id="server_list_header_[% SERVER.server_id %]"><a href="#server_id_[% SERVER.server_id %]" id="server_list_[% SERVER.server_id %]">Server ID [% SERVER.server_id _ '. ' _ SERVER.server_name %]</a></h3>
+			<div id="server_id_data_div_[% SERVER.server_id %]">
+				<div style="width: 50%; float: left">
+				<table width="100%" cellspacing="2" cellpadding="2" id="server_id_data_table_left_[% SERVER.server_id %]" class="padded-cells-3">
+					<tr>
+						<td colspan="2" class="ui-state-active ui-priority-primary">Server Basics</td>
+					</tr>
+					<tr>
+						<td class="ui-state-active ui-priority-primary">Status:</td>
+						[% IF SERVER.cancelled %]
+						<td class="ui-state-error">Cancelled ( [% SERVER.cancelled %] ) [% PROCESS tooltip icon="info" state="error" text=SERVER.cancelled_description %] </td>
+						[% ELSE %]
+						<td class="ui-state-highlight">Active</td>
+						[% END %]
+					</tr>
+					<tr>
+						<td class="ui-state-active ui-priority-primary">Provisioned:</td>
+						<td class="ui-state-hover">[% SERVER.provisioned %]</td>
+					</tr>
+					<tr>
+						<td class="ui-state-active ui-priority-primary">Can Link Server:</td>
+						<td class="ui-state-hover">
+							[% IF SERVER.can_link_server %]
+								Yes
+								[% IF PERMISSIONS.can('Support.Linked_Server', 'edit_link', 'w') %] - [ remove ][% END %]
+							[% ELSE %]
+								No
+							[% END %]
+						</td>
+					</tr>
+					<tr>
+						<td class="ui-state-active ui-priority-primary">CP Version:</td>
+						<td class="ui-state-hover">[% SERVER.cp_version %]</td>
+					</tr>
+					<tr>
+						<td class="ui-state-active ui-priority-primary">CP Location:</td>
+						<td class="ui-state-hover">[% SERVER.cp_location %]</td>
+					</tr>
+					<tr>
+						<td class="ui-state-active ui-priority-primary">Asterisk Version:</td>
+						<td class="ui-state-hover">[% SERVER.asterisk_version %]</td>
+					</tr>
+					<tr>
+						<td class="ui-state-active ui-priority-primary">Country:</td>
+						<td class="ui-state-hover">[% SERVER.country %]</td>
+					</tr>
+					<tr>
+						<td class="ui-state-active ui-priority-primary">Language:</td>
+						<td class="ui-state-hover">[% SERVER.language %]</td>
+					</tr>
+					<tr>
+						<td class="ui-state-active ui-priority-primary">Time Zone:</td>
+						<td class="ui-state-hover">[% TZ = SERVER.localtime_file.split('/') %][% TZ.reverse.1 _ '/' _ TZ.reverse.0 %]</td>
+					</tr>
+					<tr>
+						<td class="ui-state-active ui-priority-primary">Service Tag:</td>
+						<td class="ui-state-hover">[% SERVER.service_tag %]</td>
+					</tr>
+					<tr>
+						<td class="ui-state-active ui-priority-primary">Tunnel Addresses:</td>
+						<td class="ui-state-hover">[% SERVER.tun_address _ ' / ' _ SERVER.tun_address2 %] </td>
+					</tr>
+				</table>
+				</div>
+				<div style="width: 50%; float: left">
+				<table width="100%" cellspacing="2" cellpadding="2" id="server_id_data_table_right_[% SERVER.server_id %]" class="padded-cells-3">
+					<tr>
+						<td colspan="2" class="ui-state-active ui-priority-primary">Auth Information</td>
+					</tr>
+					<tr>
+						<td class="ui-state-active ui-priority-primary">FTP Password:</td>
+						<td class="ui-state-hover">[% SERVER.ftp_password %]</td>
+					</tr>
+					<tr>
+						<td class="ui-state-active ui-priority-primary">Local Manager Password:</td>
+						<td class="ui-state-hover">[% SERVER.local_mgr_password %]</td>
+					</tr>
+					<tr>
+						<td class="ui-state-active ui-priority-primary">Remote Manager Password:</td>
+						<td class="ui-state-hover">[% SERVER.remote_mgr_password %]</td>
+					</tr>
+					<tr>
+						<td class="ui-state-active ui-priority-primary">RPC User / Pass:</td>
+						<td class="ui-state-hover">[% SERVER.remote_auth_username _ ' / ' _ SERVER.remote_auth_password %]</td>
+					</tr>
+					<tr>
+						<td class="ui-state-active ui-priority-primary">VoIP User / Pass:</td>
+						<td class="ui-state-hover">[% SERVER.iax2_username _ ' / ' _ SERVER.iax2_password %]</td>
+					</tr>
+					<tr>
+						<td class="ui-state-active ui-priority-primary">Local Manager Password:</td>
+						<td class="ui-state-hover">[% SERVER.local_mgr_password %]</td>
+					</tr>
+				</table>
+				</div>
+			</div>
+	[% END %]
+	</div>
+[% END %]
+
+[% PROCESS 'footer.tt' %]

@@ -1,0 +1,41 @@
+[% PROCESS 'header.tt'  %]
+
+<link href="/css/jquery.mCustomScrollbar.css" rel="stylesheet" type="text/css" />
+<link href="/css/Sales.Create_Quote.css" rel="stylesheet" type="text/css" />
+<link href="/css/Sales.Create_Order.css" rel="stylesheet" type="text/css" />
+
+<script src="/js/jquery.mousewheel.min.js"></script>
+<script src="/js/jquery.mCustomScrollbar.js"></script>
+[% USE date %]
+<script src="/js/jquery.orderDependencies.js?[% date.format %]"></script>
+<script src="js/createOrder.js"></script>
+
+[% PROCESS 'modules/dialogBox.tt'  %]
+[% PROCESS 'modules/Sales/Create_Quote/ReviewWindowPanel.tt'  %]
+
+<table width="100%">
+    <tr>
+        <td align="center">
+           [% PROCESS 'modules/Sales/Create_Order/formContainer.tt'  %]
+        </td>
+    </tr>
+</table>
+<img src="/images/loading_large.gif" style="display: none;">
+
+[% PROCESS 'footer.tt' %]
+
+[% BLOCK right_preview %]
+
+[% PROCESS 'modules/Sales/Create_Order/rightPreview.tt' %]
+[% END %]
+
+
+[% BLOCK 'right_preview_select_bundle' %]
+
+  [% PROCESS 'modules/Sales/Create_Order/rightPreviewSelectBundle.tt' %]
+
+[% END %]
+<script>
+var orderId = [% order.order_id %];
+init();
+</script>

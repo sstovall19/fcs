@@ -1,0 +1,83 @@
+#!/bin/bash
+
+
+# FCS Init Script
+# RHEL style
+
+. /etc/init.d/functions
+
+. /etc/default/fcs
+
+export PERL5LIB="$PERLLIB_TARGET:$PERL5LIB"
+
+start() {
+		if [ "$FCS_TESTED" != "true" ]; then
+			echo  "You have not tested this installation of FCS. Please ensure database settings are correct, then run 'service fcs test'."
+			exit 1;
+		fi 
+        echo "Starting fcs: "
+     	$SM_TARGET/tools/sm_startall.pl
+        touch /var/lock/subsys/fcs
+        return 0
+}
+
+stop() {
+        if [ "$FCS_TESTED" != "true" ]; then
+            echo  "You have not tested this installation of FCS. Please ensure database settings are correct, then run 'service fcs test'."
+			exit 1;
+        fi
+        echo "Shutting down fcs: "
+     	$SM_TARGET/tools/sm_stopall.pl
+        rm -f /var/lock/subsys/fcs
+        return 0
+}
+merge() {
+	# do_merge, maybe check stuff
+	do_merge;
+}
+test(){
+	$TEST_DIR/t/run_tests
+	if [ $? -eq 0 ]; then
+		sed -i '/FCS_TESTED/d' /etc/default/fcs
+		echo "export FCS_TESTED=\"true\"" >> /etc/default/fcs
+	fi
+	return $?
+}
+reloaddb() {
+#mysqldump -u $FCS_DB_USER -p$FCS_DB_PASS -h $FCS_DB_HOST $FCS_DB_NAME > "$SCHEMA_TARGET/fcs_database.backup`date +%Y%m%d.%H%M%S%Z`.sql" && mysql -u $FCS_DB_USER -p$FCS_DB_PASS -h $FCS_DB_HOST $FCS_DB_NAME < "$SCHEMA_TARGET/fcs_database.sql"
+echo "Database reload manually";
+return 0;
+}
+do_merge() {
+	echo "Merging databases..."
+	mysql -u $FCS_DB_USER -p$FCS_DB_PASS -h $FCS_DB_HOST $FCS_DB_NAME < "$SCHEMA_TARGET/structural_changes.sql"
+	mysql -u $FCS_DB_USER -p$FCS_DB_PASS -h $FCS_DB_HOST $FCS_DB_NAME < "$SCHEMA_TARGET/data_changes.sql"
+	return 0
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+	reloaddb)
+		reloaddb
+		;;
+	merge)
+		merge
+		;;
+	test)
+		test
+		;;
+    restart)
+        stop
+        start
+        ;;
+    *)     
+        echo "Usage: fcs {start|stop|restart|merge|test]"
+        exit 1
+        ;;
+esac
+exit $?

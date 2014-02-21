@@ -1,0 +1,14 @@
+Greetings.<br/><br/>
+A new order ([% order.order_id %]) requires billing approval!<br/>
+<br/>
+Company: [% order.company_name %]<br/>
+First Name: [% order.contact.first_name %]<br/>
+Last Name: [% order.contact.last_name %]<br/>
+Email: [% order.contact.email %]<br/>
+<br/>
+<br/>
+<br/>A link to review and approve the order should go here<br/>
+<br/>
+Info:  This file is billing_approval.tt, which contains an HTML template to display<br/>
+when an order is submitted.  The "order" data structure is passed along, and<br/>
+is available for display or manipulation.<br/>

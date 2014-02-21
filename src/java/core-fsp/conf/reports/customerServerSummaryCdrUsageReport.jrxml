@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="customerServerSummaryCdrUsageReport" pageWidth="545" pageHeight="842" columnWidth="545" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" scriptletClass="com.fonality.util.ReportScriplet" uuid="ca569e1b-0a34-4cd2-90cd-ed61eca188e9">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="cellStyle">
+		<box topPadding="6" leftPadding="6" bottomPadding="1" rightPadding="1">
+			<pen lineWidth="1.0"/>
+			<topPen lineWidth="1.0"/>
+			<leftPen lineWidth="1.0"/>
+			<bottomPen lineWidth="1.0"/>
+			<rightPen lineWidth="1.0"/>
+		</box>
+	</style>
+	<style name="detailCell" fontSize="7">
+		<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="1">
+			<pen lineWidth="1.0"/>
+			<topPen lineWidth="0.0"/>
+			<leftPen lineWidth="1.0"/>
+			<bottomPen lineWidth="0.0"/>
+			<rightPen lineWidth="1.0"/>
+		</box>
+	</style>
+	<style name="detailBand">
+		<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
+			<pen lineWidth="1.0"/>
+			<topPen lineWidth="1.0"/>
+			<leftPen lineWidth="0.0"/>
+			<bottomPen lineWidth="0.0"/>
+			<rightPen lineWidth="0.0"/>
+		</box>
+	</style>
+	<style name="cellStyle2" fontSize="11">
+		<box topPadding="4" leftPadding="1" bottomPadding="1" rightPadding="1">
+			<pen lineWidth="1.0"/>
+			<topPen lineWidth="1.0"/>
+			<leftPen lineWidth="1.0"/>
+			<bottomPen lineWidth="1.0"/>
+			<rightPen lineWidth="1.0"/>
+		</box>
+	</style>
+	<style name="addressStyle">
+		<box topPadding="0" leftPadding="1" bottomPadding="0" rightPadding="1">
+			<pen lineWidth="1.0"/>
+			<topPen lineWidth="1.0"/>
+			<leftPen lineWidth="1.0"/>
+			<bottomPen lineWidth="0.0"/>
+			<rightPen lineWidth="1.0"/>
+		</box>
+	</style>
+	<style name="cellStyle3" fontSize="11">
+		<box topPadding="4" leftPadding="1" bottomPadding="1" rightPadding="0">
+			<pen lineWidth="1.0"/>
+			<topPen lineWidth="1.0"/>
+			<leftPen lineWidth="1.0"/>
+			<bottomPen lineWidth="1.0"/>
+			<rightPen lineWidth="1.0"/>
+		</box>
+	</style>
+	<style name="cellStyle4" fontSize="11">
+		<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
+			<pen lineWidth="1.0" lineColor="#000000"/>
+			<topPen lineWidth="0.0" lineColor="#000000"/>
+			<leftPen lineWidth="0.0" lineColor="#000000"/>
+			<bottomPen lineWidth="0.0" lineColor="#000000"/>
+			<rightPen lineWidth="1.0" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="summaryFooterCell" mode="Opaque" forecolor="#FFFFFF" backcolor="#000000" hAlign="Center" fontSize="9" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false">
+		<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
+			<pen lineWidth="1.0" lineColor="#000000"/>
+			<topPen lineWidth="0.0" lineColor="#000000"/>
+			<leftPen lineWidth="1.0" lineColor="#000000"/>
+			<bottomPen lineWidth="0.0" lineColor="#000000"/>
+			<rightPen lineWidth="0.0" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="detailCell2" fontSize="7">
+		<box topPadding="0" leftPadding="78" bottomPadding="0" rightPadding="0">
+			<pen lineWidth="1.0"/>
+			<topPen lineWidth="0.0"/>
+			<leftPen lineWidth="1.0"/>
+			<bottomPen lineWidth="0.0"/>
+			<rightPen lineWidth="1.0"/>
+		</box>
+	</style>
+	<style name="summaryFooterCell1" mode="Opaque" forecolor="#FFFFFF" backcolor="#000000" hAlign="Center" fontSize="9" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false">
+		<box topPadding="0" leftPadding="10" bottomPadding="0" rightPadding="0">
+			<pen lineWidth="1.0" lineColor="#000000"/>
+			<topPen lineWidth="0.0" lineColor="#000000"/>
+			<leftPen lineWidth="0.0" lineColor="#000000"/>
+			<bottomPen lineWidth="0.0" lineColor="#000000"/>
+			<rightPen lineWidth="1.0" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="detailCell3" hAlign="Left" fontSize="7" isItalic="false" isUnderline="false" isStrikeThrough="false">
+		<box topPadding="0" leftPadding="53" bottomPadding="0" rightPadding="0">
+			<pen lineWidth="1.0"/>
+			<topPen lineWidth="0.0"/>
+			<leftPen lineWidth="1.0"/>
+			<bottomPen lineWidth="0.0"/>
+			<rightPen lineWidth="1.0"/>
+		</box>
+	</style>
+	<parameter name="call_type_size" class="java.lang.Integer" isForPrompting="false"/>
+	<parameter name="addr1" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="billedAmount" class="java.math.BigDecimal" isForPrompting="false"/>
+	<parameter name="durationSum" class="java.lang.Integer" isForPrompting="false"/>
+	<parameter name="server_id" class="java.lang.Integer" isForPrompting="false"/>
+	<queryString>
+		<![CDATA[select 1 as 'NA']]>
+	</queryString>
+	<field name="callType" class="java.lang.String"/>
+	<field name="billedAmount" class="java.math.BigDecimal"/>
+	<field name="durationSum" class="java.lang.Integer"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="26">
+			<printWhenExpression><![CDATA[$V{REPORT_COUNT} > 0]]></printWhenExpression>
+			<textField pattern="MM/dd/yyyy HH:mm">
+				<reportElement uuid="001585e5-945c-4c33-ac92-b565d31a8f5f" style="detailCell3" x="0" y="0" width="195" height="12"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8" isUnderline="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{callType}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="067409fa-e831-4bdb-bcce-275d508483ca" style="detailCell" x="195" y="0" width="175" height="12"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isUnderline="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{REPORT_SCRIPTLET}.formatDuration($F{durationSum})]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00">
+				<reportElement uuid="3637596a-3c5a-408f-8e4f-f00091bab770" style="detailCell2" x="370" y="0" width="175" height="12"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8" isUnderline="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{billedAmount}]]></textFieldExpression>
+			</textField>
+			<frame>
+				<reportElement uuid="30c78324-2be9-4962-8e57-df498de585e5" style="detailBand" positionType="Float" stretchType="RelativeToTallestObject" x="0" y="12" width="545" height="14" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$P{call_type_size} == $V{REPORT_COUNT}]]></printWhenExpression>
+				</reportElement>
+				<textField pattern="">
+					<reportElement uuid="bd5606fe-0036-4e47-a14d-1244447bbdf9" mode="Opaque" x="195" y="0" width="175" height="14" forecolor="#FFFFFF" backcolor="#000000"/>
+					<textElement textAlignment="Center">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{REPORT_SCRIPTLET}.formatDuration($P{durationSum})]]></textFieldExpression>
+				</textField>
+				<textField pattern="¤ #,##0.00">
+					<reportElement uuid="b4ff1832-5b90-483f-ab0a-1a4709cf6a91" style="summaryFooterCell1" mode="Opaque" x="370" y="0" width="175" height="14" forecolor="#FFFFFF" backcolor="#000000"/>
+					<textElement textAlignment="Center">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{billedAmount}]]></textFieldExpression>
+				</textField>
+				<textField pattern="">
+					<reportElement uuid="b4ff1832-5b90-483f-ab0a-1a4709cf6a91" style="summaryFooterCell" mode="Opaque" x="0" y="0" width="195" height="14" forecolor="#FFFFFF" backcolor="#000000"/>
+					<textElement textAlignment="Right">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Server " + $P{server_id} + " - " + $P{addr1} + " Total: "]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</detail>
+</jasperReport>

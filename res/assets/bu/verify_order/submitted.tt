@@ -1,0 +1,16 @@
+Greetings.<br/><br/>
+A new order ([% order.order_id %]) has been submitted!<br/>
+<br/>
+Company: [% order.company_name %]<br/>
+First Name: [% order.contact.first_name %]<br/>
+Last Name: [% order.contact.last_name %]<br/>
+Email: [% order.contact.email %]<br/>
+<br/>
+<br/>
+<br/>
+Info:  This file is submitted.tt, which contains an HTML template to display<br/>
+when an order is submitted.  The "order" data structure is passed along, and<br/>
+is available for display or manipulation.<br/>
+<br/>
+The sales representative email address (normally retrieved from SQL) can be overridden<br/>
+for testing or entertainment purposes.  In the verify_order.conf, set sales_rep_override.<br/>

@@ -1,0 +1,411 @@
+[% ITEM_GROUP_LIST = [
+						'PBXtra Software',
+						'PBXtra HUD',
+						'PBXtra User Licenses',
+						'PBXtra Optional Software',
+						'servers',
+						'redundancy',
+						'warranty',
+						'cpu',
+						'ram',
+						'raid',
+						'power',
+						'Cards - Digital',
+						'analog_base_pci',
+						'analog_base_pcie',
+						'analog_exp1',
+						'analog_exp2',
+						'Cards - Other',
+						'Cards - Analog',
+						'IP Phones',
+						'Channel Bank',
+						'Miscellaneous',
+						'Annual Support Group',
+						'Configuration Fees Group',
+						'Reseller Phone Provisioning Fee',
+						'Reseller Phone Provisioning Credit',
+						'discount'
+] %]
+
+[% TITLE = ' :: New Order' %]
+[% PROCESSING_TEXT = '<p>This might take a minute. Please do not stop or reload your browser.</p>' %]
+[% COLSPAN = 2 %]
+[% UNLESS PHONE_QTY %][% PHONE_QTY = 0 %][% END %]
+</form>
+
+<form method="post" name="orderform" action="[% SCRIPT_URL %]?order=confirmed">
+<input type="hidden" name='reseller' value='[% IF RESELLER_ID OR RESELLER_PROPOSAL %]1[% ELSE %]0[% END %]' />
+<input type="hidden" name='oid' value='[% OID %]' />
+
+<div class="order_step_heading">
+	<div class="steps">
+		[% IF ADDON OR ORDER_TYPE == 'addon' %]Add-On[% END %]
+		Order Step&nbsp;
+		<span style="color:[% GRAYED_OUT %]">1</span>&nbsp;
+		<span style="color:[% GRAYED_OUT %]">2</span>&nbsp;
+		<span style="color:[% GRAYED_OUT %]">3</span>&nbsp;
+		<span style="color:[% GRAYED_OUT %]">4</span>&nbsp;
+		<span style="color:[% GRAYED_OUT %]">5</span>&nbsp;
+		<span style="color:[% GRAYED_OUT %]">6</span>&nbsp;
+		<span style="color:[% COLOR1 %]">7</span>
+	</div>
+	<h1>Order Review</h1>
+	<div style="clear:both"><!-- --></div>
+</div>
+
+<p style="margin-top:20px">If you have any questions about your [% IF ADDON %]addon order for server #<b>[% SID %]</b>[% ELSE %]order[% END %], please
+	[% IF RESELLER_ORDER OR RESELLER_PROPOSAL %]
+		<a href='mailto:resellers@fonality.com?subject=Question%20from%20order%20page'>contact the Fonality Reseller team</a>
+	[% ELSE %]
+		<a href='mailto:sales@fonality.com?subject=Question%20from%20order%20page'>contact a Fonality salesperson</a>
+	[% END %]
+	or the <a href='mailto:billing@fonality.com?subject=Question%20from%20order%20page'>Fonality billing department</a>.
+</p>
+
+		<table class="noborder" style="margin: 10px !important;">
+			<tr>
+				<td style="width: 50%">
+					<h5>Shipping Address:</h5>
+					[% SHIP_COMPANY_NAME %]<br />
+					<input type="hidden" name='ship_company_name' value='[% SHIP_COMPANY_NAME %]' />
+					[% SHIPPING_ADDRESS1 %]&nbsp;[% SHIPPING_ADDRESS2 %]<br />
+					<input type="hidden" name='shipping_address1' value='[% SHIPPING_ADDRESS1 %]' />
+					<input type="hidden" name='shipping_address2' value='[% SHIPPING_ADDRESS2 %]' />
+					[% SHIPPING_CITY %], [% SHIPPING_STATE %]<br />
+					<input type="hidden" name='shipping_city' value='[% SHIPPING_CITY %]' />
+					<input type="hidden" name='shipping_state' value='[% SHIPPING_STATE %]' />
+					[% SHIPPING_COUNTRY %]&nbsp;[% SHIPPING_ZIP %]<br />
+					<input type="hidden" name='shipping_country' value='[% SHIPPING_COUNTRY %]' />
+					<input type="hidden" name='shipping_zip' value='[% SHIPPING_ZIP %]' />
+				</td>
+				<td>
+					<h5>Billing Address:</h5>
+					[% CUSTOMER_NAME %]<br />
+					<input type="hidden" name='customer_name' value='[% CUSTOMER_NAME %]' />
+					[% BILLING_ADDRESS1 %]&nbsp;[% BILLING_ADDRESS2 %]<br />
+					<input type="hidden" name='billing_address1' value='[% BILLING_ADDRESS1 %]' />
+					<input type="hidden" name='billing_address2' value='[% BILLING_ADDRESS2 %]' />
+					[% BILLING_CITY %], [% BILLING_STATE %]<br />
+					<input type="hidden" name='billing_city' value='[% BILLING_CITY %]' />
+					<input type="hidden" name='billing_state' value='[% BILLING_STATE %]' />
+					[% BILLING_COUNTRY %]&nbsp;[% BILLING_ZIP %]<br />
+					<input type="hidden" name='billing_country' value='[% BILLING_COUNTRY %]' />
+					<input type="hidden" name='billing_zip' value='[% BILLING_ZIP %]' />
+				</td>
+			</tr>
+			<tr>
+				<td>
+					[% IF RESELLER_ORDER %]
+						<h5>Primary Reseller Contact:</h5>
+					[% ELSE %]
+						<h5>Contact:</h5>
+					[% END %]
+					[% ADMIN_FIRST_NAME %]&nbsp;[% ADMIN_LAST_NAME %]<br />
+					<input type="hidden" name='admin_first_name' value='[% ADMIN_FIRST_NAME %]' />
+					<input type="hidden" name='admin_last_name' value='[% ADMIN_LAST_NAME %]' />
+					[% ADMIN_EMAIL %]<br />
+					<input type="hidden" name='admin_email' value='[% ADMIN_EMAIL %]' />
+					[% ADMIN_PHONE %]<br />
+					<input type="hidden" name='admin_phone' value='[% ADMIN_PHONE %]' />
+				</td>
+			</tr>
+			</table>
+			<input type="hidden" name='customer_id' value='[% CUSTOMER_ID %]' />
+			<p>
+			<input class="button" type="submit" name='act' value='Change Addresses or Contacts' style='width: 200px;' /></p>
+
+			<table id="order" class="noborder" style="margin: 10px !important; clear: both;">
+				<tr>
+					<th style="text-align: left !important;"><h5>Description</h5></th>
+					<th style="text-align: center !important;" colspan="2"><h5>Price</h5></th>
+					<th style="text-align: right !important;"><h5>Qty</h5></th>
+					<th style="text-align: center !important;" colspan="2"><h5>Subtotal</h5></th>
+				</tr>
+				[% FOREACH GROUP = ITEM_GROUP_LIST %]
+					[% FOREACH ITEM = ORDER_ITEMS %]
+						[% NEXT IF ITEM.item_id == 77 %]
+						[% NEXT IF ITEM.item_id == 78 %]
+						[% IF ITEM.group_name == GROUP %]
+							<tr align="right">
+								<td style="text-align: left !important;"nowrap="nowrap">[% ITEM.name %]</td>
+								<td>$</td>
+								<td>[% ITEM.item_price %]</td>
+								<td>[% ITEM.quantity %]</td>
+								<td>$</td>
+								<td nowrap="nowrap">[% ITEM.subtotal %]</td>
+							</tr>
+						[% END %]
+					[% END %]
+				[% END %]
+			</table>		
+
+			[% IF PRORATED_SUPPORT %]
+				<p>* Support [% PRORATED_TEXT %]</p>
+			[% END %]
+
+			[% IF DEDUCTION_EXISTS %]
+				<p>Note: Because this order has a Manager's Discount, you cannot modify it.
+				If you wish to place a modified order, you will need to start with a brand new proposal
+				by clicking the "Quote" link at the top of this site.</p>
+			[% ELSE %]
+				<input type="submit" name='act' value='Change Order' class='order_go_button' style="width: 180px" />
+			[% END %]
+
+			<table class="noborder" style="clear:both; margin-top: 30px !important; margin-bottom: 10px !important;">
+						[% IF NUM_OF_EXTENSIONS %]
+							<tr>
+								<th style="text-align: left !important; vertical-align: bottom !important; width: 90px !important;"><h5>Extension #</h5></th>
+								<th><h5>Device</h5></th>
+							</tr>
+						[% ELSE %]
+							<tr>
+								<td colspan="2">
+									<strong>There are no phones or phone ports for Fonality to configure.</strong>
+								</td>
+							</tr>
+						[% END %]
+						[% FOREACH ITEM = EXTENSION_ITEMS %]
+							[% NEXT IF ITEM.item_id == SIDECAR_650_ITEM_ID %]
+							[% IF ITEM.group_name == 'IP Phones'           ||
+							      ITEM.item_id == REPROVISIONING_ID        ||
+							      ITEM.item_id == REMOTE_REPROVISIONING_ID ||
+								  ITEM.item_id == RESELLER_PHONE_FEE_ID	%]
+								[% myCount = 0 %]
+								[% WHILE myCount < ITEM.quantity %]
+									[% myCount = myCount + 1 %]
+									[% myName = 'item_id_' _ ITEM.item_id _ '_number_' _ myCount %]
+										<tr>
+											<td align="left">
+												[% $myName %]
+											</td>
+											<td nowrap="nowrap">
+												[% IF ITEM.item_id == RESELLER_PHONE_FEE_ID %]
+													Reseller Provided Phone ([% myCount %])
+												[% ELSE %]
+													[% ITEM.name %] ([% myCount %])
+												[% END %]
+											</td>
+										</tr>
+								[% END %]
+							[% ELSIF ITEM.item_id == RHINO_FXS_ID %]
+								[% myCount = 0 %]
+								[% myTotal = ITEM.quantity * 4 %]
+								[% WHILE myCount < myTotal %]
+									[% myCount = myCount + 1 %]
+									[% myName = 'rhino_phone_port_' _ myCount %]
+										<tr>
+											<td align="left">
+												[% $myName %]
+											</td>
+											<td nowrap="nowrap">
+												Rhino Channel (phone port [% myCount %])
+											</td>
+										</tr>
+								[% END %]
+							[% ELSIF PHONE_PORTS.${ITEM.item_id} %]
+								[% TOTAL_CNT = 0 %]
+								[% ITEM_CNT = 0 %]
+								[% QUANTITY = ITEM.quantity %]
+								[% IF ITEM.extension_qty > 0 %]
+									[% QUANTITY = ITEM.extension_qty %]
+								[% END %]
+								[% WHILE ITEM_CNT < QUANTITY %]
+									[% ITEM_CNT = ITEM_CNT + 1 %]
+									[% PORT_CNT = 0 %]
+									[% WHILE PORT_CNT < PHONE_PORTS.${ITEM.item_id} %]
+										[% PORT_CNT = PORT_CNT + 1 %]
+										[% TOTAL_CNT = TOTAL_CNT + 1 %]
+										[% myName = 'item_id_' _ ITEM.item_id _ '_number_' _ TOTAL_CNT %]
+											<tr>
+												<td align="left">
+													[% $myName %]
+												</td>
+												<td nowrap="nowrap">
+													[% ITEM.name %] (phone port [% TOTAL_CNT %])
+												</td>
+											</tr>
+									[% END %]
+								[% END %]
+							[% END %]
+						[% END %]
+					</table>
+					<p>
+					<input class="button" type="submit"
+						name="act"
+						value="Change Extensions"
+						style="width: 180px"
+					[% IF ! NUM_OF_EXTENSIONS %] disabled="disabled"[% END %] /></span>
+					</p>
+					<br>
+
+					<table class="noborder" style="clear:both; margin-bottom: 10px !important; width: 370px !important;">
+						[% IF SHIPPING_REQUIRED %]
+							<tr>
+								<th style="text-align: left !important;"><h5>Additional Services</h5></th>
+								<th style="text-align: center !important;" colspan="2"><h5>Price</h5></th>
+							</tr>
+							[% IF PROVISIONING_PRICE %]
+								<tr>
+									<td nowrap="nowrap">[% PROVISIONING_NAME %]</td>
+									<td align="right">$</td>
+									<td align="right">[% PROVISIONING_PRICE %]</td>
+								</tr>
+							[% END %]
+							<tr>
+								<td nowrap>Shipping &amp; Handling - [% SHIPPING_SERVICE %]</td>
+								<td class='invoice_table_cell_dollar_divider' align="right">$</td>
+								<td class='invoice_table_cell_amount_divider' align="right">[% SHIPPING_PRICE %]</td>
+							</tr>
+						[% ELSE %]
+							<tr>
+								<td colspan="2">
+									<strong>There is nothing to ship.</strong>
+								</td>
+							</tr>
+						[% END %]
+					</table>
+					<p>
+						<input class = "button"
+						       type  = "submit"
+							   name  = "act"
+							   value = "Change Additional Services"
+							   style = "width: 180px"
+							   [% UNLESS SHIPPING_REQUIRED %]disabled="disabled"[% END %] />
+					</p>
+
+
+					<table class="noborder" style="clear:both; margin-bottom: 10px !important; width: 370px !important;">
+						<tr>
+							<th><h5>Payment Method:</h5></th>
+						</tr>
+						<tr>
+							<td>
+								[% PAYMENT_METHOD %]<br />
+								<input type="hidden" name='payment_method' value='[% PAYMENT_METHOD %]' />
+								<input type="hidden" name='cc_number' value='[% CC_NUMBER %]' />
+								<input type="hidden" name='cc_name' value='[% CC_NAME %]' />
+								[% IF CC_NAME %]
+									[% CC_NAME %]<br />
+								[% END %]
+								[% IF CC_NUMBER %]
+									[% CC_NUMBER %]
+								[% END %]
+							</td>
+						</tr>
+					</table>
+					<p>
+					<input style = "width: 180px; margin-top: 10px !important; margin-bottom: 15px !important;"
+						   class = "button"
+						   type  = "submit"
+						   name  = 'act'
+						   value = 'Change Payment Method' /></p>
+
+						<table class="noborder" style="clear:both; margin-bottom: 15px !important;">
+							<tr>
+								<td align="right">Sub-Total:</td>
+								<td align="center" style='padding-right: 0px;'>
+										<strong>
+											$
+										</strong>
+								</td>
+								<td align="right">
+										<strong>
+											[% SUBTOTAL %]
+										</strong>
+									<input type="hidden" name='sub_total' value='[% SUBTOTAL %]' />
+								</td>
+								<td width='100%'></td>
+							</tr>
+
+							[% IF DEDUCTION_EXISTS %]
+								<tr>
+									<td align="right">Manager's Discount:</td>
+									<td align="center">
+											<strong>
+												$
+											</strong>
+									</td>
+									<td align="right">
+											<strong>
+												(<span style="color:red">[% DEDUCTION_VALUE_COMMIFIED %]</span>)
+											</strong>
+									</td>
+									<td width='100%'></td>
+								</tr>
+							[% END %]
+
+							[% IF PROMO_CODE %]
+								<tr>
+									<td align="right">
+										Discount:
+									</td>
+									<td align="center">
+											<strong>
+												$
+											</strong>
+									</td>
+									<td align="right">
+											<strong>
+												(<span style="color:red">[% PROMO_CODE_DISCOUNT %]</span>)
+											</strong>
+									</td>
+									<td width='100%'></td>
+								</tr>
+							[% END %]
+
+							<tr>
+								<td align="right" valign='top' nowrap="nowrap">
+										
+											Estimated [% IF SALES_TAX > 0 %][% SHIPPING_STATE %][% END %] Sales Tax:
+										
+								</td>
+								<td align="center" valign='top' style='padding-right: 0px;'>
+										<strong>
+											$
+										</strong>
+								</td>
+								<td align="right">
+										<strong>[% SALES_TAX %]</strong><br />
+										<hr size="1"	 width="100%" align="right" />
+								</td>
+								<td width='100%'></td>
+							</tr>
+
+							<tr>
+								<td align="right">
+										
+											<strong>Total:</strong>
+										
+									
+								</td>
+								<td align="center" style='padding-right: 0px;'>
+										<strong>
+											$
+										</strong>
+									
+								</td>
+								<td align="right" style='padding-left: 5px;'>
+										<strong>
+											[% PRICE_TOTAL %]
+										</strong>
+									
+								</td>
+								<td width='100%'></td>
+							</tr>
+						</table>
+					<input type="hidden" name='price_total' value='[% PRICE_TOTAL %]' />
+					<input type="hidden" name='sales_tax'   value='[% SALES_TAX %]' />
+
+		[% wrapper = "$BASE_DIR" _ "legal.tt" %]
+		[% INCLUDE $wrapper %]
+		
+		<p>[% INCLUDE 'order_payment_terms.tt' %]</p>
+
+		<div style="text-align: center;margin: 10px 0">
+			<input class="checkbox" type="checkbox" name="terms" style="display:inline;float:none" />
+				I have read, understand and agree to the
+			<a target="fonality_terms" href="http://pbxtra.fonality.com/about-us/legal.html">Fonality terms and conditions</a>.
+		</div>
+		<div style="text-align: center !important; margin: 15px !important;">
+			<input class="button" type="submit" name="act" style="width: 180px" onClick="swapDivTagsToLoading();" value="Confirm Order" />
+		</div>

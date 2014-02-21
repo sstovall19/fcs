@@ -1,0 +1,383 @@
+#!/usr/bin/perl
+#
+# Assign DIDs to users BU
+#
+#  Notes:
+#
+# 	Assigns DIDs to users based on the order.
+#
+#  Options:
+#
+#	-r	Rollback.
+#
+# #
+
+use strict;
+use warnings;
+use Fap::Model::Fcs;
+use Fap::StateMachine::Unit;
+use Fap::Order;
+use Fap::Bundle;
+use Fap::PhoneNumbers;
+use Fap::CallerID;
+use Fap::Devices;
+use JSON;
+# for optmal search of phone_numbers
+use List::Util qw(first);
+use Data::Dumper;
+
+#my $client = Fap::StateMachine::Unit->new()->run();
+my $client;
+my $package = "fcs_assign_dids_to_users";
+my $input = {};
+
+#$input->{'order_id'} = 52914;
+#execute($package, $client, $input);
+$input->{'did_assigned_users'} = [ 779131 ];
+rollback($package, $client, $input);
+
+sub execute {
+	my ($package, $client, $input) = @_;
+	
+	my $fcs_schema = Fap::Model::Fcs->new();
+
+    my $order_id = $input->{'order_id'};
+    my $order = Fap::Order->new('order_id'=>$order_id)->get_details();
+print __LINE__ . ":\n";
+    if (!Fap::Order::validate_prov_order($fcs_schema, $order_id)) {
+        #$client->displayfailure($@);
+    }
+
+    foreach my $order_group ( @{ $order->{'order'}->{'order_groups'} } ) {
+
+		my $server_id = $order_group->{'server_id'};
+		my @phone_numbers = F::PhoneNumbers::get_phone_numbers($F::Globals::dbh, $server_id);	
+		my $primary_exts = F::User::get_user_list_for_server($F::Globals::dbh, $server_id);	
+print __LINE__ . ":\n";
+print Dumper $primary_exts;
+		foreach my $order_bundle (@{$order_group->{'order_bundles'}}) {
+#print __LINE__ . ":\n";
+#print Dumper $order_bundle;
+			my $bundle = Fap::Bundle->new(
+				bundle_id => $order_bundle->{'bundle_id'},
+				cs_schema => $fcs_schema,
+			);
+			if (!defined($bundle)) {
+				#$client->displayfailure('ERR: bundle id is invalid in order group ' . $order_group->{'order_group_id'} .
+				#' order bundle ' . $order_bundle->{'order_bundle_id'});
+			}
+			#next unless $bundle->is_phone_bundle();
+			next unless ($order_bundle->{'bundle'}->{'category'}->{'name'} eq 'phone_number');
+			my @dids;
+			foreach my $order_bundle_detail (@{$order_bundle->{'order_bundle_details'}}) {
+				# extract the DID list from the order bundle
+				push(@dids, $order_bundle_detail->{'did_number'});
+			}
+			foreach my $did (@dids) {
+				# search for DID in @phone_numbers
+				my $number = first { $_->{number} eq $did } @phone_numbers;
+				unless ($number)
+				{
+					#$client->displayfailure("ERR: DIDs do not match in phone_numbers table");
+				}	
+				# validate, don't verify, DID	
+				unless ($did =~ m/^(?:9?1)?(\d{10})/)
+				{
+					#$client->displayfailure("ERR: DIDs not purchased yet");
+				}
+				# get primary extensions
+				my $exten = undef;
+				for my $primary (@$primary_exts) {
+print __LINE__ . ": primary=$primary->{extension}\n";
+					# search for primary extension in @phone_numbers
+					if (!defined(my $extension = first {defined($_->{extension}) && $_->{extension} eq $primary->{extension}} @phone_numbers)) {
+print __LINE__ . ":\n";
+print Dumper $extension;
+						# if this primary extension is unassigned, assign it
+						$exten = $primary->{extension};
+						last;
+					}
+				}
+print __LINE__ . ": exten=$exten\n";
+				my ($cid, $name) = get_caller_id($server_id, $exten);
+print __LINE__ . ": name=$name\n";
+				if (!defined($name) || !defined(set_caller_id($F::Globals::dbh, $server_id, $did, $name, $exten, 1))) {
+					$client->displayfailure("ERR: failed to set caller id for server $server_id extension $exten DID $did");
+				}
+print __LINE__ . ": server_id=$server_id did=$did exten=$exten\n";
+				#if (!defined(Fap::PhoneNumbers::update_phone_number($server_id, $did, $exten))) {
+				if (!defined(update_phone_number($F::Globals::dbh, $server_id, $did, $exten))) {
+					#$client->displayfailure("ERR: failed to update phone number for server $server_id extension $exten DID $did");
+				}
+print __LINE__ . ":\n";
+				my $u_info = F::User::get_user_info_by_ext_and_server($F::Globals::dbh, $exten, $server_id);
+print __LINE__ . ":\n";
+				push (@{$input->{'did_assigned_users'}}, $u_info->{'user_id'});
+			}
+print __LINE__ . ":\n";
+		}
+	}
+	return $input;
+}
+
+sub rollback {
+	my ($package, $client, $input) = @_;
+	
+	my $fcs_schema = Fap::Model::Fcs->new();
+
+    my $order_id = $input->{'order_id'};
+	my $did_assigned_users = $input->{'did_assigned_users'};			
+print __LINE__ . ": did_assigned_users=" . scalar @$did_assigned_users . "\n";
+print Dumper $did_assigned_users;
+	for my $did_assigned_user (@$did_assigned_users) {
+		my $user = Fap::User::get_user_info_by_id($did_assigned_user);
+		print Dumper $user;
+		if (!defined($user)) {
+				#$client->displayfailure('ERR: userid maps to no serverid: ' . $did_assigned_user);
+				print "ERR: userid maps to no serverid: $did_assigned_user\n";
+		}
+		my $server_id = $user->{'default_server_id'};
+print __LINE__ . ": server_id=$server_id\n";
+print Dumper $user;
+		my $exten = $user->{'extension'};
+		#my $ret = Fap::CallerID::remove_caller_id($user->{'default_server_id'}, $user->{'extension'});
+		#if (!defined($ret)) {
+			#$client->displayfailure("ERR: failed to remove caller id for server $server_id  extension$exten");
+		#}
+		my $did = Fap::PhoneNumbers::get_phone_numbers($fcs_schema, $server_id, $exten);
+		if (!defined($did)) {
+			#$client->displayfailure("ERR: failed to update phone number for server $server_id extension $exten DID $did");
+		}
+		my $ret = Fap::PhoneNumbers::update_phone_number($server_id, $did, qw/NULL/);
+		if (!defined($ret)) {
+			#$client->displayfailure("ERR: failed to update phone number for server $server_id extension $exten DID $did");
+		}
+	}
+	if (defined($input->{'did_assigned_users'})) {	
+		delete $input->{'did_assigned_users'};			
+	}
+	print Dumper $input;
+	return $input;
+}
+
+sub set_caller_id
+{
+	my ($dbh, $server_id, $number, $name, $extension, $nosync) = @_;
+
+	unless (defined($dbh))
+	{
+		$dbh = F::Database::mysql_connect();
+		unless (defined($dbh))
+		{
+			$@ = "Unable to connect to the database";
+			return undef;
+		}
+	}
+	unless (defined($server_id))
+	{
+		$@ = "Must pass a server_id";
+		return undef;
+	}
+	unless (defined($number))
+	{
+		$@ = "Must pass a phone number";
+		return undef;
+	}
+	unless (defined($name))
+	{
+		$@ = "Must pass a name";
+		return undef;
+	}
+	unless (defined($extension))
+	{
+		$extension = "";
+	}
+
+	$number =~ s/^1//; # Strip leading 1
+
+	# Make sure the number is at least an 7 digit number (intl can be 7)
+	# litle discobob exception here
+	# Allow blank callerid numbers be passed to the db
+	# when pbxtra.fast encounters an extension
+	# with a callerID name and a blank caller number
+	# then it will use the global callerid number
+	unless (($server_id == 1006) || (length($number) == 0))
+	{
+		unless($number =~ /^\d{7,}$/) 
+		{
+			$@ = "Caller-id number must be at least 7 digits long: " . $number;
+			return(undef);
+		}
+	}
+
+	my $sth = $dbh->prepare("
+		DELETE FROM	cid
+		WHERE		server_id = ?
+		AND		extension = ?
+	");
+	$sth->execute($server_id, $extension);
+
+	$sth = $dbh->prepare("
+		INSERT INTO	cid
+		SET		server_id = ?,
+				extension = ?,
+				cid = ?,
+				cidname = ?
+	");
+
+	my $res = $sth->execute($server_id, $extension, $number, $name);
+
+	# The extension is blank, we're updated global callerid
+	# Sync the global callerID for pbxtra.fast
+	if ($extension eq "")
+	{
+		# Sync extension information to customer's server if nosync isn't set
+		# required for pbxtra.fast
+		F::DialPlanSync::sync_extensions_to_server_id($dbh,$server_id) unless $nosync;
+	}
+
+	return $res;
+}
+
+sub get_caller_id
+{
+	my ($dbh) = &F::Database::check_dbh;
+	my ($server_id, $extension) = @_;
+
+	unless (defined($server_id))
+	{
+		$@ = "Must pass a server_id";
+		return undef;
+	}
+	unless (defined($extension))
+	{
+		$extension = "";
+	}
+
+	my $sth = $dbh->prepare("
+		SELECT	cid, cidname
+		FROM	cid
+		WHERE	server_id = ?
+		AND	extension = ?
+	");
+
+	my ($cid, $name);
+	my $status = 'default';
+
+	# no callerid rows with that server_id/extension
+	if ($sth->execute($server_id, $extension) eq '0E0')
+	{
+		# if the extension wasn't the default extension
+		if ($extension ne '')
+		{
+			$sth = $dbh->prepare("
+				SELECT	cid, cidname
+				FROM	cid
+				WHERE	server_id = ?
+				AND	extension = ''
+			");
+
+			# if there is a default extension
+			if ($sth->execute($server_id) ne '0E0')
+			{
+				($cid, $name) = $sth->fetchrow_array();
+				# if default exists, then the status is 'default'
+				$status = 'default';
+			}
+		}
+	}
+
+	# there was a callerid for the server_id/extension
+	else
+	{
+		($cid, $name) = $sth->fetchrow_array();
+		$status = $extension eq '' ? 'default' : $cid;
+		$status = 'blocked' if($name eq 'Anonymous');
+	}
+
+	return ($cid, $name, $status);
+
+}
+
+sub update_phone_number
+{
+	my ($dbh, $server_id, $number, $extension, $device_id) = @_;
+
+	unless (defined($dbh))
+	{
+		$dbh = mysql_connect() || return undef;
+	}
+	unless (defined($server_id))
+	{
+		$@ = "Must pass a server_id";
+		return undef;
+	}
+	unless ($number =~ /^\d{6,}$|^Zap/)
+	{
+		$@ = "Must pass an 6+ digit phone number";
+		return undef;
+	}
+
+	$number = F::PhoneNumbers::_prep_number($dbh, $server_id, $number);
+	
+print __LINE__ . ": \n";
+	my $sinfo = F::Server::get_server_info_detail($dbh, $server_id, ['mosted']) || {};
+print __LINE__ . ": \n";
+	my $unbound = $$sinfo{'mosted'};
+
+	my $num_row = $dbh->selectrow_arrayref("
+								SELECT
+									type
+								FROM
+									phone_numbers
+								WHERE
+									server_id = $server_id
+								AND
+									number = '$number'
+								LIMIT 1
+	");
+
+	my $exist_type;
+	if (defined($num_row))
+	{
+		$exist_type = $num_row->[0] ;
+	}
+
+	# prepare the sql statement to delete the phone number
+	my $sql = qq{
+	    REPLACE INTO
+		phone_numbers
+		SET
+		extension=?,
+		server_id=?,
+		number=?}
+	. ( $exist_type ? qq{,
+			     type="$exist_type"} : '')
+	    ;
+	my $sth = $dbh->prepare($sql);
+	my $rv = $sth->execute($extension,$server_id,$number);
+
+	if (not defined($rv)) 
+	{
+		$@ = $sth->errstr;
+		return undef;
+	}
+
+	# if this is unbound, switch the device from the old number to the new number in unbound_map
+	# BUT only do this if this is an actual device, not a virtual extension
+print __LINE__ . ": \n";
+	if ($unbound && F::Devices::is_sip_device($dbh,$server_id,$device_id))
+	{		
+		F::Unbound::update_phone_number(
+			'dbh'       => $dbh,
+			'sid'       => $server_id,
+			'number'    => $number,
+			'device_id' => $device_id
+		);
+	}
+
+print __LINE__ . ": \n";
+	#F::PhoneNumbers::set_dp_incoming_number($dbh, $server_id, $number, $extension);
+print __LINE__ . ": \n";
+	return $rv;
+}

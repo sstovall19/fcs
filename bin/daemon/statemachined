@@ -1,0 +1,25 @@
+#!/usr/bin/perl
+use strict;
+use Fap::StateMachine;
+use Fap;
+use File::Slurp;
+use JSON::XS;
+use Try::Tiny;
+use Fap::StateMachine::Client;
+use Data::Dumper;
+
+my $conf = Fap::StateMachine->load_conf();
+my $server=Fap::StateMachine->new({
+	port=>$conf->{port},
+        host=>$conf->{host},
+        background=>1,
+	#user=>"nobody",
+	#group=>"nobody",
+        log_file=>$conf->{logfile},
+	#log_file=>"/tmp/statemachine_$$.pid",
+	pid_file=>$conf->{pidfile},
+        leave_children_open_on_hup=>1,
+});
+$server->run();
+exit;
+

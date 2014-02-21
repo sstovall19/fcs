@@ -1,0 +1,402 @@
+[% COLSPAN = 4 %]
+[% TITLE      = ':: Interview' %]
+[% TABLE_WIDTH = 380 %]
+[% PAGE = 'order_interview' %]
+<style type="text/css">
+	table td input {
+		float: none !important;
+		width: 150px !important;
+	}
+</style>
+
+<script language='JavaScript'>
+
+//var first_extension_digit = '';
+var warned_multiple_extensions = 0;
+function validate_extension(input_field)
+{
+	var invalid = is_invalid_extension(input_field.value);
+
+	// exit if we have an invalid extension
+	if (invalid)
+	{
+		input_field.value = '';
+		input_field.focus();
+		return;
+	}
+
+	var multiple_extension_ranges = is_multiple_extension_ranges();
+	if (multiple_extension_ranges)
+	{
+		if (! warned_multiple_extensions)
+		{
+			alert("We suggest refraining from using multiple extension ranges. See 'Why is this important?' at the top of this page for more information.");
+			warned_multiple_extensions = 1;
+		}
+	}
+}
+
+function is_multiple_extension_ranges()
+{
+	var first_digit;
+	var c;
+	[% NO_FIRST_DIGIT = 1 %]
+	[% FOREACH ITEM = EXTENSION_ITEMS %]
+
+		[%# trained resellers went away MARCH 2009 -pmadison %]
+		[%# NEXT IF RESELLER_TRAINED && ITEM.item_id == RESELLER_PHONE_FEE_ID %]
+
+		[% NEXT IF ITEM.item_id == SIDECAR_650_ITEM_ID %]
+
+		[% IF ITEM.group_name == 'IP Phones'           ||
+		      ITEM.item_id == REPROVISIONING_ID        ||
+		      ITEM.item_id == REMOTE_REPROVISIONING_ID ||
+		      ITEM.item_id == RESELLER_PHONE_FEE_ID	%]
+			[% myCount = 0 %]
+			[% WHILE myCount < ITEM.quantity %]
+				[% myCount = myCount + 1 %]
+				[% myName = 'item_id_' _ ITEM.item_id _ '_number_' _ myCount %]
+				[% IF NO_FIRST_DIGIT %]
+					first_digit = document.form.[% myName %].value.substr(0,1);
+					[% NO_FIRST_DIGIT = 0 %]
+				[% ELSE %]
+					c = document.form.[% myName %].value.substr(0,1);
+					if (c != first_digit && c != '')
+					{
+						return 1;
+					}
+				[% END %]
+			[% END %]
+		[% ELSIF ITEM.item_id == RHINO_FXS_ID %]
+			[% myCount = 0 %]
+			[% myTotal = ITEM.quantity * 4 %]
+			[% WHILE myCount < myTotal %]
+				[% myCount = myCount + 1 %]
+				[% myName = 'rhino_phone_port_' _ myCount %]
+				[% IF NO_FIRST_DIGIT %]
+					first_digit = document.form.[% myName %].value.substr(0,1);
+					[% NO_FIRST_DIGIT = 0 %]
+				[% ELSE %]
+					c = document.form.[% myName %].value.substr(0,1);
+					if (c != first_digit && c != '')
+					{
+						return 1;
+					}
+				[% END %]
+			[% END %]
+		[% ELSIF PHONE_PORTS.${ITEM.item_id} %]
+			[% TOTAL_CNT = 0 %]
+			[% ITEM_CNT = 0 %]
+			[% WHILE ITEM_CNT < ITEM.quantity %]
+				[% ITEM_CNT = ITEM_CNT + 1 %]
+				[% PORT_CNT = 0 %]
+				[% WHILE PORT_CNT < PHONE_PORTS.${ITEM.item_id} %]
+					[% TOTAL_CNT = TOTAL_CNT + 1 %]
+					[% PORT_CNT = PORT_CNT + 1 %]
+					[% myName = 'item_id_' _ ITEM.item_id _ '_number_' _ TOTAL_CNT %]
+					[% IF NO_FIRST_DIGIT %]
+						first_digit = document.form.[% myName %].value.substr(0,1);
+						[% NO_FIRST_DIGIT = 0 %]
+					[% ELSE %]
+						c = document.form.[% myName %].value.substr(0,1);
+						if (c != first_digit && c != '')
+						{
+							return 1;
+						}
+					[% END %]
+				[% END %]
+			[% END %]
+		[% END %]
+	[% END %]
+	return 0;
+}
+
+function autopopulate_extensions()
+{
+	var first_var_value     = 0;
+	var first_var_not_found = 1;
+
+	[% FIRST_VAR_NOT_FOUND = 1 %]
+	[% FOREACH ITEM = EXTENSION_ITEMS %]
+
+		[%# trained resellers went away MARCH 2009 -pmadison %]
+		[%# NEXT IF RESELLER_TRAINED && ITEM.item_id == RESELLER_PHONE_FEE_ID %]
+
+		[% NEXT IF ITEM.item_id == SIDECAR_650_ITEM_ID %]
+
+		[% IF ITEM.group_name == 'IP Phones'           ||
+		      ITEM.item_id == REPROVISIONING_ID        ||
+		      ITEM.item_id == REMOTE_REPROVISIONING_ID ||
+		      ITEM.item_id == RESELLER_PHONE_FEE_ID	%]
+			[% myCount = 0 %]
+			[% WHILE myCount < ITEM.quantity %]
+				[% myCount = myCount + 1 %]
+				[% myName = 'item_id_' _ ITEM.item_id _ '_number_' _ myCount %]
+				[% IF FIRST_VAR_NOT_FOUND %]
+					[% FIRST_VAR_NOT_FOUND = 0 %]
+
+					first_var_value = document.form.[% myName %].value;
+
+				[% ELSE %]
+
+					first_var_value++;
+					if (is_invalid_extension(first_var_value))
+					{
+						document.form.[% myName %].focus();
+						return;
+					}
+					document.form.[% myName %].value = first_var_value;
+
+				[% END %]
+			[% END %]
+		[% ELSIF ITEM.item_id == RHINO_FXS_ID %]
+			[% myCount = 0 %]
+			[% myTotal = ITEM.quantity * 4 %]
+			[% WHILE myCount < myTotal %]
+				[% myCount = myCount + 1 %]
+				[% myName = 'rhino_phone_port_' _ myCount %]
+				[% IF FIRST_VAR_NOT_FOUND %]
+					[% FIRST_VAR_NOT_FOUND = 0 %]
+
+					first_var_value = document.form.[% myName %].value;
+
+				[% ELSE %]
+
+					first_var_value++;
+					if (is_invalid_extension(first_var_value))
+					{
+						document.form.[% myName %].focus();
+						return;
+					}
+					document.form.[% myName %].value = first_var_value;
+
+				[% END %]
+			[% END %]
+		[% ELSIF PHONE_PORTS.${ITEM.item_id} %]
+			[% TOTAL_CNT = 0 %]
+			[% ITEM_CNT = 0 %]
+			[% PORT_CNT = PHONE_PORTS.${ITEM.item_id} %]
+			[% WHILE ITEM_CNT < ITEM.quantity %]
+				[% ITEM_CNT = ITEM_CNT + 1 %]
+				[% PORT_CNT = 0 %]
+				[% WHILE PORT_CNT < PHONE_PORTS.${ITEM.item_id} %]
+					[% TOTAL_CNT = TOTAL_CNT + 1 %]
+					[% PORT_CNT = PORT_CNT + 1 %]
+					[% myName = 'item_id_' _ ITEM.item_id _ '_number_' _ TOTAL_CNT %]
+					[% IF FIRST_VAR_NOT_FOUND %]
+						[% FIRST_VAR_NOT_FOUND = 0 %]
+
+						first_var_value = document.form.[% myName %].value;
+
+					[% ELSE %]
+
+						first_var_value++;
+						if (is_invalid_extension(first_var_value))
+						{
+							document.form.[% myName %].focus();
+							return;
+						}
+						document.form.[% myName %].value = first_var_value;
+
+					[% END %]
+				[% END %]
+			[% END %]
+		[% END %]
+	[% END %]
+}
+
+function is_invalid_extension(extension_num)
+{
+	var s = extension_num.toString();
+	var c = s.substr(0,1);
+
+	if (c == '0' || c == '9')
+	{
+		// this is *NOT* a valid extension
+		alert('Extension numbers cannot begin with 0 or 9.');
+		return 1;
+	}
+
+	// test the rest of the value to prevent non-digits from being entered
+	var char_problem = 0;
+	var tmp;
+	for (var i=0; i < extension_num.length; i++)
+	{
+		var d = extension_num.substr(i,1);
+		if (d >= '0' && d <= '9')
+			tmp = tmp + d;
+		else
+			char_problem++;
+	}
+	if (char_problem)
+	{
+		alert('Extension numbers can only contain numbers.');
+		return 1;
+	}
+
+	if (extension_num == 8555 || (extension_num >= 8500 && extension_num <=8520))
+	{
+		// this is *NOT* a valid extension
+		alert('Extension numbers cannot be set to 8555 or be between 8500 and 8520.');
+		return 1;
+	}
+
+	// this is a valid extension
+	return 0;
+}
+</script>
+
+
+<div class="order_step_heading">
+	<div class="steps">
+		[% IF ADDON OR ORDER_TYPE == 'addon' %]Add-On[% END %]
+		Order Step&nbsp;
+		<span style="color:[% GRAYED_OUT %]">1</span>&nbsp;
+		<span style="color:[% GRAYED_OUT %]">2</span>&nbsp;
+		<span style="color:[% GRAYED_OUT %]">3</span>&nbsp;
+		<span style="color:[% COLOR1 %]">4</span>&nbsp;
+		<span style="color:[% GRAYED_OUT %]">5</span>&nbsp;
+		<span style="color:[% GRAYED_OUT %]">6</span>&nbsp;
+		<span style="color:[% GRAYED_OUT %]">7</span>
+	</div>
+	<h1>Choose Your Extensions</h1>
+	<div style="clear:both"><!-- --></div>
+</div>
+
+<div style="padding-top: 15px"></div>
+
+[% IF NUM_OF_EXTENSIONS %]
+	<p>When we are building your new phone system, we will need to assign each physical phone (or port on a channel bank) an actual extension number.</p>
+	<p>Note: <em>When choosing your extension numbers below, please try to have all extension numbers start with the same digit.</em></p>
+
+	<h5>Why is this important?</h5>
+	<p>When a caller dials into your phone system they will have a choice: dial an extension, or dial a digit to go to a department.
+	So, when you choose your extensions, the first digit of those extensions will be "reserved" by your phone system.
+	Example: <em>If you elect to use extensions in the range of 7000, then the digit "7" will need to be reserved in your phone system's call menu
+	(auto-attendant). This means that you will *not* be able to use "7" for a department in your phone system.</em></p>
+[% ELSE %]
+	<p><b>There are no phones or phone ports for Fonality to configure.</b></p>
+[% END %]
+
+					<table class="noborder">
+						[% IF NUM_OF_EXTENSIONS %]
+							<tr>
+								<th valign="bottom" style="width: 90px !important; text-align: center !important;">
+									<a href='javascript:void(0);'><img src="images/auto_fill.gif" onMouseUp="autopopulate_extensions();" /></a><br>
+									<h5>Extension #</h5>
+								</th>
+								<th align="left" valign="bottom"><h5>Device</h5></th>
+							</tr>
+						[% END %]
+						[% FIRST_VALUE_NOT_FOUND = 1 %]
+						[% FOREACH ITEM = EXTENSION_ITEMS %]
+
+							[%# trained resellers went away MARCH 2009 -pmadison %]
+							[%# NEXT IF RESELLER_TRAINED && ITEM.item_id == RESELLER_PHONE_FEE_ID %]
+
+							[% NEXT IF ITEM.item_id == SIDECAR_650_ITEM_ID %]
+
+							[% IF ITEM.group_name == 'IP Phones'           ||
+							      ITEM.item_id == REPROVISIONING_ID        ||
+							      ITEM.item_id == REMOTE_REPROVISIONING_ID ||
+							      ITEM.item_id == RESELLER_PHONE_FEE_ID	%]
+								[% myCount = 0 %]
+								[% WHILE myCount < ITEM.quantity %]
+									[% myCount = myCount + 1 %]
+									[% myName = 'item_id_' _ ITEM.item_id _ '_number_' _ myCount %]
+									[% IF FIRST_VALUE_NOT_FOUND %]
+										[% FIRST_VALUE_NOT_FOUND = 0 %]
+										[% IF $myName == '' %][% $myName = '7000' %][% END %][%# DEFAULT VALUE %]
+									[% END %]
+										<tr>
+											<td style="padding: 2px !important" align="center">
+												<input
+													style="width: 50px !important"
+										  			type="text"
+										  			size="4" 
+										  			maxlength="6" 
+										  			name="[% myName %]" 
+										  			value="[% $myName %]" 
+						   				  			onKeyUp="validate_extension(document.form.[% myName %]);" 
+						   				  			autocomplete="off" />
+											</td>
+											<td nowrap="nowrap" style="padding: 2px !important">
+													[% IF ITEM.item_id == RESELLER_PHONE_FEE_ID %]
+														Reseller Provided Phone ([% myCount %])
+													[% ELSE %]
+														[% ITEM.name %] ([% myCount %])
+													[% END %]
+											</td>
+										</tr>
+								[% END %]
+							[% ELSIF ITEM.item_id == RHINO_FXS_ID %]
+								[% myCount = 0 %]
+								[% myTotal = ITEM.quantity * 4 %]
+								[% WHILE myCount < myTotal %]
+									[% myCount = myCount + 1 %]
+									[% myName = 'rhino_phone_port_' _ myCount %]
+									[% IF FIRST_VALUE_NOT_FOUND %]
+										[% FIRST_VALUE_NOT_FOUND = 0 %]
+										[% IF $myName == '' %][% $myName = '7000' %][% END %][%# DEFAULT VALUE %]
+									[% END %]
+										<tr>
+											<td style="padding: 2px !important" align="center">
+												<input
+										  			type="text" 
+													style="width: 50px !important"
+										  			size="4" 
+										  			maxlength="6" 
+										  			name="[% myName %]" 
+										  			value="[% $myName %]" 
+						   				  			onKeyUp="validate_extension(document.form.[% myName %]);" 
+						   				  			autocomplete="off" />
+											</td>
+											<td style="padding: 2px !important">Rhino Channel (phone port [% myCount %])</td>
+										</tr>
+								[% END %]
+							[% ELSIF PHONE_PORTS.${ITEM.item_id} %]
+								[% TOTAL_CNT = 0 %]
+								[% ITEM_CNT = 0 %]
+								[% WHILE ITEM_CNT < ITEM.quantity %]
+									[% ITEM_CNT = ITEM_CNT + 1 %]
+									[% PORT_CNT = 0 %]
+									[% WHILE PORT_CNT < PHONE_PORTS.${ITEM.item_id} %]
+										[% PORT_CNT = PORT_CNT + 1 %]
+										[% TOTAL_CNT = TOTAL_CNT + 1 %]
+										[% myName = 'item_id_' _ ITEM.item_id _ '_number_' _ TOTAL_CNT %]
+										[% IF FIRST_VALUE_NOT_FOUND %]
+											[% FIRST_VALUE_NOT_FOUND = 0 %]
+											[% IF $myName == '' %][% $myName = '7000' %][% END %][%# DEFAULT VALUE %]
+										[% END %]
+											<tr>
+												<td style="padding: 2px !important" align="center">
+													<input
+									      				type="text" 
+														style="width: 50px !important"
+										  				size="4" 
+										  				maxlength="6" 
+										  				name="[% myName %]" 
+										  				value="[% $myName %]" 
+						   				  				onKeyUp="validate_extension(document.form.[% myName %])"
+						   				  				autocomplete="off" />
+												</td>
+												<td style="padding: 2px !important">[% ITEM.name.replace(' adds ',' ') %] (phone port [% TOTAL_CNT %])</td>
+											</tr>
+									[% END %]
+								[% END %]
+							[% END %]
+						[% END %]
+					</table>
+					<input type="hidden" name="reseller" value="[% IF RESELLER_ORDER OR RESELLER_PROPOSAL %]1[% ELSE %]0[% END %]" />
+					<input type="hidden" name="oid" value="[% OID %]" />
+
+					[% IF PRE_CONFIRM_CHANGE_EXTENSIONS %]
+						<input type="hidden" name="act" value="Save Extension Changes" />
+						<div>
+		            		<input class="button" type="submit" value="Save Changes" style="width: 180px; float: none;" />
+		        		</div>
+					[% ELSE %]
+				    	<div>
+		            		<input class="button" type="submit" name="act" value="Continue to Step 5" style="width: 180px;float:none" />
+		        		</div>
+		            [% END %]

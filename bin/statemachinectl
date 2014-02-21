@@ -1,0 +1,50 @@
+#!/usr/bin/perl
+use strict;
+use Fap::StateMachine;
+use Fap;
+use File::Slurp;
+use JSON::XS;
+use Try::Tiny;
+use Fap::StateMachine::Client;
+use Fap::StateMachine;
+
+my $conf = Fap::StateMachine->load_conf;
+my $cmd = lc($ARGV[0]);
+my $client = Fap::StateMachine::Client->new();
+
+if ($cmd eq "start") {
+	if ($client->ping()->{status}) {
+		print STDERR "StateMachine Already Running\n";
+	} else {
+		print STDERR "Starting State Machine....";
+		system(Fap->path_to("bin/daemon/statemachined"));
+		if (-e $conf->{pidfile}) {
+			print STDERR "done\n";
+		} else {
+			print STDERR "FAILED\n";
+		}
+	}
+} elsif ($cmd eq "stop") {
+	print STDERR "Stopping State Machine....";
+	try {
+		my $pid = read_file($conf->{pidfile});
+		qx(kill $pid);
+	} catch {
+	};
+	print STDERR "done\n";
+} elsif ($cmd eq "restart") {
+	print STDERR "Restarting State Machine....";
+	try {
+		my $pid = read_file($conf->{pidfile});
+                qx(kill -HUP $pid);
+	} catch {
+		system(Fap->path_to("bin/daemon/statemachined"));
+	};
+	if (!-e $conf->{pidfile}) {
+		print STDERR "FAILED\n";
+	} else {
+		print STDERR "done\n";
+	}
+} else {
+	print STDERR "USAGE: statemachined [start|stop|restart]\n";
+}

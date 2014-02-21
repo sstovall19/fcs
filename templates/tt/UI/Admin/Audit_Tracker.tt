@@ -1,0 +1,144 @@
+[% PROCESS 'header.tt' %]
+
+<script type="text/javascript">
+	$(document).ready(function()
+	{
+		$('#range_start').datepicker({
+			defaultDate: "+0d",
+			changeMonth: true,
+			numberOfMonths: 2,
+			onSelect: function( selectedDate )
+			{
+				$('#range_end').datepicker('option', 'minDate', selectedDate);
+			},
+			dateFormat: 'yy-mm-dd',
+			onClose: function()
+			{
+				update_fields('module');
+				update_fields('function');
+			}
+		 });
+
+		$('#range_end').datepicker({
+			defaultDate: "+0d",
+			changeMonth: true,
+			numberOfMonths: 2,
+			onSelect: function( selectedDate )
+			{
+				$('#range_start').datepicker('option', 'maxDate', selectedDate);
+			},
+			dateFormat: 'yy-mm-dd',
+			onClose: function()
+			{
+				update_fields('module');
+				update_fields('function');
+			}
+		});
+
+		$('#search').click(function(){search();});
+		$('#next').click(function(){search(limit);});
+		$('#prev').click(function(){search(0-limit);});
+
+	});
+
+	var field_delay = new Array();
+
+	var start = 0;
+	var limit = 100;
+
+	function search(offset)
+	{
+		$('#search').val('Searching..').attr('disabled', 'disabled');
+		$("#results_table").find('tr').slice(2).remove();
+		var form_data = {};
+
+		var fields = [ 'log_level', 'range_start', 'range_end', 'user', 'customer_id', 'server_id', 'module', 'function' ];
+
+		for(i in fields)
+		{
+			if($('#'+fields[i]).val() && $('#'+fields[i]).val() != "")
+			{
+				form_data[fields[i]] = $('#'+fields[i]).val();
+			}
+		}
+
+		form_data.mode = 'Admin.Audit_Tracker';
+		form_data.action = 'view_audit_log';
+		form_data.start = start + offset;
+		form_data.limit = limit;
+
+		if(form_data.start < 0)
+			form_data.start = 0;
+
+		$.ajax({
+			type: 'POST',
+			url: '/',
+			data: form_data,
+			dataType: 'JSON',
+			success: function(data)
+			{
+				if(data && data.results)
+				{
+					if($.isEmptyObject(data.results[0]))
+					{
+						$('#results_table').append('<tr><td class="ui-state-default" colspan="7">No results</td></tr>');
+						$('#search').val('Search').removeAttr('disabled');
+						return false;
+					}
+
+					for(i in data.results)
+					{
+						var log = data.results[i];
+						$('#results_table').append('<tr><td class="ui-state-default">'+log.ts+'</td><td class="ui-state-default">'+log.userid+'</td><td class="ui-state-default">'+log.customer_id+'</td><td class="ui-state-default">'+log.server_id+'</td><td class="ui-state-default">'+log.module+'</td><td class="ui-state-default">'+log.function+'</td><td class="ui-state-default">'+log.audit+'</td></tr>');
+					}
+				}
+
+				$('#search').val('Search').removeAttr('disabled');
+			}
+		});
+
+	}
+
+</script>
+
+	<div class="ui-state-highlight ui-widget-header ui-corner-all" style="padding: 8px; height: 18px; margin-top: 50px;">
+		<div style="float: left;"><span class="ui-widget-title" style="font-size: 15px;">View / Search The Audit Log</span></div>
+	</div>
+
+	[% PROCESS infobox text="Choose by any of the below critera and then press the search button to find the associated logs" %]
+
+	<table width="100%" cellspacing="3" style="text-align: center;" id="results_table" class="logs">
+		<tr>
+			<td class="ui-state-active">Date/Time</td>
+			<td class="ui-state-active">User</td>
+			<td class="ui-state-active">Customer ID</td>
+			<td class="ui-state-active">Server ID</td>
+			<td class="ui-state-active">Application</td>
+			<td class="ui-state-active">Function</td>
+			<td class="ui-state-active">Action</td>
+		</tr>
+		<tr>
+			<td class="ui-state-active" style="text-align: center;"><div style="float: left;"><input type="text" size="10" id="range_start"></div>to<div style="float: right;"><input type="text" size="10" id="range_end"></div></td>
+			<td class="ui-state-active">
+				<select id="user">
+					<option></option>
+					[% FOR U IN USER_LIST.sort('first_name') %]
+					<option value="[% U.username %]">[% U.first_name _ ' ' _ U.last_name %]</option>
+					[% END %]
+				</select>
+			</td>
+			<td class="ui-state-active"><input id="customer_id" size="10" maxlength="10"></td>
+			<td class="ui-state-active"><input id="server_id" size="10" maxlength="6"></td>
+			<td class="ui-state-active">
+			</td>
+			<td class="ui-state-active">
+			</td>
+			<td class="ui-state-active">
+				<input id="prev" type="button" class="ui-widget-button" value="<">
+				<input id="search" type="button" class="ui-widget-button" value="Search">
+				<input id="next" type="button" class="ui-widget-button" value=">">
+			</td>
+		</tr>
+	</table>
+
+[% INCLUDE 'footer.tt' %]

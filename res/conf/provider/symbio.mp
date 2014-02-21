@@ -1,0 +1,1 @@
+‚¤conf¤auth©plaintext«canreinvite¢no§context¨incoming¨disallow£all¨dtmfmode¤autoªfromdomain°sip.fonality.com¤host»sip-proxy.syd1.fonality.com¨insecure¤very£nat¢no§qualify¢no¨sendrpid£yes£tos«reliability¤type¦friend¥proxy¤syd1

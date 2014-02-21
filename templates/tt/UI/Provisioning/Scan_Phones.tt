@@ -1,0 +1,11 @@
+[% PROCESS header.tt %]
+<link href="/css/phoneScan.css" rel="stylesheet" type="text/css" />
+[% PROCESS 'modules/dialogBox.tt' %]
+  [% IF order_details %]	
+    [% PROCESS 'modules/Provisioning/Scan_Phones/order_details.tt' %]
+  [% ELSE %]
+    [% PROCESS 'modules/Provisioning/Scan_Phones/order_entry.tt' %]
+  [% END %]
+<script src="/js/phoneScan.js"></script>
+[% PROCESS footer.tt %]
+

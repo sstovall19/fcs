@@ -1,0 +1,25 @@
+#!/bin/bash
+
+T_WD="$(readlink -f $(dirname "$0"))"
+cd $T_WD
+
+USER=$(whoami)
+
+# Default paths.
+QUOTE_BU_T="quote/t"
+QUOTE_BU_FAM_T="$QUOTE_BU_T/families/t"
+ORDER_BU_T="order/t"
+ORDER_BU_FAM_T="$ORDER_BU_T/families/t"
+COLLECTOR_T="collector/t"
+STATEMACHINE_T="statemachine"
+
+    SM_TOOLS_T=$SM_TARGET/tools/t
+    SM_T=$SM_TARGET/t
+    SM_MORE_T=$SM_TARGET/t/t_ext
+
+
+prove --formatter TAP::Formatter::JUnit -r \
+      "$COLLECTOR_T" \
+      "$QUOTE_BU_T" \
+      "$STATEMACHINE_T"
+      

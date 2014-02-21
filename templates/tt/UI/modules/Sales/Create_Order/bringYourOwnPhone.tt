@@ -1,0 +1,91 @@
+<div id="Repro" class="form_category_div ui-tabs-hide" category_title="Bring Your Own" nextTab="Sign" prevTab="Pick" tab="3">
+    <div class="wrapperDiv">
+        <div class="floatLeft">
+            <h3 style="">Create an order</h3>
+        </div>
+    </div> 
+    [% phone_count = 0 %]
+    [% FOREACH order_group IN order.order_group %]
+      [% FOREACH order_bundle IN order_group.order_bundles %]
+        [% IF order_bundle.name == 'Reprovisioned Phone' %]
+          [% phone_count = phone_count + order_bundle.quantity %]
+        [% END %]
+      [% END %]
+    [% END %]
+    <div class="customerAddr">
+      <h4>
+        [% IF order.order_group.size > 1 %]
+          <div class="dd ddcommon borderRadius" id="addr_msdd">
+            <div class="ddTitle borderRadiusTp" style="">
+                 <span class="divider"></span>
+                 <span class="arrow arrowoff"></span>
+                 <div class="ddTitleText" id="[% order.order_group.0.order_group_id %]_title">
+                    <div class="ddlabel">[% address1 %]</div>
+                    <span class="description" style="display: none;"></span>  
+                 </div>
+             </div>
+             <input id="addr_titleText" type="text" autocomplete="off" class="text shadow borderRadius" style="display: none;">
+            
+             <div class="ddChild ddchild_ border shadow" id="addr_dropdown">
+            
+              <ul id="order_groups">
+                [% FOREACH order_group IN order.order_group %]
+                 <li class="enabled _msddli_ [% IF loop.count == 1 %]selected[% END %]" id="[% order_group.order_group_id %]" value="[% (loop.count - 1) %]">
+                   <span class="ddlabel">[% order_group.shipping_address.0.addr1 %]</span>
+                   <div class="clear"></div>
+                 </li>
+                [% END %]
+              </ul>
+            </div>
+         </div>  
+        [% ELSE %]
+           [% address1 %]
+        [% END %]
+       <h4> 
+    </div>
+    
+    <div class="display_right_preview_form">
+    
+      <div id="message">
+        Your order contains <span>[% phone_count %]</span> bring your own phones.<br/>
+        For each phone, select the model of phone bellow.<br/>
+        Than, enter the MAC address found on the back of the phone.
+      </div>
+     <form id="form_Repro"> 
+      <div id="addPhone">
+        <div id="phoneModel" style="float: left">
+           <div class="form_label no_image" category_id="bringYourOwn" description="Phone Model">Phone Model</div>
+           <select id="phone_list">
+           </select>
+           <div class="form_clear"></div>
+        </div>
+        
+        <div id="MACAddr">
+           <div class="form_label no_image" category_id="bringYourOwn" description="MAC Address">MAC Address</div>
+           <div class="form_element"><input class="ui-widget ui-corner-all no_sync" type="text" name="macAddr" id="macAddr" size="12" maxlength="12"/></div>
+           <div class="form_clear"></div>
+        </div>
+     </div>
+     
+     <div class="phone"><img src="/images/icons/polycom_550.png" onerror="this.src='/images/icons/no-image-available.png'"/></div><!--  style="background-image: url('/images/icons/polycom_550.png');" -->
+     <div id="addPhoneWrapper"><input class="quote_nav_button" category_id="bringYourOwn" type="button" name="addAPhoneButton" id="addAPhoneButton" value="Add Phone"/></div>
+    
+     <div id="phones" style="display:none;">
+         <h4>Enter phones</h4><div id="phone_count">(<span>0</span>/[% phone_count %])</div>
+         <div id="phoneList">
+           <ul>
+             <!-- <li>
+               Polycom IP 335 [004F283AD11] <div class="form_element"><input class="ui-widget ui-corner-all no_sync" type="checkbox" name="polycom_335" id="polycom_335" value="004F283AD11"/></div>
+             </li> -->
+           </ul>
+         </div>
+     </div>
+     
+     <div class="nav_buttons">
+       <input class="nav_prev_button quote_nav_button" category_id="bringYourOwn" type="button" name="previous" id="previous" value="Previous">
+       <input class="nav_next_button quote_nav_button" category_id="bringYourOwn" type="button" name="continue" id="continue" value="Continue" disabled/>
+     </div> 
+   </form>  
+  </div>
+   
+ </div>  

@@ -1,0 +1,19 @@
+[% INCLUDE 'email/header.tt' %]
+<h4>Hi provisioner,</h4>
+
+<p>Please click <a href="[% URL %]">here</a> to scan the following phones to be added to their appropriate servers as part of the order ([% ORDER_ID %]):</p>
+[% FOREACH server_id = ORDER.keys.sort %]
+<table with="180" border=0 cellspacing=0 cellpadding=0>
+    <tr><td colspan=3>Server ID: [% server_id %]</td></tr>
+    <tr><td with="85">Quantity</td><td>&nbsp;&nbsp;</td><td with="85">Phone</td></tr>
+    [% FOREACH phone = ORDER.$server_id.keys.sort %]
+    <tr><td>[% ORDER.$server_id.$phone %]</td><td></td><td>[% phone %]</td></tr>
+    [% END %]
+</table>
+<p>&nbsp;<p/>
+[% END %]
+
+<p>Please also test and make sure you can dial 0 from those phones.</p>
+<p>Thank you, <br />
+Fonality Provisioning System</p>
+[% INCLUDE 'email/footer.tt' %]

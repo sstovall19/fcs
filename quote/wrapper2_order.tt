@@ -1,0 +1,52 @@
+[% TITLE  = "PBXtra Order"  _ TITLE %] [%# sets title #%]
+
+[% wrapper = "$BASE_DIR" _ "wrapper.tt" %]
+[% WRAPPER $wrapper %]      [%# wrapper for the main site #%]
+
+<div class="slide" style="padding:0;_float:right">
+	<style type="text/css">
+		fieldset {
+			width: auto !important;
+		}
+	</style>
+	<script type="text/javascript" charset="utf-8">
+	function swapDivTagsToLoading()
+	{
+		// hide the form and display the loading page
+		document.getElementById("displayTheLoadingPrompt").style.display    = '';
+		document.getElementById("displayTheLoadingPrompt").style.visibility = 'visible';
+		document.getElementById("displayTheOrderForm").style.display    = 'none';
+		document.getElementById("displayTheOrderForm").style.visibility = 'hidden';
+		document.getElementById("loading_image").src = document.getElementById("loading_image").src;
+		return false;
+	}
+	</script>
+
+	[% IF ORDER_FORM_SUBMIT == "" %]
+		[% ORDER_FORM_SUBMIT = "onSubmit='swapDivTagsToLoading();'" %]
+	[% END %]
+
+	<div class="slide" id="displayTheOrderForm">
+			
+		[% IF MSG_ERROR %]<div>[% PROCESS ERROR_BLOCK %]</div>[% END %]
+		[% IF MSG_COMPLETED %][% FOREACH MSG=MSG_COMPLETED %]<h1>[% MSG %]</h1>[% END %][% END %]
+	
+		<form class="inline" style="width:100%;_width:600px" method="post" name="form" action="[% SCRIPT_URL %]" [% ORDER_FORM_SUBMIT %]>
+	
+			[% content %]
+				
+			[% USE CGI %]
+				
+		</form>	
+	</div>
+	
+	<div class="slide" id="displayTheLoadingPrompt" style="display: none; padding-top: 160px; padding-bottom: 160px;text-align:center">
+		<img id="loading_image" src="[% HOST %]images/loading_blue.gif" style="margin-bottom: 15px !important;" />
+		<p>
+			Processing...
+		</p>
+		[% PROCESSING_TEXT %]
+		<img src="[% HOST %]images/loading_blue.gif" width="1" height="1" border="0" />
+	</div>
+</div>
+[% END %]

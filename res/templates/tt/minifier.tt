@@ -1,0 +1,5 @@
+[% FILTER collapse %]
+[% FOREACH source IN sources %]
+	[% source %]
+[% END %]
+[% END %]

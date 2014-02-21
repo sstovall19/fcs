@@ -1,0 +1,259 @@
+[% country_wrapper = "$TT_CONSTANTS_DIR" _ "country_list.tt" %]
+[% PROCESS $country_wrapper %]
+
+[% state_wrapper = "$TT_CONSTANTS_DIR" _ "usa_state_list.tt" %]
+[% PROCESS $state_wrapper %]
+
+[% SET PAGE = "order_start" %]
+
+[% ORDER_FORM_SUBMIT = ' id="quoteForm"' %]
+[% ORDER_FORM_NAME   = ' name="quoteForm"' %]
+<script language="javascript" src="order_start_js.cgi?src=pbxtra&amp;type=[% IF THIS_IS_AN_ORDER %]o&amp;id=[% OID %][% ELSE %]q&amp;id=[% PROPOSAL_ID %][% END %][% IF ADDON %]&amp;addon=1[% END %]" type="text/javascript"></script>
+
+<input type="hidden" name="eml" value="[% EMAIL %]" />
+<input type="hidden" name="reseller" value="[% IF RESELLER_ID OR RESELLER_PROPOSAL %]1[% ELSE %]0[% END %]" />
+<input type="hidden" name="src" value="[% TT_DIR %]" />
+[% IF RESELLER_PROPOSAL %]<input type="hidden" name='reseller_proposal' value="1" />[% END %]
+
+[% IF THIS_IS_AN_ORDER %]
+	<div class="order_step_heading">
+		<div class="steps">
+			[% IF ADDON OR ORDER_TYPE == 'addon' %]Add-On[% END %]
+			Order Step&nbsp;
+			<span style="color:[% GRAYED_OUT %]">1</span>&nbsp;
+			<span style="color:[% GRAYED_OUT %]">2</span>&nbsp;
+			<span style="color:[% COLOR1 %]">3</span>&nbsp;
+			<span style="color:[% GRAYED_OUT %]">4</span>&nbsp;
+			<span style="color:[% GRAYED_OUT %]">5</span>&nbsp;
+			<span style="color:[% GRAYED_OUT %]">6</span>&nbsp;
+			<span style="color:[% GRAYED_OUT %]">7</span>
+		</div>
+		<h1>Order Items</h1>
+		<div style="clear:both"><!-- --></div>
+	</div>
+		
+	[% IF OID %]<input type="hidden" name="oid" value="[% OID %]" />[% END %]
+	[% IF ADDON OR ORDER_TYPE == 'addon' %]<input type="hidden" name="addon" value="1" />[% END %]
+[% ELSIF PRE_CONFIRM_MODIFY_ORDER %]
+	<input type="hidden" name="oid" value="[% OID %]" />
+[% ELSE %]
+	<input type="hidden" name="order_review" value="1" />
+	[% IF PROPOSAL_ID %]<input type="hidden" name="existing_proposal" value="[% PROPOSAL_ID %]" />[% END %]
+[% END %]
+
+[% IF INTRANET_NAME %]
+	<div id="order-intranet-name" style="margin-bottom: 20px">
+	<span class="intranet-name">[% INTRANET_NAME %]</span> is logged into the Intranet.&nbsp;
+		[% IF INVALID_SUGAR_SALESPERSON %]
+			[% INTRANET_NAME %] is <strong>*NOT*</strong> a salesperson. The opportunity will be assigned to round robin.
+		[% ELSE %]
+			[% INTRANET_NAME %] will be assigned to this opportunity.
+		[% END %]
+	</div>
+[% END %]
+
+[% IF DEDUCTION_EXISTS %]
+	<div id="order-deduction"> 
+		<input type="hidden" name="deduction_exists" value="1" />
+		<br>
+		<p>Step 3 is the normal place that you would modify the items in this order. However, because this order has a discount in it, you are not able to modify it.</p>
+		<p>So, if you wish to place a modified order, you will need to start with a brand new proposal. You can create a brand new proposal by clicking the "Quote" link at the top of this site.</p>
+		<p>If you do not need to modify this order, simply click "Continue to Step 4" below.</p>
+	</div>
+[% END %]
+
+[% IF INVALID_RESELLER %]
+	<div id="order-welcome-message">				
+		<p>
+			Hi [% RESELLER_NAME %].
+			Your Reseller account has not yet been certified by our Reseller Team.
+			Therefore, the following prices do not reflect the Reseller discount.
+			To become certified, you must do one of the following:
+		</p>
+		<ul style="list-style-type: disc; margin-left: 15px; margin-bottom: 15px; !important">
+			<li>Purchase an NFR System.</li>
+			<li>Purchase a system for your own internal/office use.</li>
+			<li>Sell a system to a client.</li>
+		</ul>
+		<p>
+			If you have questions about the certification process, please contact
+			<a href="mailto:resellers@fonality.com">a Fonality Reseller Manager</a>.
+		</p>
+	</div>
+[% ELSIF RESELLER_PROPOSAL OR RESELLER_ORDER %]
+	<div id="order-welcome-message">		
+		<p>
+			Hi [% RESELLER_NAME %].
+			[% UNLESS THIS_IS_AN_ORDER %]
+				Welcome to the proposal page.
+			[% END %]
+			Prices reflect your Reseller discount.
+			If you have questions about your [% IF THIS_IS_AN_ORDER %] order [% ELSE %] proposal [% END %]
+			or want to place an add-on order, please
+			<a href="mailto:resellers@fonality.com?subject=Question%20from%20proposal%20page">contact the Fonality Resellers team</a>.
+		</p>
+	</div>	
+[% ELSE %]
+	<div id="order-welcome-message">				
+		[% UNLESS THIS_IS_AN_ORDER %]
+			<p>Welcome to the proposal page. If you have any questions about your proposal or would like to place an add-on order, please
+		[% ELSIF ADDON %]
+			<p>If you have questions about your Add-On Order, please
+		[% ELSE %]
+			<p>If you have questions about your order or would like to place an add-on order, please
+		[% END %]
+		<a href="mailto:sales@fonality.com?subject=Question%20from%20proposal%20page">contact a Fonality salesperson</a>.</p>	
+	</div>
+[% END %]
+
+[%# INCLUDE "order_discount_banners.tt" %]
+
+[% UNLESS THIS_IS_AN_ORDER %]
+	<ul id="quotetabs" class="clear">
+		[% IF (INVALID_RESELLER || NOT_A_RESELLER) && !PROPOSAL_ID %]
+			<li>
+				<a href="javascript:void(0);" onclick="document.form.wizard.value=1; document.form.submit(); return false">
+					<input type="hidden" name="wizard" value="0" />Quote Wizard</a>
+				</li>
+		[% ELSE %]
+			<li><span>Quote Wizard</span></li>
+		[% END %]
+		<li class="active" id="customizequote"><span>Customize Your Quote</span></li>
+	</ul>
+[% END %]
+
+<div id="quote">
+	
+[% IF ADDON %]
+	<div>
+		<fieldset id="option-chooser">
+			<legend>I'd like to</legend>
+			<select name = "product_choice" id = "product_choice"
+					onChange = "switchAddonOptions(document.form.product_choice.options[document.form.product_choice.selectedIndex].value);">
+				<option value="none_selected">Please select one...</option>
+				<option value="change_devices" [% IF ADDON_SELECT == "change_devices" %]selected[% END %]>Add phones</option>
+				<option value="change_other">Add other</option>
+			</select>
+		</fieldset>
+	</div>
+
+	<div id="change_devices" style="visibility: hidden; display: none;">
+		<fieldset id="ipphones">
+			<legend>Add Phones</legend>
+			[% PROCESS ip_phones_block %]
+		</fieldset>
+	</div>
+
+	<div id="change_other" style="visibility: hidden; display: none;">
+		<fieldset>
+			<legend>Add Other</legend>
+			Please provide a description of your needs and someone from billing will contact you:
+			<textarea name="change_other" style="float: left; width: 500px;">[% ADD_OTHER %]</textarea>
+		</fieldset>
+	</div>
+[% END %]
+
+<div id="acc2" class="accordion">
+<h5><a href="#">First [% name %] [% PRODUCT_DESCRIPTION %] Server</a></h5>
+<div class="inner shown">
+[% PROCESS order_items_form.tt %]
+</div>
+
+<h5>Optional additional systems - Click to Expand</h5>
+<div class="inner">
+	[% servernumber = 1 %]
+	[% WHILE servernumber < MAXITEMS %] 
+		[% servernumber = servernumber + 1 %]
+<h4><a href="#">Click to add [% name %] [% PRODUCT_DESCRIPTION %] Server #[% servernumber %]</a></h4>
+<div class="inner">
+[% PROCESS order_items_form.tt %]
+</div>
+	[% END %]
+</div>
+</div>
+
+	<fieldset style="border: 0px">
+		[%# add dynamic customer contact information %]
+		[% FOREACH company_info_priority IN CONTACT_QUESTIONS.keys.sort %]
+			<div>
+				<label>
+					[% IF CONTACT_QUESTIONS.$company_info_priority.required_field %]*&nbsp;[% END %]
+					[% CONTACT_QUESTIONS.$company_info_priority.label_name %]
+				</label>
+				[% IF CONTACT_QUESTIONS.$company_info_priority.label_type == 'dropdown' %]
+					<select class="input-wide" name="company_info_[% CONTACT_QUESTIONS.$company_info_priority.label_value %]">
+						[% IF CONTACT_QUESTIONS.$company_info_priority.dropdown_has_null %]
+							<option value="">[% CONTACT_QUESTIONS.$company_info_priority.dropdown_null_text %]</option>
+						[% END %]
+						[%# get all the options that should go in this dropdown %]
+						[% MYOPTIONS = CONTACT_QUESTIONS.$company_info_priority.dropdown_options %]
+						[% FOREACH option_priority IN MYOPTIONS.keys.sort %]
+							<option value="[% MYOPTIONS.$option_priority.option_value %]">[% MYOPTIONS.$option_priority.option_name %]</option>
+						[% END %]
+					</select>
+				[% ELSIF CONTACT_QUESTIONS.$company_info_priority.label_type == 'checkbox' %]
+					<input type="checkbox" class="checkbox" name="company_info_[% CONTACT_QUESTIONS.$company_info_priority.label_value %]" value="1" />
+				[% ELSIF CONTACT_QUESTIONS.$company_info_priority.label_type == 'text' %]
+					<input type="text" name="company_info_[% CONTACT_QUESTIONS.$company_info_priority.label_value %]" value="" class="input-wide" />
+				[% ELSIF CONTACT_QUESTIONS.$company_info_priority.label_type == 'number' %]
+					<input type="text" size="4" maxlength="3" name="company_info_[% CONTACT_QUESTIONS.$company_info_priority.label_value %]" value="" autocomplete="off" style="width: 35px" />
+				[% END %]
+			</div>
+		[% END %]
+
+		[% IF RESELLER_EMAIL != '' && (RESELLER_STATUS == 'WTG-Agent' || RESELLER_STATUS == 'BD-Agent' || RESELLER_STATUS == 'Fonality-Affiliate') %]
+			<div>
+				<label for="email_to_reseller">Send this proposal to</label>
+				<select class="input-wide" name="email_to_reseller">
+					<option value="off" selected>Customer's Email Address</option>
+					<option value="on">Reseller([% RESELLER_EMAIL %])</option>
+				</select>
+			</div>
+		[% END %]
+
+		[%# IF INTRANET_NAME %]
+			<div>
+				<label>Promotional Code</label>
+				<input class="input-wide" type="text" name="promo_code" value="[% PROMO_CODE %]"  maxlength="50" />
+			</div>
+		[%# END %]
+
+		[% IF DOLLAR_AMT_DEDUCTION_ALLOWED %]
+			<div>
+				<label>Dollar Amount Deduction</label>
+				<input type="text" name="dollar_amt_deduction" value="[% DOLLAR_AMT_DEDUCTION %]" maxlength="50" />
+			</div>
+			<div>
+				<label for="">Deduction Expiration</label>
+				<input type="text" name="dollar_amt_expire" value="[% DOLLAR_AMT_EXPIRE %]" maxlength="10" />
+			</div>
+		[% END %]
+
+	</fieldset>
+
+	[% IF THIS_IS_AN_ORDER %]
+		<div>
+			<input type="submit" name="act" value="Continue to Step 4" style="width: 180px" />
+		</div>
+		<div style="clear:both"><!-- --></div>
+	[% ELSIF PRE_CONFIRM_MODIFY_ORDER %]
+		<div>
+			<input type="submit" value="Save Changes" style="width: 180px" />
+			<input type="hidden" name="act" value="Continue to Step 4" />
+		</div>
+	[% ELSE %]
+		[% IF RECALLED_QUOTE %]
+			<div>
+				<span style="padding:0;margin:0">
+					<input type="submit" name="email_proposal" value="Change Proposal" style="width: 160px;padding:0;margin:0" />
+				</span>
+			</div>
+		[% ELSE %]
+			<input type="submit" name="email_proposal" value="Get Quote &raquo;" />
+		[% END %]
+		<div style="clear:both"><!-- --></div>
+	[% END %]
+
+</div> <!-- // quote -->
+
+

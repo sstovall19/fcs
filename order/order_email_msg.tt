@@ -1,0 +1,534 @@
+[% ITEM_GROUP_LIST = [
+						'PBXtra Software',
+						'PBXtra HUD',
+						'PBXtra User Licenses',
+						'PBXtra Optional Software',
+						'servers',
+						'redundancy',
+						'warranty',
+						'cpu',
+						'ram',
+						'raid',
+						'power',
+						'Cards - Digital',
+						'analog_base_pci',
+						'analog_base_pcie',
+						'analog_exp1',
+						'analog_exp2',
+						'Cards - Analog',
+						'Cards - Other',
+						'IP Phones',
+						'Channel Bank',
+						'Miscellaneous',
+						'Annual Support Group',
+						'Configuration Fees Group',
+						'Reseller Phone Provisioning Fee',
+						'Reseller Phone Provisioning Credit',
+						'discount'
+] %]
+
+[% EMAIL_QUOTE_FONT = 'font-family: Verdana,Arial,Helvetica; ' _
+                      'font-size: 12px;' %]
+
+[% CP_TABLE_CONTAINER = 'border-collapse: collapse;' %]
+
+[% CP_TEXT_SMALL = 'font-family: Verdana, Arial; ' _
+                   'color: #000000; ' _
+                   'font-size: 11px;' %]
+
+[% CP_TABLE_SMALL = 'filter: alpha(opacity=75); ' _
+                    '-moz-opacity: 0.75; ' _
+                    'background: white; ' _
+                    'border: solid #CCCCCC 1px; ' _
+                    'vertical-align: bottom; ' _
+                    'margin: 0px; ' _
+                    'margin-top: center; ' _
+                    'margin-bottom; ' _
+                    'auto; ' _
+                    'padding: 0px; ' _
+                    'empty-cells: show; ' _
+                    'border-collapse: collapse;' %]
+
+[% CP_TABLE_CELL_HEADER = 'background-color: #6699CC; ' _
+                          'color: white; ' _
+                          'font-family: Verdana,Arial,Helvetica; ' _
+                          'font-size: 12px; ' _
+                          'font-weight: bold; ' _
+                          'border: 1px solid #CCCCCC; ' _
+                          'padding: 2px;' %]
+
+[% CP_TABLE_CELL_SUB_HEADER2 = 'background-color: #EDF1ED; ' _
+                               'font-family: Verdana,Arial,Helvetica; ' _
+                               'font-size: 11px; ' _
+                               'border: solid #cccccc 1px; ' _
+                               'padding: 2px; ' _
+                               'padding-left: 5px; ' _
+                               'padding-right: 5px;' _
+                               'vertical-align: bottom; ' _
+                               'font-weight: bold; ' _
+                               'color: #232223;' %]
+
+[% CP_TABLE_CELL2 = 'border: solid #CCCCCC 1px; ' _
+                    'font-family: Verdana,Arial,Helvetica; ' _
+                    'font-size: 11px; ' _
+                    'padding: 2px; ' _
+                    'padding-left: 5px; ' _
+                    'padding-right: 5px;' %]
+
+[% INVISIBLE_CELL_HEADER = 'font-family: Verdana,Arial,Helvetica; ' _
+                           'font-size: 12px; ' _
+						   'font-weight: bold; ' %]
+
+[% INVISIBLE_CELL = 'font-family: Verdana,Arial,Helvetica; ' _
+                    'font-size: 11px; ' %]
+
+[% CP_TABLE_CELL_BORDERLESS = 'border: 0px; ' _
+                              'font-family: Verdana,Arial,Helvetica; ' _
+                              'font-size: 11px; ' _
+                              'padding: 2px; ' _
+                              'padding-left: 5px; ' _
+                              'padding-right: 5px;' %]
+
+[% DOLLAR_DIVIDER = 'border-left: solid #CCCCCC 1px; ' _
+                    'border-top: solid #CCCCCC 1px; ' _
+                    'border-bottom: solid #CCCCCC 1px; ' _
+                    'border-right: 0px; ' _
+                    'font-family: Verdana,Arial,Helvetica; ' _
+                    'font-size: 11px; ' _
+                    'padding: 0px; ' _
+                    'padding-left: 2px; ' _
+                    'padding-right: 2px;' %]
+
+[% AMOUNT_DIVIDER = 'border-left: 0px; ' _
+                    'border-top: solid #CCCCCC 1px; ' _
+                    'border-bottom: solid #CCCCCC 1px; ' _
+                    'border-right: solid #CCCCCC 1px; ' _
+                    'font-family: Verdana,Arial,Helvetica; ' _
+                    'font-size: 11px; ' _
+                    'padding: 0px; ' _
+                    'padding-left: 2px; ' _
+                    'padding-right: 2px;' %]
+
+[% FOOTNOTE_CELL = 'border: solid #CCCCCC 1px; ' _
+				   'font-family: Verdana,Arial,Helvetica; ' _
+				   'font-size: 10px; ' _
+				   'padding: 2px; ' _
+				   'padding-left: 5px; ' _
+				   'padding-right: 5px;' %]
+
+<html>
+<head><title></title></head>
+<body bgcolor='#FFFFFF'>
+<div align='center'>
+<table style='border: 1px solid #CECFCE;' bgcolor='#FFFFFF' width=608 height=301>
+	<tr>
+		<td align='center'>
+			<table border=0 width=559>
+				<tr>
+					<td valign='bottom' align='left'>
+						<span style='[% CP_TEXT_SMALL %]'><b>Dear [% NAME %],</b></span>
+					</td>
+					<td align='right'>
+						<img src='cid:logosmall.jpg' alt='Fonality' height=58 width=252>
+					</td>
+				</tr>
+				<tr>
+					<td align='left' colspan=2>
+						<span style='[% CP_TEXT_SMALL %]'>
+							<br><p>
+								[% IF CASH_SALE %]
+									Thank you for placing a PBXtra addon order for server [% SID %].
+								[% ELSIF ORDER_APPROVED %]
+									Your PBXtra
+									[% IF ADDON %]
+										addon order for server [% SID %]
+									[% ELSE %]
+										order
+									[% END %]
+									has been approved and will be processed once your payment information is received.
+									If you have already provided payment information via credit card to your Sales Representative,
+									or if payment is received today, your order will be provisioned and shipped on or before [% DUE_DATE_ENGLISH %].
+									You can reach our billing department by replying to this email or by calling 1-877-FONALITY and selecting Option 4.
+								[% ELSE %]
+									Thank you for placing a PBXtra
+									[% IF ADDON %]
+										addon order for server [% SID %].
+									[% ELSE %]
+										order.
+										For quality assurance purposes your order will not be processed until an associate has validated
+										the server configuration.
+										A final invoice will be emailed to you when your order has been approved, generally within the next business day.
+									[% END %]
+								[% END %]
+							</p>
+						</span>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td align='center'>
+			<table width=559>
+				<tr>
+					<td>
+						<table style='[% CP_TABLE_SMALL %]'>
+							<tr>
+								<td colspan='[% IF VALID_RESELLER %]8[% ELSE %]6[% END %]' style='[% CP_TABLE_CELL_HEADER %]'>
+									Your order number is: [% TICKET_ID %]
+								</td>
+							</tr>
+							<tr>
+								<td style='[% CP_TABLE_CELL_SUB_HEADER2 %]' width=363>Description</td>
+								<td style='[% CP_TABLE_CELL_SUB_HEADER2 %]' align='center' colspan=2>
+									[% IF VALID_RESELLER %]
+										Retail
+									[% ELSE %]
+										Price
+									[% END %]
+								</td>
+								<td style='[% CP_TABLE_CELL_SUB_HEADER2 %]' align='center'>Qty</td>
+								[% IF VALID_RESELLER %]
+									<td style='[% CP_TABLE_CELL_SUB_HEADER2 %]' align='center' colspan=2>Price</td>
+								[% END %]
+								<td style='[% CP_TABLE_CELL_SUB_HEADER2 %]' align='center' colspan=2 nowrap>Sub Total</td>
+							</tr>
+
+				[% FOREACH GROUP = ITEM_GROUP_LIST %]
+					[% FOREACH ITEM = ORDER_ITEMS %]
+						[% IF ITEM.group_name == GROUP %]
+							<tr>
+								<td style='[% CP_TABLE_CELL2 %]' nowrap>[% ITEM.name %]
+								</td>
+								<td style='[% DOLLAR_DIVIDER %]' align='left'>$</td>
+								<td style='[% AMOUNT_DIVIDER %]' align='right'>[% ITEM.price %]</td>
+								<td style='[% CP_TABLE_CELL2 %]' align='right'>[% ITEM.quantity %]</td>
+								[% IF VALID_RESELLER %]
+									<td style='[% DOLLAR_DIVIDER %]' align='left'>$</td>
+									<td style='[% AMOUNT_DIVIDER %]' align='right'>[% ITEM.reseller_price %]</td>
+									<td style='[% DOLLAR_DIVIDER %]' align='left'>$</td>
+									<td style='[% AMOUNT_DIVIDER %]' align='right'>[% ITEM.reseller_subtotal %]</td>
+								[% ELSE %]
+									<td style='[% DOLLAR_DIVIDER %]' align='left'>$</td>
+									<td style='[% AMOUNT_DIVIDER %]' align='right'>[% ITEM.subtotal %]</td>
+								[% END %]
+							</tr>
+						[% END %]
+					[% END %]
+				[% END %]
+
+							[% IF VALID_RESELLER %]
+								[% TOTALS_COLSPAN = 6 %]
+							[% ELSE %]
+								[% TOTALS_COLSPAN = 4 %]
+							[% END %]
+
+							[% IF VALID_RESELLER %]
+								<tr>
+									<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='right' colspan='[% TOTALS_COLSPAN %]'>
+										<b>TOTAL RETAIL:</b>
+									</td>
+									<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='left'><b>$</b></td>
+									<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='right'><b>[% RETAIL_TOTAL %]</b></td>
+								</tr>
+								<tr>
+									<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='right' colspan='[% TOTALS_COLSPAN %]'>
+										<b>RESELLER DISCOUNT:</b>
+									</td>
+									<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='left'><b>$</b></td>
+									<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='right' nowrap>
+										<b>-(<font color='red'>[% RESELLER_DISCOUNT %]</font>)</b>
+									</td>
+								</tr>
+							[% END %]
+
+							[% IF DEDUCTION_EXISTS %]
+								<tr	>
+									<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='right' colspan='[% TOTALS_COLSPAN %]'>
+										<b>MANAGER'S DISCOUNT:</b>
+									</td>
+									<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='left'><b>$</b></td>
+									<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='right' nowrap>
+										<b>-(<font color='red'>[% DEDUCTION_VALUE_COMMIFIED %]</font>)</b>
+									</td>
+								</tr>
+							[% END %]
+
+							[% IF PROMO_CODE_DISCOUNT %]
+								<tr>
+									<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='right' colspan='[% TOTALS_COLSPAN %]'>
+										<b>PROMOTIONAL DISCOUNT:</b>
+									</td>
+									<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='left'><b>$</b></td>
+									<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='right' nowrap>
+										<b>-(<font color='red'>[% PROMO_CODE_DISCOUNT %]</font>)</b>
+									</td>
+								</tr>
+							[% END %]
+
+							<tr>
+								<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='right' colspan='[% TOTALS_COLSPAN %]'>
+									<b>SUB-TOTAL:</b>
+								</td>
+								<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='left'><b>$</b></td>
+								<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='right' nowrap>
+									<b>[% SUBTOTAL %]</b>
+								</td>
+							</tr>
+
+							[% IF SALES_TAX > 0 %]
+								<tr>
+									<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='right' colspan='[% TOTALS_COLSPAN %]'>
+										[% SHIPPING_STATE %] Sales Tax ([% SALES_TAX_ENGLISH %]%)
+									</td>
+									<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='left'>$</td>
+									<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='right'>[% SALES_TAX %]</td>
+								</tr>
+							[% END %]
+
+							<tr>
+								<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='right' colspan='[% TOTALS_COLSPAN %]'>
+									Shipping and Handling ([% SHIPPING_SERVICE %])
+								</td>
+								<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='left'>$</td>
+								<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='right'>[% SHIPPING_COST %]</td>
+							</tr>
+
+							<tr>
+								<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='right' colspan='[% TOTALS_COLSPAN %]'>
+									<b>TOTAL:</b>
+								</td>
+								<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='left'><b>$</b></td>
+								<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='right'><b>[% ORDER_TOTAL %]</b></td>
+							</tr>
+
+							[% IF BACKUP_SERVER_SELECTED || SHOW_SUPPORT_MSG || PRORATED_SUPPORT %]
+								<tr>
+									<td style='[% FOOTNOTE_CELL %]' colspan='[% TOTALS_COLSPAN + 2 %]'>
+										<table colspan=0 cellpadding=0 cellspacing=0 border=0>
+											[% IF BACKUP_SERVER_SELECTED %]
+												<tr>
+													<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='right' valign='top'>
+														[% BACKUP_SERVER_STARS %]
+													</td>
+													<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='left'>
+														Live Back-up Servers must be provisioned with the same upgrades and expansion cards
+														as the main server.
+													</td>
+												</tr>
+											[% END %]
+											[% IF SHOW_SUPPORT_MSG %]
+												<tr>
+													<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='right' valign='top'>
+														[% SUPPORT_STARS %]
+													</td>
+													<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='left'>
+														([% PHONE_CNT %] Phone[% UNLESS PHONE_CNT == 1 %]s[% END %]
+														+ [% PORT_CNT %] Phone Port[% UNLESS PORT_CNT == 1 %]s[% END %])
+														= [% PHONE_CNT + PORT_CNT %]&nbsp;[% SUPPORT_NAME_WITHOUT_STARS %]
+														[% IF PRORATED_SUPPORT %]
+															<br>&nbsp;&nbsp;[% PRORATED_TEXT %]
+														[% END %]
+													</td>
+												</tr>
+											[% ELSIF PRORATED_SUPPORT %]
+												<tr>
+													<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='right' valign='top'>
+														[% PRORATED_SUPPORT_STARS %]
+													</td>
+													<td style='[% CP_TABLE_CELL_BORDERLESS %]' align='left'>
+														[% PRORATED_TEXT %]
+													</td>
+												</tr>
+											[% END %]
+										</table>
+									</td>
+								</tr>
+							[% END %]
+
+						</table>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td align='center'>
+			<table border=0 width=559 height=40>
+				<tr>
+					<td align='left'>
+						<span style='[% CP_TEXT_SMALL %]'>
+							<br><br>
+							[% PROCESS 'legal.tt' %]
+
+							[% IF ADDON_LICENSE_UPGRADE %]
+								<p>
+									Your credit card has been charged:<br /><br />
+									[% PAYMENT_METHOD %]<br />
+									[% CC_NAME %]<br />
+									[% CC_NUMBER %]
+								</p>
+							[% ELSE %]
+								<p>
+									[% INCLUDE 'order_payment_terms.tt' %]
+									Please mail checks payable to Fonality, Inc., at the address below:
+								</p>
+								<blockquote>
+									Fonality, Inc.<br>
+									Attn: Accounts Receivable<br>
+									200 Corporate Pointe<br>
+									Suite 350<br>
+									Los Angeles, CA 90230
+								</blockquote>
+							[% END %]
+
+							<h4>Shipping and Billing Information</h4>
+
+							[% IF SHIPPING_REQUIRED %]
+								<p>
+									Your
+									[% IF ADDON %]
+										addon items
+									[% ELSE %]
+										PBXtra system
+									[% END %]
+									will be shipped to the following shipping address.
+									Please reply to this email with any modifications.
+								</p>
+							[% ELSE %]
+								<p>There are no items to ship in this order.</p>
+							[% END %]
+
+							<table border=0>
+								<tr>
+									<td colspan=2 style='[% CP_TABLE_CELL_BORDERLESS %]' valign='top'>
+										Company Name: [% CUSTOMER_NAME %]<br>
+										Customer ID: [% CUSTOMER_ID %]<br><br>
+									</td>
+								</tr>
+								<tr>
+									<td style='[% CP_TABLE_CELL_BORDERLESS %]' valign='top'>
+										Shipping Address:<br>
+										[% SHIPPING_ADDRESS %]<br><br>
+									</td>
+									<td style='[% CP_TABLE_CELL_BORDERLESS %]' valign='top'>
+										Billing Address:<br>
+										[% BILLING_ADDRESS %]
+									</td>
+								</tr>
+								<tr>
+									<td style='[% CP_TABLE_CELL_BORDERLESS %]' valign='top' colspan=2>
+										[% IF VALID_RESELLER %]
+											Primary Reseller Contact:<br>
+										[% ELSE %]
+											Contact:<br>
+										[% END %]
+										[% ADMIN_CONTACT %]<br>
+										[% ADMIN_EMAIL %]<br>
+										[% ADMIN_PHONE %]<br><br>
+									</td>
+								</tr>
+							</table>
+
+							<h4>Extension Assignment</h4>
+
+							<table border=0>
+								[% IF NUM_OF_EXTENSIONS %]
+									<tr>
+										<td style='[% INVISIBLE_CELL_HEADER %]' align='left'>Extension #&nbsp;&nbsp;</td>
+										<td style='[% INVISIBLE_CELL_HEADER %]' align='left'>Device</td>
+									</tr>
+								[% ELSE %]
+									<tr>
+										<td style='[% INVISIBLE_CELL %]' align='left' colspan=2>
+											There are no phones or phone ports for Fonality to configure.
+										</td>
+									</tr>
+								[% END %]
+
+						[% FOREACH ITEM = EXTENSION_ITEMS %]
+							[% NEXT IF ITEM.item_id == POLYCOM_650_SIDECAR %]
+							[% IF ITEM.group_name == 'IP Phones'           ||
+							      ITEM.item_id == REPROVISIONING_ID        ||
+							      ITEM.item_id == REMOTE_REPROVISIONING_ID ||
+							      ITEM.item_id == RESELLER_PHONE_FEE_ID %]
+								[% myCount = 0 %]
+								[% WHILE myCount < ITEM.quantity %]
+									[% myCount = myCount + 1 %]
+									[% myName = 'item_id_' _ ITEM.item_id _ '_number_' _ myCount %]
+									<tr>
+										<td style='[% INVISIBLE_CELL %]' align='left'>[% $myName %]</td>
+										<td style='[% INVISIBLE_CELL %]' align='left' nowrap>
+											[% IF ITEM.item_id == RESELLER_PHONE_FEE_ID %]
+												 Reseller Provided Phone ([% myCount %])
+											[% ELSE %]
+												[% ITEM.name %] ([% myCount %])
+											[% END %]
+										</td>
+									</tr>
+								[% END %]
+							[% ELSIF ITEM.item_id == RHINO_FXS_ID %]
+								[% myCount = 0 %]
+								[% myTotal = ITEM.quantity * 4 %]
+								[% WHILE myCount < myTotal %]
+									[% myCount = myCount + 1 %]
+									[% myName = 'rhino_phone_port_' _ myCount %]
+									<tr>
+										<td style='[% INVISIBLE_CELL %]' align='left'>[% $myName %]</td>
+										<td style='[% INVISIBLE_CELL %]' align='left' nowrap>Rhino Channel (phone port [% myCount %])</td>
+									</tr>
+								[% END %]
+							[% ELSIF PHONE_PORTS.${ITEM.item_id} %]
+								[% TOTAL_CNT = 0 %]
+								[% ITEM_CNT = 0 %]
+								[% QUANTITY = ITEM.quantity %]
+								[% IF ITEM.extension_qty > 0 %]
+									[% QUANTITY = ITEM.extension_qty %]
+								[% END %]
+								[% WHILE ITEM_CNT < QUANTITY %]
+									[% ITEM_CNT = ITEM_CNT + 1 %]
+									[% PORT_CNT = 0 %]
+									[% WHILE PORT_CNT < PHONE_PORTS.${ITEM.item_id} %]
+										[% PORT_CNT = PORT_CNT + 1 %]
+										[% TOTAL_CNT = TOTAL_CNT + 1 %]
+										[% myName = 'item_id_' _ ITEM.item_id _ '_number_' _ TOTAL_CNT %]
+											<tr>
+												<td style='[% INVISIBLE_CELL %]' align='left'>[% $myName %]</td>
+												<td style='[% INVISIBLE_CELL %]' align='left' nowrap>[% ITEM.name %] (phone port [% TOTAL_CNT %])</td>
+											</tr>
+									[% END %]
+								[% END %]
+							[% END %]
+						[% END %]
+							</table>
+
+
+						[% UNLESS ORDER_APPROVED %]
+							<p>
+								You may
+							<a href="http://[% SERVER_NAME %]/o.cgi?oid=[% ORDER_ID %]&eml=[% ADMIN_EMAIL %]&act=Change%20Order">modify your order</a>
+								any time prior to approval; however, once your order is approved
+								it will be configured and shipped and can not be modified.
+								Please contact your Fonality Sales Representative if you need assistance.
+							</p>
+						[% ELSE %]
+							<p>
+								Please contact your Fonality Sales Representative if you need assistance.
+							</p>
+						[% END %]
+
+							<p>
+								[% SALES_PERSON_NAME %]<br>
+								[% SALES_PERSON_EMAIL %]<br>
+								[% SALES_PERSON_PHONE %]
+							</p>
+							<br>
+						</span>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
+</div>
+</body></html>

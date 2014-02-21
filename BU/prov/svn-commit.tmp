@@ -1,0 +1,5 @@
+Rework of assign dids to users according to a revised spec
+--This line, and those below, will be ignored--
+
+M    fcs_assign_dids_to_users.pl
+M    t/fcs_assign_dids_to_users.t

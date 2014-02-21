@@ -1,0 +1,7 @@
+[% TITLE = ' :: Order Error' %]
+<input type='hidden' name='oid' value='[% OID %]'>
+
+<h1>[% ERR_MSG %]</h1>
+
+
+

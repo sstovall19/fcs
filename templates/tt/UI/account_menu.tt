@@ -1,0 +1,8 @@
+<div id="account-menu">
+	[% IF SESSION.username %]
+		<div style="float: left;"><a class="account-link" href="/?mode=Core.Account">My Info</a></div>
+		<div style="float: right;"><a class="account-link" href="/?mode=Core.Login&action=logout">Log out</a></div>
+	[% ELSE %]
+		<div style="float: right;"><a class="account-link" href="/?mode=Core.Login">Log in</a></div>
+	[% END %]
+</div>

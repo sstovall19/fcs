@@ -1,0 +1,89 @@
+server_id=15037
+$VAR1 = {
+          'extension' => undef,
+          'server_id' => '15037',
+          'number' => '111111',
+          'type' => 'voip',
+          'description' => undef,
+          'is_primary' => '0'
+        };
+$VAR2 = {
+          'extension' => undef,
+          'server_id' => '15037',
+          'number' => '111321',
+          'type' => 't1',
+          'description' => undef,
+          'is_primary' => '0'
+        };
+$VAR3 = {
+          'extension' => undef,
+          'server_id' => '15037',
+          'number' => '123456',
+          'type' => 'voip',
+          'description' => undef,
+          'is_primary' => '0'
+        };
+$VAR4 = {
+          'extension' => undef,
+          'server_id' => '15037',
+          'number' => '1234566',
+          'type' => 'voip',
+          'description' => undef,
+          'is_primary' => '0'
+        };
+$VAR5 = {
+          'extension' => undef,
+          'server_id' => '15037',
+          'number' => '23456231',
+          'type' => 'voip',
+          'description' => undef,
+          'is_primary' => '0'
+        };
+$VAR6 = {
+          'extension' => '7001',
+          'server_id' => '15037',
+          'number' => '3236652122',
+          'type' => 'voip',
+          'description' => undef,
+          'is_primary' => '0'
+        };
+$VAR7 = {
+          'extension' => undef,
+          'server_id' => '15037',
+          'number' => '3333333',
+          'type' => 'voip',
+          'description' => undef,
+          'is_primary' => '0'
+        };
+$VAR8 = {
+          'extension' => '7002',
+          'server_id' => '15037',
+          'number' => '6652122',
+          'type' => 'voip',
+          'description' => undef,
+          'is_primary' => '0'
+        };
+64:
+64:
+64:
+64:
+64:
+64:
+64:
+64:
+64:
+64:
+64:
+64:
+64:
+88: did=323
+91: did=323
+88: did=323
+91: did=323
+$VAR1 = {
+          'did_assigned_users' => [
+                                    undef,
+                                    undef
+                                  ],
+          'order_id' => 52914
+        };

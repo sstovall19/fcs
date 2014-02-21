@@ -1,0 +1,56 @@
+	<ul class="menu-nav">
+[%# TODO - Only show the Admin menu if the user is a member of the Admin role %]
+
+[% FOREACH CATEGORY IN NAV_MENU.keys.sort %]
+
+		<li><a href="#" class="maincat ">[% CATEGORY.replace('_', ' ') %]</a>
+			<div class="sub-holder business-size">
+				<ul class="level1">
+
+					[% IF NAV_MENU.$CATEGORY.Base %]
+
+					<li class="licol">
+						<ul>
+							<li class="subcat"><a href="#" >General</a>
+								<ul>
+									<ul class="menu">
+										[% FOREACH MODULE IN NAV_MENU.$CATEGORY.Base.keys.sort %]
+										<li class="leaf first"><a href="/?mode=[% CATEGORY %].[% MODULE %]" title="">[% NAV_MENU.$CATEGORY.Base.$MODULE %]</a></li>
+										[% END %]
+									</ul>
+								</ul>
+							</li>
+						</ul>
+					</li>
+					
+						[%# We don't need this anymore %]
+						[% NAV_MENU.$CATEGORY.delete('Base') %]
+
+					[% END %]
+
+					[% FOREACH SUBCAT IN NAV_MENU.$CATEGORY.keys %]
+
+					<li class="licol">
+						<ul>
+							<li class="subcat"><a href="#" >[% SUBCAT.replace('_', ' ') %]</a>
+								<ul>
+									<ul class="menu">
+										[% FOREACH MODULE IN NAV_MENU.$CATEGORY.$SUBCAT.keys.sort %]
+										<li class="leaf first"><a href="/?mode=[% CATEGORY %].[% SUBCAT %].[% MODULE %]" title="">[% NAV_MENU.$CATEGORY.$SUBCAT.$MODULE %]</a></li>
+										[% END %]
+									</ul>
+								</ul>
+							</li>
+						</ul>
+					</li>
+
+					[% END %]
+
+				</ul>
+			</div>
+		</li>
+
+[% END %]
+
+	</ul>    
+

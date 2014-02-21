@@ -1,0 +1,76 @@
+[% TAB = 'local' %]
+<form id="form_Pick">
+ <div class="phoneTabs">
+     <div class="tab" id="localNums">
+         <input type="radio" id="local-numbers" name="tab-group-1" checked>
+         <label for="local-numbers">Local (<span id="localPicked">0</span>/<span id="maxLocal"></span>)</label>
+        
+                 <div id="localAreaWrapper">
+                        <!-- state -->
+                        <select name="state_prov" id="state_prov" class="ui-widget ui-corner-all no_sync" style="width: 125px;">
+                        </select>
+                  
+                       <!-- area code -->      
+                 
+                        <select name="area_code" id="area_code" class="ui-widget ui-corner-all no_sync" style="width: 125px;">
+                        </select>
+                        
+                        <div id="localTransferWrapper"><input category_id="orderYourPhone" type="text" name="transferLocal" id="transferLocal"  class="transfer" category="local" value="Click here to move a number to Fonality"/></div>
+                        <div id="localNumToTransfer" style="display:none;">
+                            (<input type="text" name="areaCode" id="areaCode" value="" maxlength="3"/>) <input type="text" name="localToTransfer" id="localToTransfer" value="" maxlength="7"/>
+                        </div>
+                  </div>
+                  <div class="sectionBorder"></div>
+                  <div class="content">     
+                      [% PROCESS 'modules/Sales/Create_Order/availableNumbers.tt' TAB = TAB %]
+                  </div> 
+       </div>
+
+       <div class="tab" id="tfNums">
+         <input type="radio" id="toll-free-numbers" name="tab-group-1">
+         <label for="toll-free-numbers">Toll-free (<span id="tfPicked">0</span>/<span id="maxTf"></span>)</label>
+         <div class="content">
+           Toll-free stuff
+           
+           <input class="quote_nav_button" category_id="orderYourPhone" type="button" name="transferTollFree" id="transferTollFree" value="Click here to move a number to Fonality"/>
+            <div id="tollFreeNumToTransfer" style="display:none;">
+             <input type="text" name="tollFreeToTransfer" id="tollFreeToTransfer" value="" maxlength="7"/>
+            </div>
+            [% PROCESS 'modules/Sales/Create_Order/availableNumbers.tt' TAB = 'tf' %]
+         </div> 
+       </div>
+
+       <div class="tab" id="intlNums">
+        <input type="radio" id="intl-numbers" name="tab-group-1">
+        <label for="intl-numbers">Intl. (<span id="intlPicked">0</span>/<span id="maxIntl"></span>)</label>
+        
+               
+                  <div id="intlAreaWrapper">
+                       <!-- country-->
+                         <select name="country" id="country" class="ui-widget ui-corner-all no_sync" style="width: 125px;">
+                         </select>
+                         
+                         <!-- state -->
+                        <select name="state_prov" id="state_prov" class="ui-widget ui-corner-all no_sync" style="width: 125px;">
+                        </select>
+                        
+                         <!-- area code -->      
+                         <select name="area_code" id="area_code" class="ui-widget ui-corner-all no_sync" style="width: 125px;">
+                         </select>
+                         
+                         <div id="intlTransferWrapper"><input category_id="orderYourPhone" type="text" name="transferIntl" id="transferIntl" class="transfer" category="intl" value="Click here to move a number to Fonality"/></div>
+                         <div id="intlNumToTransfer" style="display:none;">
+                            (<input type="text" name="areaCode" id="areaCode" value="" maxlength="3"/>) <input type="text" name="intlToTransfer" id="intlToTransfer" value="" maxlength="7"/>
+                         </div>
+                  </div>
+                  <div class="sectionBorder"></div>
+                  <div class="content">
+                         [% PROCESS 'modules/Sales/Create_Order/availableNumbers.tt' TAB = 'intl' %]                              
+                  </div> 
+      </div>
+      <div class="nav_buttons">
+         <input class="nav_prev_button quote_nav_button" category_id="orderYourPhone" type="button" name="previous" id="previous" value="Previous">
+         <input class="nav_next_button quote_nav_button" category_id="orderYourPhone" type="button" name="continue" id="continue" value="Continue" disabled/>
+       </div> 
+     </div>
+   </form>  

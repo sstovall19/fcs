@@ -1,0 +1,14 @@
+The following billing transaction did not complete successfully. 
+
+Billing Schedule ID: $billingScheduleId
+Order Transaction ID: $transactionId 
+
+Please note the following errors:
+
+<font color="red"> Error Type: $errorType </font> 
+<font color="red"> Description: $description </font> 
+
+If you have questions, please contact Fonality Production Support at productionsupport@fonality.com.
+
+- The FCS Billing Machine
+

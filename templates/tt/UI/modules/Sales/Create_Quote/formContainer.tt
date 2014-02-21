@@ -1,0 +1,386 @@
+<div id="form_container">
+
+        [% IF GUID %]
+
+                    <div class="grey-round" id="round1">
+                        <h4>Thank you.</h4>
+                        <p>Your quote has been successfully submitted and is being processed right now.
+                        <p>You will receive an email with detailed quote information shortly.  If you have any questions about your quote or if you would like to speak to one of our sales representatives, please call us at 877-366-2548.
+                    </div>
+
+        <br>
+        
+        <span id="orderIdLabel">Unique Order ID: [% GUID %]</span>
+
+        [% ELSIF selected_deployment %]
+
+        [% IF pre_form_categories %]
+            <div id="pre_category_form_container">
+                [%# PROCESS right_preview_select_bundle CATEGORY=CATEGORY HIDDEN=HIDE #%]
+                [% PROCESS right_preview_select_bundle CATEGORY=pre_form_categories.first %]
+            </div>
+        [% ELSE %]
+
+        <div class="tabs-bottom tabs-centre tabs-min tabs-fixed-height" id="form_components">
+            <ul id="form_categories">
+            [%# categories = form_data_hash.category %]
+
+                        [% FOREACH CATEGORY IN categories.nsort('priority') %]
+                                [% item = CATEGORY.name.replace(' ', '_') %]
+                [% IF item == 'Users' && !PERMISSION.can('mix_and_match', 'w') %]
+                    [% NEXT %]
+                [% END %]
+                [% IF CATEGORY.display_type == 'pre_panel' %]
+                    [% NEXT %]
+                [% END %]
+                <li>
+                    <a href="#category_[% item %]">
+                        <div id="icon_category_[% item %]" class="navtabs_text icons">
+                            <img width="25" height="25" src="/iconify?&w=25&h=25&icon=[% item %]"><br>[% CATEGORY.name.chunk(10).join('<br>') %]
+                        </div>
+                    </a>
+                </li>
+
+            [% END %]
+                <li>
+                    <a href="#Terms">
+                        <div id="icon_Terms" class="navtabs_text icons">
+                            <img width="25" height="25" src="/iconify?&w=25&h=25&icon=terms"><br>Service<br>Terms
+                        </div>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#Shipping" onclick="init_shipping()">
+                        <div id="icon_Shipping" class="navtabs_text icons">
+                            <img width="25" height="25" src="/iconify?&w=25&h=25&icon=shipping"><br>Shipping
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="#Contact">
+                        <div id="icon_Contact" class="navtabs_text icons">
+                            <img width="25" height="25" src="/iconify?&w=25&h=25&icon=contact"><br>Contact
+                        </div>
+                    </a>
+                </li>
+                [% IF PERMISSION.can('manager_discount', 'w') %]
+                <li>
+                    <a href="#Discounts">
+                        <div id="icon_Discounts" class="navtabs_text icons">
+                            <img width="25" height="25" src="/iconify?&w=25&h=25&icon=discounts"><br>Discounts
+                        </div>
+                    </a>
+                </li>
+                [% END %]
+            </ul>
+        
+            [% FOREACH CATEGORY IN categories.nsort('priority') %]
+                [% HIDE = 0 %]
+
+                [% IF CATEGORY.name == 'Users' && !PERMISSION.can('mix_and_match', 'w') %]
+                    [% HIDE = 1 %]
+                [% END %]
+
+                    [% IF CATEGORY.display_type == 'right_preview' %]
+                        [% PROCESS right_preview  CATEGORY=CATEGORY HIDDEN=HIDE %]
+                    [% ELSIF CATEGORY.display_type == 'left_preview' %]
+                        [% PROCESS left_preview CATEGORY=CATEGORY HIDDEN=HIDE %]
+                    [% ELSIF CATEGORY.display_type == 'top_preview_image' %]
+                        [% PROCESS top_preview_image CATEGORY=CATEGORY HIDDEN=HIDE %]
+                    [% ELSIF CATEGORY.display_type == 'no_preview' %]
+                        [% PROCESS no_preview CATEGORY=CATEGORY %]
+                    [% ELSIF CATEGORY.display_type == 'pre_panel' %]
+                        [% NEXT %]
+                    [% ELSE %]
+                        [% PROCESS right_preview CATEGORY=CATEGORY HIDDEN=HIDE %]
+                    [% END %]
+
+            [% END %]
+
+            [% IF PERMISSION.can('manager_discount', 'w') %]
+
+            <div id="Discounts" class="form_category_div" category_title="Discounts">
+                <div class="wrapperDiv">
+                    <div class="floatLeft">
+                        <h3 style="">Discounts</h3>
+                    </div>
+                    <div class="floatRight">
+                        <input type="button" class="nav_prev_button quote_nav_button" value="Previous">
+                        <input type="button" class="nav_next_button quote_nav_button" value="Next">
+                        <input type="button" class="nav_review_button quote_nav_button" value="Review Quote">
+                    </div>
+                </div>  
+                <div class="display_right_preview_form">
+                <form id="form_Discounts">  
+        
+                    <div class="form_label no_image" category_id="discounts" description="Discount Percentage">Discount %</div>
+                    <div class="form_element"><input class="ui-widget ui-corner-all no_sync" type="text" name="order_discount" id="order_discount" size="3"></div>
+                    <div class="form_element"><input class="ui-widget ui-corner-all no_sync" type="button" id="order_discount_submit" value="Apply"></div>
+                    <div class="form_clear"></div>
+                </form>
+                </div>
+                <div id="preview_panel_discounts" class="display_right_preview_panel"></div>
+            </div>
+
+            [% END %]
+
+            <div id="Terms" class="form_category_div" category_title="Service Terms">
+                <div class="wrapperDiv">
+                    <div class="floatLeft">
+                        <h3 style="">Service Terms</h3>
+                    </div>
+                    <div class="floatRight">
+                        <input type="button" class="nav_prev_button quote_nav_button" value="Previous">
+                        <input type="button" class="nav_next_button quote_nav_button" value="Next">
+                        <input type="button" class="nav_review_button quote_nav_button" value="Review Quote">
+                    </div>
+                </div>  
+
+
+                <div class="display_right_preview_form">
+                <form id="form_Terms">  
+        
+                    <div class="form_label no_image" category_id="terms" description="Choose your term...">Choose your term</div>
+                    <div class="form_element">
+                        <select name="contract-term" id="contract-term" class="ui-widget ui-corner-all no_sync" style="width: 100px;">
+                        [% FOREACH TERM IN [1..5] %]
+                            <option value="[% 12 * TERM %]"[% IF term_in_months == (TERM*12) %] selected[% END %]>[% 12 * TERM %] Months</option>
+                        [% END %]
+                        </select>
+                    </div>
+                    <div class="form_clear"></div>
+                    <div class="form_category_description">
+                        <p>If you choose a longer service time, we'll lock in your pricing etc., etc. 
+                        <p>More description stuff all the way down.  The quick brown fox and all that.
+                    </div>
+
+                    <div class="form_label_no_clear no_image" category_id="terms" description="Pre-Pay description...">Pre-Pay $</div>
+                    <div class="form_element">
+                        <input class="ui-widget ui-corner-all no_sync form_element" type="text" name="prePayAmount" id="pre-pay-amount" size="5" value="0.00">
+                    </div>
+                    <div class="form_label_no_clear no_image" category_id="terms" description="Pre-Pay percentage description...">&nbsp;&nbsp;&nbsp;or&nbsp;</div>
+                    <div class="form_element">
+                        <input class="ui-widget ui-corner-all no_sync form_element" type="text" name="prePayPercentage" id="pre-pay-percentage" size="5" [% IF prepay_amount && prepay_amount > 0 %]value="[% prepay_amount %]"[% ELSE %]value="0"[% END %]>
+                    </div>
+                    <div class="form_label_no_clear no_image" id="pre-pay-discount-status" category_id="terms" description="Pre-Pay percentage description...">%</div>
+                    
+                    <div class="form_clear"></div>
+                    <div class="form_category_description">
+                        <p>If you'd like to lower your monthly payments, you may pre-pay some of your contract here.
+                        <p>Doing so will also grant you extra discounts, etc., etc.
+                        <p>We love your money now.
+                    </div>
+                    
+                </form>
+                </div>
+                <div id="preview_panel_terms" class="display_right_preview_panel"></div>
+            </div>
+
+
+            <div id="Shipping" class="form_category_div" category_title="Shipping Information">
+                <div class="wrapperDiv">
+                    <div class="floatLeft">
+                        <h3 style="">Shipping Information</h3>
+                    </div>
+                    <div  class="floatRight">
+                        <input type="button" class="nav_prev_button quote_nav_button" value="Previous">
+                        <input type="button" class="nav_next_button quote_nav_button" value="Next">
+                        <input type="button" class="nav_review_button quote_nav_button" value="Review Quote">
+                    </div>
+                </div>  
+
+                <div class="display_right_preview_form">
+                <form id="form_Shipping">   
+        
+                    <div class="form_label no_image" category_id="shipping" description="Your shipping street address">* Street Address</div>
+                    <div class="form_element"><input class="ui-widget ui-corner-all no_sync" type="text" name="addr1" id="addr1" size="18"></div>
+                    <div class="form_clear"></div>
+                    
+                    <div class="form_label no_image" category_id="shipping" description="Additional Address Information.  Suite, Office, etc.">Street Address 2</div>
+                    <div class="form_element"><input class="ui-widget ui-corner-all no_sync" type="text" name="addr2" id="addr2" size="18"></div>
+                    <div class="form_clear"></div>
+                    
+                    <div class="form_label no_image" category_id="shipping" description="Your shipping city">* City</div>
+                    <div class="form_element"><input class="ui-widget ui-corner-all no_sync" type="text" name="city" id="city" size="18"></div>
+                    <div class="form_clear"></div>
+                    
+                    <div class="form_label" category_id="shipping" description="Shipping State or Province">* State / Province</div>
+                    <div class="form_element">
+                        <select name="state_prov" id="state_prov" class="ui-widget ui-corner-all no_sync" style="width: 125px;">
+                            <option value=""></option>
+                            [% FOREACH S IN state_list.keys.sort %]
+                                <option value="[% S %]">[% state_list.$S %]</option>
+                            [% END %]
+                        </select>
+                    </div>
+                    <div class="form_clear"></div>
+                
+                    <div class="form_label no_image" category_id="shipping" description="Your shipping postal or Zip code">* Postal Code</div>
+                    <div class="form_element"><input class="ui-widget ui-corner-all no_sync" type="text" name="postal" id="postal" size="5"></div>
+                    <div class="form_clear"></div>
+            
+                    <div class="form_label" category_id="shipping" description="Shipping Country">* Country</div>
+                    <div class="form_element">
+                    <select name="country" id="country" class="ui-widget ui-corner-all no_sync" style="width: 125px;">
+                        <option value="USA" class="requires_state_prov requires_postal_code">United States</option>
+                        [% FOREACH C IN country_list.keys.sort %]
+                            <option value="[% C %]" class="[% IF country_list.$C.state_prov %]requires_state_prov[% END %][% IF country_list.$C.postal_code %] requires_postal_code[% END %]">[% country_list.$C.full_name %]</option>
+                        [% END %]
+                    </select>
+                    </div>
+                    <div class="form_clear"></div>
+
+                </form>
+                </div>
+                <div id="preview_panel_shipping" class="display_right_preview_panel"></div>
+            </div>
+
+            <div id="Contact" class="form_category_div" category_title="Contact Information">
+                <div class="wrapperDiv">
+                    <div class="floatLeft">
+                        <h3 style="">Contact Information</h3>
+                    </div>
+                    <div class="floatRight">
+                        <input type="button" class="nav_prev_button quote_nav_button" value="Previous">
+                        <input type="button" class="nav_next_button quote_nav_button" value="Next">
+                        <input type="button" class="nav_review_button quote_nav_button" value="Review Quote">
+                    </div>
+                </div>  
+                
+                <div class="display_right_preview_form">
+                    <form id="form_Contact">
+
+                    <div class="form_label no_image" category_id="contact" description="Your first name">* First Name</div>
+                    <div class="form_element"><input class="ui-widget ui-corner-all no_sync" type="text" name="first_name" size="18"></div>
+                    <div class="form_clear"></div>
+
+                    <div class="form_label no_image" category_id="contact" description="Your last name">* Last Name</div>
+                    <div class="form_element"><input class="ui-widget ui-corner-all no_sync" type="text" name="last_name" size="18"></div>
+                    <div class="form_clear"></div>
+
+                    <div class="form_label no_image" category_id="contact" description="Your email address">* Your email address</div>
+                    <div class="form_element"><input class="ui-widget ui-corner-all no_sync" type="text" id="email" name="email" size="18"></div>
+                    <div class="form_clear"></div>
+
+                    <div class="form_label no_image" category_id="contact" description="Confirm your email address">* Confirm email address</div>
+                    <div class="form_element"><input class="ui-widget ui-corner-all no_sync" type="text" name="email_confirm" size="18"></div>
+                    <div class="form_clear"></div>
+
+                    <div class="form_label no_image" category_id="contact" description="Your phone number">* Phone number</div>
+                    <div class="form_element"><input class="ui-widget ui-corner-all no_sync" type="text" name="phone" size="18"></div>
+                    <div class="form_clear"></div>
+
+                    <div class="form_label no_image" category_id="contact" description="Your company name">* Company</div>
+                    <div class="form_element"><input class="ui-widget ui-corner-all no_sync" type="text" name="company_name" size="18"></div>
+                    <div class="form_clear"></div>
+
+                    <div class="form_label no_image" category_id="contact" description="Your company name">Website</div>
+                    <div class="form_element"><input class="ui-widget ui-corner-all no_sync" type="text" name="website" size="18"></div>
+                    <div class="form_clear"></div>
+
+                    <div class="form_label no_image" category_id="contact" description="Your company's industry">Company Industry</div>
+                    <div class="form_element">
+                        <select class="ui-widget ui-corner-all no_sync" name="industry" style="width: 125px;">
+                            <option value="Aerospace & Defense">Aerospace & Defense</option>
+                            <option value="Agriculture">Agriculture</option>
+                            <option value="Automotive & Transport">Automotive & Transport</option>
+                            <option value="Banking">Banking</option>
+                            <option value="Beverages">Beverages</option>
+                            <option value="Business Services">Business Services</option>
+                            <option value="Charitable Organizations">Charitable Organizations</option>
+                            <option value="Chemicals">Chemicals</option>
+                            <option value="Computer Hardware">Computer Hardware</option>
+                            <option value="Computer Services">Computer Services</option>
+                            <option value="Computer Software">Computer Software</option>
+                            <option value="Construction">Construction</option>
+                            <option value="Consumer Products Manufacturers">Consumer Products Manufacturers</option>
+                            <option value="Consumer Services">Consumer Services</option>
+                            <option value="Cultural Institutions">Cultural Institutions</option>
+                            <option value="Education">Education</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Energy & Utilities">Energy & Utilities</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Environmental Services & Equipment">Environmental Services & Equipment</option>
+                            <option value="Financial Services">Financial Services</option>
+                            <option value="Food">Food</option>
+                            <option value="Foundations">Foundations</option>
+                            <option value="Government">Government</option>
+                            <option value="Health Care">Health Care</option>
+                            <option value="Industrial Manufacturing">Industrial Manufacturing</option>
+                            <option value="Insurance">Insurance</option>
+                            <option value="Leisure">Leisure</option>
+                            <option value="Media">Media</option>
+                            <option value="Membership Organizations">Membership Organizations</option>
+                            <option value="Metals & Mining">Metals & Mining</option>
+                            <option value="Pharmaceuticals">Pharmaceuticals</option>
+                            <option value="Real Estate">Real Estate</option>
+                            <option value="Retail">Retail</option>
+                            <option value="Security Products & Services">Security Products & Services</option>
+                            <option value="Telecommunications Equipment">Telecommunications Equipment</option>
+                            <option value="Telecommunications Services">Telecommunications Services</option>
+                            <option value="Transportation Services">Transportation Services</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form_clear"></div>
+                    </form>
+                </div>
+                <div id="preview_panel_contact" class="display_right_preview_panel"></div>
+            </div>
+        </div>
+
+        [% END %][%# END PREFORM %]
+
+        [% ELSE %][%# Choose deployment %]
+
+            <div id="deployment_form_container">
+            <form method="POST" id="deployment_form">
+            <input type="hidden" name="product_id" value="[% SESSION.product_id %]">
+            <input type="hidden" name="mode" value="Sales.Create_Quote">
+            <input type="hidden" name="action" value="select_deployment">
+            <input type="hidden" id="deployment_id" name="deployment_id" value="">
+
+                <div class="form-title">Choose your deployment</div>
+                <table width="100%">
+                    <tr>
+                        <td width="100%" align="center">    
+
+                <div id="deployment_selection">
+                    <table width="100%">
+                        <tr>
+                            [% FOREACH DEPLOYMENT IN deployments %]
+                            <td align="center">
+                                <div class="deployment_icon">
+                                    <div>
+                                        <div class="deployment_radio" id="deployment_[% DEPLOYMENT.product_id %]" name="deployment_id" value="[% DEPLOYMENT.product_id %]" title="[% DEPLOYMENT.description %]" icon="[% DEPLOYMENT.name %]"></div>
+                                    </div>
+                                    <div class="deployment_name"><b>[% DEPLOYMENT.name %]</b></div>
+                                </div>
+                            </td>
+                            [% END %]
+                        </tr>
+                    </table>
+                </div>
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="center" width="100%">
+                            <div id="deployment_description">
+                                Select your desired deployment option above.
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+            </div>
+        [% END %]
+
+        [% IF selected_deployment && !pre_form_categories %]
+        <div id="review_panel" class="review_results">
+            Summary
+        </div>
+        [% END %]
+    </div>

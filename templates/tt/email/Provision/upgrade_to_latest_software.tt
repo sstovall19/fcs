@@ -1,0 +1,22 @@
+[% INCLUDE 'email/header.tt' %]
+<h4>Hi provisioner,</h4>
+
+[% IF SUCCESS == 1 %]
+    <p>
+    Server [% SERVER_ID %] is now ready.<br/><br/>
+    Please run the upgrade manually through cp.<br/><br/>
+    </p>
+[% ELSE %]
+    <p>
+    Good Day,<br/><br/>
+    When you received this email that means that the upgrade failed on one of the box being provision.<br/>
+    Check the /tmp/upgrade_installer.log of server [% SERVER_ID %] for more information about what<br/>
+    happened during the ugprade.<br/><br/>
+    Just a heads up on why it failed:<br/><br/>
+    &nbsp;&nbsp;- Server [% SERVER_ID %] requires host to be upgraded first.<br/><br/>
+    </p>
+[% END %]
+
+<p>Thank you, <br />
+Fonality Provisioning System</p>
+[% INCLUDE 'email/footer.tt' %]

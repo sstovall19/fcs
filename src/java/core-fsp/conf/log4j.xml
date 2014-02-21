@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd" >
+<log4j:configuration>
+    <appender name="stdout" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d %-5p %c{1} - %m%n" />
+        </layout>
+    </appender>
+    <appender name="rollfile" class="org.apache.log4j.RollingFileAppender">
+        <!-- Note, running the app within Eclipse will place the log file
+             under the [ECLIPSE_HOME]/[the path configured below] -->
+        <param name="file" value="logs/billing.log" />
+        <param name="encoding" value="UTF-8" />
+        <param name="MaxFileSize" value="10MB" />
+        <!-- Essentially save all files, set to large number -->
+        <param name="MaxBackupIndex" value="1000" /> 
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d %-5p %c{1} - %m%n" />
+        </layout>
+    </appender>
+    
+   
+    <logger name="com.sun.xml.ws.policy.EffectiveAlternativeSelector" >
+        <level value="INFO" />
+        <appender-ref ref="rollfile" />
+    </logger>
+    
+  <!--   <logger name="net.sf.jasperreports" >
+        <level value="DEBUG" />
+        <appender-ref ref="rollfile" />
+    </logger>  --> 
+    
+    
+	<logger name="com.fonality" additivity="false">
+	    <level value="INFO" />
+	    <appender-ref ref="stdout" />
+	    <appender-ref ref="rollfile"/>
+	</logger>
+
+
+    <root>
+        <priority value = "ERROR"/>
+        <appender-ref ref="stdout" />
+        <appender-ref ref="rollfile" />
+    </root>
+</log4j:configuration>

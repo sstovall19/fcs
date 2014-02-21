@@ -1,0 +1,179 @@
+26,27c26
+< use Data::Dumper;
+< # for optmal search of array of hashes
+---
+> # for optmal search of phone_numbers
+30,38c29
+< my $debug = 1;
+< 
+< #my $client = Fap::StateMachine::Unit->new()->run();
+< my $client;
+< my $package = "fcs_assign_dids_to_users";
+< my $input = {};
+< 
+< $input->{'order_id'} = 52914;
+< execute($package, $client, $input);
+---
+> my $client = Fap::StateMachine::Unit->new()->run();
+43,46d33
+< 	if (!Fap::Order::validate_prov_order($input)) {
+< 		#$client->displayfailure($@);
+< 	}
+< 	
+48,49d34
+< 	#my $pbxtra_dbh = Fap::Model::Fcs->new()->dbh('pbxtra');;
+< 	my $pbxtra_dbh = F::Database::mysql_connect();
+53,55c38,39
+< 
+<     if (!Fap::Order::validate_prov_order($order)) {
+<         #$client->displayfailure($@);
+---
+>     if (!Fap::Order::validate_prov_order($fcs_schema, $order_id)) {
+>         $client->displayfailure($@);
+59d42
+< 		print "server_id=$order_group->{'server_id'}\n";
+61,62c44
+< 		my @phone_numbers = F::PhoneNumbers::get_phone_numbers($pbxtra_dbh, $server_id);	
+< 		print Dumper(@phone_numbers);
+---
+> 		my @phone_numbers = Fap::PhoneNumbers::get_phone_numbers($fcs_schema, $server_id);	
+64d45
+< print __LINE__ . ":\n";
+70,71c51,52
+< 				#$client->displayfailure('ERR: bundle id is invalid in order group ' . $order_group->{'order_group_id'} .
+< 				#' order bundle ' . $order_bundle->{'order_bundle_id'});
+---
+> 				$client->displayfailure('ERR: bundle id is invalid in order group ' . $order_group->{'order_group_id'} .
+> 				' order bundle ' . $order_bundle->{'order_bundle_id'});
+72a54
+> 			next unless $bundle->is_phone_bundle();
+74,76c56
+< 			#next unless $bundle->is_phone_bundle();
+< 			next if $order_bundle->{'bundle'}->{'category'}->{'name'} ne 'phone_number';
+< 			my @dids;
+---
+> 			my %extens;
+78c58,59
+< 				push(@dids, $order_bundle_detail->{'did_number'});
+---
+> 				my $exten = $order_bundle_detail->{'extension_number'};
+> 				$extens{$order_bundle_detail->{'did_number'}} = $exten;
+80,88c61,64
+< 			foreach my $did (@dids) {
+< 				print "did=$did\n";
+< 				my $primary_exts = F::User::get_user_list_for_server($F::Globals::dbh, $server_id);	
+< 				my $exten = first {!defined($_->{extension})} $primary_exts;
+< 				print __LINE__ . ": primary_exts: " . ref($primary_exts) . "\n";
+< 				print Dumper $primary_exts;
+< 				# optimal search of DID in @phone_numbers
+< 				my $number = first { $_->{number} eq $did } @phone_numbers;
+< 				unless ($number)
+---
+> 			foreach my $did (keys %extens) {
+> 				# optimal search for the DID in @phone_numbers
+> 				my $numbers = first { $_->{number} eq $did } @phone_numbers;
+> 				unless ($numbers)
+90c66
+< 					#$client->displayfailure("ERR: DIDs do not match in phone_numbers table");
+---
+> 					$client->displayfailure("ERR: $did: DIDs do not match in phone_numbers table");
+92c68
+< 				# validate, don't verify, DID	
+---
+> 				# validate the DID	
+95,96c71
+< print __LINE__ . ": did=$did\n";
+< 					#$client->displayfailure("ERR: DIDs not purchased yet");
+---
+> 					$client->displayfailure("ERR: DIDs not purchased yet");
+98c73
+< print __LINE__ . ": did=$did\n";
+---
+> 				my $exten = $extens{$did};
+101c76
+< 					#$client->displayfailure("ERR: failed to set caller id for server $server_id extension $exten DID $did");
+---
+> 					$client->displayfailure("ERR: failed to set caller id for server $server_id extension $exten DID $did");
+106,107c81
+< print __LINE__ . ": did=$did exten=$exten\n";
+< 					#$client->displayfailure("ERR: failed to update phone number for server $server_id extension $exten DID $did");
+---
+> 					$client->displayfailure("ERR: failed to update phone number for server $server_id extension $exten DID $did");
+109,111d82
+< 				my $user_id = get_user_id_by_ext_and_server($server_id, $exten);
+< print __LINE__ . ": server_id=$server_id exten=$exten assigned_user_id=$user_id\n";
+< 				push (@{$input->{'did_assigned_users'}}, $user_id);
+115,116d85
+< 	
+< 	print Dumper($input);
+122a92,93
+> 	my $fcs_schema = Fap::Model::Fcs->new();
+> 
+126,127c97,98
+<     if (!Fap::Order::validate_prov_order($order)) {
+<         #$client->displayfailure($@);
+---
+>     if (!Fap::Order::validate_prov_order($fcs_schema, $order_id)) {
+>         $client->displayfailure($@);
+129,130d99
+< 	my $fcs_schema = Fap::Model::Fcs->new();
+< 
+138,139c107,108
+< 				#$client->displayfailure('ERR: bundle id is invalid in order group ' . $order_group->{'order_group_id'} .
+< 				#' order bundle ' . $order_bundle->{'order_bundle_id'});
+---
+> 				$client->displayfailure('ERR: bundle id is invalid in order group ' . $order_group->{'order_group_id'} .
+> 				' order bundle ' . $order_bundle->{'order_bundle_id'});
+146d114
+< 					
+149,150c117,118
+< 					#$client->displayfailure('ERR: failed to remove caller id for server ' . $order_group->{'server_id'} .
+< 						#' extension ' . $order_bundle_detail->{'extension_number'});
+---
+> 					$client->displayfailure('ERR: failed to remove caller id for server ' . $order_group->{'server_id'} .
+> 						' extension ' . $order_bundle_detail->{'extension_number'});
+155,156c123,124
+< 					#$client->displayfailure('ERR: failed to remove phone number for server ' . $order_group->{'server_id'} .
+< 						#' DID ' . $order_bundle_detail->{'ordered_did'});
+---
+> 					$client->displayfailure('ERR: failed to remove phone number for server ' . $order_group->{'server_id'} .
+> 						' DID ' . $order_bundle_detail->{'ordered_did'});
+161c129,131
+< 			
+---
+> 	if (defined($input->{'did_assigned_users'})) {	
+> 		delete $input->{'did_assigned_users'};			
+> 	}
+167a138
+> 	my $input =shift;
+169,190c140,144
+< 	if(my $name = Fap::CallerID::get_caller_id($server_id, $exten)) {
+< 		return Fap::CallerID::set_caller_id($server_id, $did, $name, $exten);
+< 	}
+< 	return undef;
+< }
+< 
+< sub get_user_id_by_ext_and_server {
+< 	my $server_id = shift;
+< 	my $exten = shift;
+< 
+<     my $user_id = undef;
+<     if (Fap::Util::is_valid_extension($server_id, $exten)) {
+< print __LINE__ . ": server_id=$server_id exten=$exten\n";
+<         my $u_info = F::User::get_user_info_by_ext_and_server($F::Globals::dbh, $exten, $server_id);
+<         if (!defined($u_info)) {
+<             Fap->trace_error('Failed to get user info');
+<             return undef;
+<         }
+<         $user_id = $u_info->{'user_id'};
+< print __LINE__ . ": server_id=$server_id exten=$exten assigned_user_id=$user_id\n";
+<     }
+< 	return $user_id;
+---
+> 	my ($cid, $name) = Fap::CallerID::get_caller_id($server_id, $exten);
+> 	return if !defined($cid) || !defined($name);
+> 	# append $cid to output
+> 	push (@{$input->{'did_assigned_users'}}, $cid);
+> 	return Fap::CallerID::set_caller_id($server_id, $did, $name, $exten);
+192d145
+< 

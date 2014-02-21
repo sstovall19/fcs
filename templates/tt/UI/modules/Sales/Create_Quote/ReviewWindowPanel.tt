@@ -1,0 +1,16 @@
+<!-- Review window panel -->
+    <table class="super-centered" id="review-window">
+        <tr>
+            <td>
+                <div class="review-window-container">
+                <div id="review-window-panel" class="grey-roun review-window-panel">
+                
+                </div>
+                    <input type="button" id="close-review-window" value="Return to quote">
+                    <input type="button" id="submit-button" value="Submit Quote">
+                </div>
+            </td>
+        </tr>
+    </table>
+
+<!-- End Review window panel -->

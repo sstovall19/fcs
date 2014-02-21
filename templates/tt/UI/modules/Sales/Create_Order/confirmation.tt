@@ -1,0 +1,17 @@
+<div id="confirmation" class="form_category_div ui-tabs-hide" category_title="Confirmation">
+      <div class="wrapperDiv">
+        <div class="floatLeft">
+            <h3 style="">Order Confirmation</h3>
+        </div>
+        
+       </div>  
+       <div class="">
+           <div class="sectionHeadr"><h4>Your order has been received</h4></div>
+           <img src="/images/green-checkmark.png" width="80" height="92" border="0" style="margin: 0 auto;"/>
+           <div id="thankYou">Thank You!</div>
+           <p>Your order has been received and you will receive a confirmation in your inbox shortly.</p>
+           <p>If we need additional information regarding your order, we will contact you. Should you have any questions or need to make changes to your order, please call us at 877-366-2548 and reference order ID [order id]</p>
+           <p> Thank You!<br/>Fonality, Inc.<br/>www.fonality.com</p>
+           
+        </div>  
+</div>        

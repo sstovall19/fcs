@@ -1,0 +1,277 @@
+package Fap::Model::DBIx::ResultSet;
+use base 'DBIx::Class::ResultSet';
+use Storable;
+use Digest::SHA;
+use Data::Dumper;
+use strict;
+$SIG{__WARN__} = sub { foreach (@_) {  print STDERR "$_\n" if ($_!~/Prefetch/);} };
+
+
+
+sub find {
+    my ($self,@args ) = @_;
+    my $res;
+
+    no warnings;
+    return $self->filter_duplicates( wantarray, [ $self->SUPER::find(@args) ] );
+}
+
+
+sub _collapse_query {
+  my ($self, $query, $collapsed) = @_;
+
+	print STDERR "COLLAPSE QUERY!";
+
+
+  $collapsed ||= {};
+
+  if (ref $query eq 'ARRAY') {
+    foreach my $subquery (@$query) {
+      next unless ref $subquery;  # -or
+      $collapsed = $self->_collapse_query($subquery, $collapsed);
+    }
+  }
+  elsif (ref $query eq 'HASH') {
+    if (keys %$query and (keys %$query)[0] eq '-and') {
+      foreach my $subquery (@{$query->{-and}}) {
+        $collapsed = $self->_collapse_query($subquery, $collapsed);
+      }
+    }
+    else {
+      foreach my $col (keys %$query) {
+        my $value = $query->{$col};
+        $collapsed->{$col}{$value}++;
+      }
+    }
+  }
+
+  return $collapsed;
+}
+
+
+sub find_cached {
+	my ($self,@args) = @_;
+
+
+	my $k = $self->_build_cache_key(@args);
+	my $obj = $self->{cache}->get_storable($k);
+	$obj=[$obj] if (ref($obj) ne "ARRAY");
+	if (!$obj) {
+		$obj = [$self->SUPER::find(@args)];
+		$self->{cache}->set_storable($k,$obj,$args[1]->{cache_for});
+	}
+	
+	if (wantarray) {
+                        return @$obj;
+                } else {
+                        if (scalar(@$obj)>1) {
+                                return $obj;
+                        } else {
+                                return $obj->[0];
+                        }
+                }
+}
+
+sub find_or_new {
+	my ($self,$columns,@args) = @_;
+
+	return $self->SUPER::find_or_new($self->apply_defaults($columns,1),@args);
+}
+
+sub find_or_create {
+        my ($self,$columns,@args) = @_;
+
+        return $self->SUPER::find_or_create($self->apply_defaults($columns,1),@args);
+}
+
+sub create {
+	  my ($self,$columns,@args) = @_;
+
+        return $self->SUPER::create($self->apply_defaults($columns),@args);
+}
+
+
+
+
+
+sub apply_defaults {
+	my ($self,$columns,$ignore_refs) = @_;
+
+	my $defaults = $self->result_class->column_defaults;
+	foreach my $default (keys %$defaults) {
+		unless ($ignore_refs && ref($defaults->{$default}) eq "SCALAR") {
+			$columns->{$default} = $defaults->{$default} if (!defined $columns->{$default});
+		}
+	}
+	return $columns;
+}
+	
+
+sub first {
+    my ( $self, @args ) = @_;
+    return $self->filter_duplicates( wantarray, [ $self->SUPER::first(@args) ] );
+}
+
+sub next {
+    my ( $self, @args ) = @_;
+    return $self->filter_duplicates( wantarray, [ $self->SUPER::next(@args) ] );
+}
+
+sub all {
+    my ( $self, @args ) = @_;
+    return $self->filter_duplicates( wantarray, [ $self->SUPER::all(@args) ] );
+}
+
+sub _construct_object {
+  my ($self, @row) = @_;
+
+
+  my $info = $self->_collapse_result($self->{_attrs}{as}, \@row)
+    or return ();
+  my @new = $self->result_class->inflate_result($self->result_source, @$info);
+  @new = $self->{_attrs}{record_filter}->(@new)
+    if exists $self->{_attrs}{record_filter};
+  return @new;
+}
+
+
+#sub search {
+	#my ($self,$select,$args) = @_;
+#
+#}
+
+sub get_records {
+	my ($self,$function,$wantarray,$select,$args) = @_;
+
+	my @ret;
+
+	my $k = $self->_build_cache_key($select,$args);
+	if ((!defined $args->{cache_for} || $args->{cache_for}>0) && ref($self->cache)) {
+		my $cached = $self->cache->get($k);
+		if (defined $cached) {
+			@ret = @$cached;
+		}
+	}
+	if ($wantarray) {
+        	return @ret;
+    	} else {
+        	if ( scalar(@ret) > 1 ) {
+            		return @ret;
+        	} else {
+            		return $ret[0];
+        	}
+    	}
+}
+
+sub _build_cache_key {
+  my ($class, $args, $attrs) = @_;
+  # compose the query and bind values, like as_query(),
+  # so the cache key is only affected by what the database sees
+  # and not any other cruft in $attrs
+
+}
+
+sub cache {
+	my $self = shift;
+	my $obj = shift;
+
+	$self->{cache} = $obj if (ref($obj));
+	return $self->{cache};
+}
+
+sub filter_duplicates {
+    my ( $self, $wantarray, $recs ) = @_;
+
+    my @ret;
+    my $rc = 0;
+    foreach my $rec (@$recs) {
+        if ($rec) {
+            push( @ret, $rec->uniqueify() );
+            $rc++;
+        }
+    }
+    $self->{row_count} = $rc;
+	if ($wantarray) {
+                return @ret;
+        } else {
+                if ( scalar(@ret) > 1 ) {
+                        return @ret;
+                } else {
+                        return $ret[0];
+                }
+        }
+
+}
+
+sub set_cache {
+  my ( $self, $data ) = @_;
+	my $uh = {};
+	my $final = [];
+	my $ref;
+	foreach (@$data) {
+		if (!$uh->{$_->id}) {
+			
+			push(@$final,$_);
+			$uh->{$_->id} = 1;
+		}
+	}
+	$self->SUPER::set_cache($final);
+}
+
+
+
+sub row_count {
+    my $self  = shift;
+    my $count = shift;
+
+    if ($count) {
+        $self->{row_count} = $count;
+    }
+    return $self->{row_count};
+}
+1;
+
+#################### pod generated by Pod::Autopod - keep this line to make pod updates possible ####################
+
+=head1 NAME
+
+Fap::Model::DBIx::ResultSet
+
+
+=head1 REQUIRES
+
+
+=head1 IMPLEMENTS
+
+L<DBIx::Class::ResultSet> 
+
+
+=head1 METHODS
+
+=head2 all
+
+ $this->all();
+
+=head2 filter_duplicates
+
+ $this->filter_duplicates();
+
+=head2 find
+
+ $this->find();
+
+=head2 first
+
+ $this->first();
+
+=head2 next
+
+ $this->next();
+
+=head2 row_count
+
+ $this->row_count();
+
+
+=cut
+
